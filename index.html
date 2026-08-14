@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#238464">
+<title>酒ログ Demo v4.9.2.1</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f6f8f6;color:#17211c}
+header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #dfe4e0;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:22px;font-weight:800}.pill{font-size:12px;background:#edf5f1;color:#238464;padding:4px 9px;border-radius:999px}
+main{max-width:680px;margin:auto;padding:18px 18px 95px}.card{background:#fff;border:1px solid #dfe4e0;border-radius:22px;padding:18px;margin-bottom:14px}
+h1,h2,h3{margin:0 0 12px}.small{font-size:12px;color:#6f7773}.hidden{display:none!important}
+label{display:block;font-size:13px;color:#707874;margin:10px 0 6px}input,textarea{width:100%;padding:13px;border:1px solid #d5dcd8;border-radius:13px;font:inherit}
+textarea{min-height:90px}.btn{width:100%;padding:14px;border:0;border-radius:14px;font-weight:800;margin-top:9px;font-size:16px}.primary{background:#238464;color:#fff}.secondary{background:#edf5f1;color:#238464}.outline{background:#fff;border:1px solid #dfe4e0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.msg{margin-top:12px;padding:11px;border-radius:12px;white-space:pre-wrap;word-break:break-word}.ok{background:#e8f7ef;color:#17683f}.err{background:#fff0ee;color:#a32c22}.info{background:#eef5ff;color:#235a90}
+.preview{width:100%;max-height:300px;object-fit:contain;border-radius:14px;background:#f0f1f0}.record{padding:11px 0;border-bottom:1px solid #e6ebe7}.record:last-child{border-bottom:0}.record b{display:block}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #dfe4e0;z-index:30}.navin{max-width:680px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr)}.navbtn{border:0;background:transparent;padding:10px 4px;font-size:11px;color:#6f7773}.navbtn span{display:block;font-size:20px}.navbtn.active{color:#238464;font-weight:800}
+.hero{background:linear-gradient(135deg,#eaf7f1,#fff)}
+
+.history-grid{display:grid;gap:14px}
+.sake-card{display:grid;grid-template-columns:96px 1fr;gap:13px;padding:12px;border:1px solid #e1e7e3;border-radius:18px;background:#fff}
+.sake-thumb{width:96px;height:128px;border-radius:14px;object-fit:cover;background:#eef1ef}
+.sake-thumb.placeholder{display:flex;align-items:center;justify-content:center;font-size:32px;color:#9aa39e}
+.sake-main{min-width:0}.sake-title{font-size:17px;font-weight:850;line-height:1.3}.sake-sub{font-size:12px;color:#68716d;margin-top:3px}
+.sake-badges{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.tag{font-size:11px;background:#edf5f1;color:#237459;border-radius:999px;padding:4px 7px}
+.sake-rating{font-weight:800;margin-top:4px}.sake-meta{font-size:12px;color:#68716d;line-height:1.55;margin-top:5px}
+.sake-comment{font-size:13px;margin-top:7px;padding:8px 10px;background:#f7f9f7;border-radius:10px}
+.sake-details{grid-column:1/-1;border-top:1px solid #edf0ee;padding-top:8px;margin-top:2px}
+.sake-details summary{font-size:12px;color:#238464;font-weight:700;cursor:pointer}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px;font-size:12px}
+.spec-grid div{min-width:0}.spec-grid b{display:block;color:#7a827e;font-size:10px;margin-bottom:1px}
+@media(max-width:420px){.sake-card{grid-template-columns:82px 1fr}.sake-thumb{width:82px;height:112px}}
+
+
+.detail-hero{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.detail-photo{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:16px;background:#eef1ef}
+.detail-photo.empty{display:flex;align-items:center;justify-content:center;font-size:38px;color:#9aa39e}
+.detail-title{font-size:26px;font-weight:900;line-height:1.25;margin:4px 0}
+.detail-brewery{color:#68716d;margin-bottom:8px}
+.detail-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.detail-rating{font-size:20px;font-weight:850;margin:8px 0}
+.detail-info{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.detail-info>div{background:#f7f9f7;border-radius:12px;padding:10px}
+.detail-info b{display:block;font-size:11px;color:#7a827e;margin-bottom:3px}
+.detail-comment{margin-top:14px;padding:12px;background:#f7f9f7;border-radius:12px;white-space:pre-wrap}
+.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.danger{background:#fff0ee;color:#a32c22;border:1px solid #f0c7c2}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.edit-grid .full{grid-column:1/-1}
+@media(max-width:520px){.detail-info,.edit-grid{grid-template-columns:1fr}.detail-actions{grid-template-columns:1fr}}
+
+
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
+.stat-card{background:#f7f9f7;border-radius:16px;padding:14px}
+.stat-card b{display:block;font-size:11px;color:#7a827e;margin-bottom:4px}
+.stat-card strong{font-size:24px}
+.rank-list{display:grid;gap:8px;margin-top:10px}
+.rank-row{display:grid;grid-template-columns:32px 1fr auto;gap:8px;align-items:center;padding:10px 12px;background:#f7f9f7;border-radius:12px}
+.rank-num{font-weight:900;color:#238464}
+.bar{height:8px;background:#e5ebe7;border-radius:999px;overflow:hidden;margin-top:6px}
+.bar>span{display:block;height:100%;background:#238464;border-radius:999px}
+.analysis-section{margin-top:18px}.analysis-section h3{margin-bottom:8px}
+.top-sake{padding:12px;border:1px solid #e1e7e3;border-radius:14px;margin-top:8px}
+.insight{margin-top:12px;padding:12px;border-radius:14px;background:#eef5ff;color:#235a90;line-height:1.6}
+@media(max-width:420px){.stats-grid{grid-template-columns:1fr 1fr}}
+
+
+.sakenowa-box{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff8e8;border:1px solid #f0dfb8;font-size:12px;line-height:1.55}
+.sakenowa-candidate{padding:7px 0;border-top:1px solid #eee}.sakenowa-candidate:first-of-type{border-top:0}
+</style>
+</head>
+<body>
+<header>
+<div class="brand">🍶 酒ログ <span class="pill">Demo v4.9.2</span></div>
+<button id="logoutTop" class="outline" style="padding:8px 11px;border-radius:10px">ログアウト</button>
+</header>
+
+<main>
+<section id="setupView">
+<div class="card">
+<h2>接続設定</h2>
+<div class="small">Project URLは設定済み。Publishable key（sb_publishable_...）だけ入力してください。</div>
+<label>Supabase Project URL</label>
+<input id="url" value="https://mtshsijgfmottgkbgnir.supabase.co" readonly>
+<label>Publishable key</label>
+<input id="key" type="password" placeholder="sb_publishable_...">
+<button id="testBtn" class="btn primary">接続テスト</button>
+<button id="saveSetup" class="btn secondary">設定を保存して認証へ</button>
+<div id="setupMsg"></div>
+</div>
+</section>
+
+<section id="authView" class="hidden">
+<div class="card">
+<h2 id="authTitle">ログイン</h2>
+<label>メールアドレス</label><input id="email" type="email">
+<label>パスワード（6文字以上）</label><input id="password" type="password">
+<button id="authBtn" class="btn primary">ログイン</button>
+<button id="toggleAuth" class="btn secondary">初めて使う → 新規登録</button>
+<div id="authMsg"></div>
+</div>
+</section>
+
+<section id="homeView" class="page hidden">
+<div class="card hero">
+<h2>日本酒を記録する</h2>
+<div class="small" id="userEmail"></div>
+<div class="grid">
+<button id="cameraBtn" class="btn primary">📷 表ラベル撮影</button>
+<button id="galleryBtn" class="btn secondary">🖼 表ラベル選択</button>
+</div>
+<div class="grid">
+<button id="backCameraBtn" class="btn outline">📷 裏ラベル撮影</button>
+<button id="backGalleryBtn" class="btn outline">🖼 裏ラベル選択</button>
+</div>
+<input id="cameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+<input id="galleryInput" type="file" accept="image/*" class="hidden">
+<input id="backCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+<input id="backGalleryInput" type="file" accept="image/*" class="hidden">
+<button id="manualBtn" class="btn outline">✍️ 写真なしで手入力</button>
+</div>
+
+<div class="card">
+<h3>最近の記録</h3>
+<div id="recentList">読み込み中…</div>
+</div>
+</section>
+
+<section id="recordView" class="page hidden">
+<div class="card">
+<h2>ラベル確認・AI候補</h2>
+<div class="grid">
+<div><div class="small">表ラベル</div><img id="preview" class="preview hidden"></div>
+<div><div class="small">裏ラベル</div><img id="backPreview" class="preview hidden"></div>
+</div>
+<div class="grid">
+<button id="recordFrontGalleryBtn" class="btn outline">🖼 表ラベルを変更</button>
+<button id="recordBackGalleryBtn" class="btn outline">🖼 裏ラベルを追加</button>
+</div>
+<div class="grid">
+<button id="recordFrontCameraBtn" class="btn outline">📷 表を撮り直す</button>
+<button id="recordBackCameraBtn" class="btn outline">📷 裏を撮影</button>
+</div>
+<button id="analyzeBtn" class="btn secondary hidden">🔎 AIで銘柄候補を探す</button>
+<div id="analysisMsg"></div>
+<div id="candidateBox" class="hidden"></div>
+<h3 style="margin-top:18px">確定して記録</h3>
+<label>銘柄</label><input id="brand" placeholder="例：今西">
+<label>商品名</label><input id="product" placeholder="例：純米吟醸 朝日">
+<label>蔵元</label><input id="brewery" placeholder="例：今西酒造株式会社">
+<label>都道府県</label><input id="prefecture" placeholder="例：奈良県">
+<label>特定名称・酒類区分</label><input id="classification" placeholder="例：純米吟醸">
+<label>原材料名</label><input id="rice" placeholder="例：米（国産）">
+<label>使用米・原料米</label>
+<input id="riceVariety" placeholder="例：朝日米100%">
+<label>精米歩合</label><input id="polishing" placeholder="例：60%">
+<label>アルコール度数</label><input id="alcohol" placeholder="例：14%">
+<label>容量</label><input id="volume" placeholder="例：720ml">
+<label>評価（1〜5）</label><input id="rating" type="range" min="1" max="5" step=".5" value="4">
+<div><span id="ratingVal">4.0</span> ★</div>
+<label>飲んだ店</label><input id="restaurant">
+<label>価格（円・任意）</label><input id="price" inputmode="numeric">
+<label>コメント</label><textarea id="comment"></textarea>
+<button id="locateBtn" class="btn outline">📍 現在地を記録</button>
+<div id="locMsg" class="small"></div>
+<button id="saveRecordBtn" class="btn primary">Supabaseに保存</button>
+<div id="recordMsg"></div>
+</div>
+</section>
+
+<section id="historyView" class="page hidden">
+<div class="card">
+<h2>🍶 飲んだ記録</h2><div class="small" style="margin-bottom:12px">これまで飲んだ一本を、写真・評価・場所と一緒に残します。</div>
+<div id="historyList">読み込み中…</div>
+</div>
+</section>
+
+
+<section id="detailView" class="page hidden">
+  <div class="card">
+    <button id="detailBackBtn" class="btn outline" style="margin-top:0">← 記録一覧へ戻る</button>
+    <div id="detailBody" style="margin-top:14px">読み込み中…</div>
+  </div>
+</section>
+
+
+<section id="analysisView" class="page hidden">
+  <div class="card">
+    <h2>📊 マイ酒ログ分析</h2>
+    <div class="small" style="margin-bottom:12px">これまでの記録から、あなたの日本酒の好みを自動集計します。</div>
+    <div id="analysisBody">読み込み中…</div>
+  </div>
+</section>
+
+<section id="profileView" class="page hidden">
+<div class="card">
+<h2>マイページ</h2>
+<div id="profileBody"></div>
+</div>
+</section>
+<div class="small" style="text-align:center;margin:14px 8px 76px">銘柄・蔵元・地域の照合に <a href="https://sakenowa.com" target="_blank" rel="noopener">さけのわデータ</a> を利用しています。</div></main>
+
+<nav id="bottomNav" class="hidden">
+<div class="navin">
+<button class="navbtn active" data-page="homeView"><span>⌂</span>ホーム</button>
+<button class="navbtn" data-page="recordView"><span>＋</span>追加</button>
+<button class="navbtn" data-page="historyView"><span>▤</span>記録</button>
+<button class="navbtn" data-page="analysisView"><span>📊</span>分析</button>
+<button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
+</div>
+</nav>
+
+<script src="app.js"></script>
+</body></html>
