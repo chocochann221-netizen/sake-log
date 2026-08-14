@@ -1,0 +1,9 @@
+{
+  "name": "酒ログ",
+  "short_name": "酒ログ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#238464",
+  "lang": "ja"
+}
