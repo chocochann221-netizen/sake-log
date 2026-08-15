@@ -70,7 +70,7 @@ brand が読めているのに product が完全には読めない場合でも�
     const resp=await fetch("https://api.openai.com/v1/responses",{
       method:"POST",
       headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},
-      body:JSON.stringify({model,max_output_tokens:850,tools:[{type:"web_search"}],input:[{role:"user",content}]})
+      body:JSON.stringify({model,max_output_tokens:2000,tools:[{type:"web_search"}],input:[{role:"user",content}]})
     });
     const data=await resp.json();
     if(!resp.ok){
