@@ -24,6 +24,9 @@ async function recognizeSake(request, env) {
 2. 大きな銘柄名だけで判定しない。
 3. 蔵元名、都道府県、特定名称、原料米、精米歩合、アルコール度数、
    「大辛口」「生酒」「無濾過」「山田錦」などの商品識別語を必ず利用する。
+4. 「原材料名」と「原料米・使用米・酒米品種」は必ず別情報として扱う。
+   ingredients にはラベルに記載された原材料名をそのまま入れる。例：「米（国産）・米麹（国産米）」
+   rice_variety には酒米の品種だけを入れる。例：「山田錦」「雄町」「五百万石」。原材料名から酒米品種を推測しない。
 4. 裏ラベルの製造者名は非常に重要な照合材料として扱う。
 5. 読めた文字を使ってWeb検索し、蔵元公式サイトや信頼できる商品情報と照合する。
 6. 商品名の一部しか読めなくても、銘柄＋特徴語から商品候補を作る。
@@ -41,10 +44,12 @@ async function recognizeSake(request, env) {
     "product": "商品名・サブネーム・識別語",
     "brewery": "蔵元・製造者",
     "prefecture": "都道府県",
-    "type": "純米吟醸・本醸造など",
-    "rice": "原料米",
-    "polishing": "精米歩合",
-    "alcohol": "アルコール度数"
+    "classification": "純米吟醸・本醸造など",
+"ingredients": "原材料名。例：米（国産）、米こうじ（国産米）",
+"rice_variety": "酒米の品種。例：山田錦",
+"polishing_ratio": "精米歩合。例：60%",
+"alcohol": "アルコール度数。例：14度",
+"volume": "内容量。例：720ml"
   },
   "candidates": [
     {
@@ -52,7 +57,7 @@ async function recognizeSake(request, env) {
       "product": "商品名",
       "brewery": "蔵元",
       "prefecture": "都道府県",
-      "type": "種類",
+      "classification": "種類",
       "confidence": 0.0,
       "reason": "この候補にした根拠"
     }
