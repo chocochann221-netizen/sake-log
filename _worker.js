@@ -15,7 +15,56 @@ async function recognizeSake(request, env) {
     const {front, back} = await request.json();
     if (!front) return json({error:"表ラベル画像が必要です"}, 400);
     const model = env.OPENAI_MODEL || "gpt-5.4-mini";
-    const prompt = `日本酒ボトルを解析してください。写真の文字読取とWebでの商品同定を同時に行います。\n\n最重要ルール:\n1. label_facts の ingredients / rice_variety / polishing_ratio / alcohol / volume は「写真に実際に写っている文字」だけから転記。Web知識・商品知識・推測で補完・訂正しない。読めなければ空文字。\n2. candidates はWeb検索で実在確認した商品候補。Webは銘柄・商品名・蔵元・都道府県・分類の同定に使う。\n3. 写真とWebで容量・度数・精米歩合・原材料が違う場合、label_factsは写真の値を保持し、差異は candidate.discrepancies に書く。\n4. 裏ラベルがある場合、法定表示欄を高優先で確認。14/15/16度、720ml/1800ml/1.8Lなどの読み違いに注意。\n5. ingredients は原材料名の行。rice_variety は使用米・品種で、別項目。\n6. 候補は最大3件。URLは実際にWeb検索で確認できたものだけ。\n\nJSONのみ:\n{"label_facts":{"brand":"","product":"","brewery":"","prefecture":"","classification":"","ingredients":"","rice_variety":"","polishing_ratio":"","alcohol":"","volume":"","ocr":""},"candidates":[{"brand":"","product":"","brewery":"","prefecture":"","classification":"","confidence":0.0,"web_verified":true,"reason":"","discrepancies":[]}],"web_sources":[{"title":"","url":"","domain":"","supports":""}],"note":""}`;
+    const prompt = `
+あなたは日本酒の商品同定専門AIです。
+表ラベルと裏ラベルの画像を読み、日本酒を「銘柄だけ」ではなく可能な限り商品単位まで特定してください。
+
+重要ルール:
+1. 表ラベル・裏ラベルの文字を両方読む。
+2. 大きな銘柄名だけで判定しない。
+3. 蔵元名、都道府県、特定名称、原料米、精米歩合、アルコール度数、
+   「大辛口」「生酒」「無濾過」「山田錦」などの商品識別語を必ず利用する。
+4. 裏ラベルの製造者名は非常に重要な照合材料として扱う。
+5. 読めた文字を使ってWeb検索し、蔵元公式サイトや信頼できる商品情報と照合する。
+6. 商品名の一部しか読めなくても、銘柄＋特徴語から商品候補を作る。
+   例: ラベルに「正雪」「大辛口」が読めれば product を空欄にせず
+   「大辛口」またはWeb照合で確認できた正式商品名を入れる。
+7. 確証のない情報は断定せず、候補を最大3件返す。
+8. JSON以外は絶対に出力しない。
+
+次のJSON形式だけを返してください:
+
+{
+  "label_facts": {
+    "ocr": "表裏から読めた重要文字",
+    "brand": "銘柄名",
+    "product": "商品名・サブネーム・識別語",
+    "brewery": "蔵元・製造者",
+    "prefecture": "都道府県",
+    "type": "純米吟醸・本醸造など",
+    "rice": "原料米",
+    "polishing": "精米歩合",
+    "alcohol": "アルコール度数"
+  },
+  "candidates": [
+    {
+      "brand": "銘柄",
+      "product": "商品名",
+      "brewery": "蔵元",
+      "prefecture": "都道府県",
+      "type": "種類",
+      "confidence": 0.0,
+      "reason": "この候補にした根拠"
+    }
+  ],
+  "web_sources": [],
+  "note": ""
+}
+
+特に重要:
+brand が読めているのに product が完全には読めない場合でも、
+ラベル上の商品識別語を product に必ず入れてください。
+`;
     const content=[{type:"input_text",text:prompt},{type:"input_image",image_url:front,detail:"low"}];
     if(back) content.push({type:"input_image",image_url:back,detail:"high"});
     const resp=await fetch("https://api.openai.com/v1/responses",{
