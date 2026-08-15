@@ -90,15 +90,60 @@ try{
   },500);
 }
     const f=parsed.label_facts||{};
-    const candidates=Array.isArray(parsed.candidates)?parsed.candidates.filter(c=>c&&c.brand&&Number(c.confidence||0)>=0.45).slice(0,3):[];
-    for(const c of candidates){delete c.ingredients;delete c.rice;delete c.rice_variety;delete c.polishing_ratio;delete c.alcohol;delete c.volume;}
-    return json({
-      ocr_text:f.ocr||"",
-      label_facts:{brand:f.brand||"",product:f.product||"",brewery:f.brewery||"",prefecture:f.prefecture||"",classification:f.classification||"",ingredients:f.ingredients||"",rice_variety:f.rice_variety||"",polishing_ratio:f.polishing_ratio||"",alcohol:f.alcohol||"",volume:f.volume||"",other:[]},
-      candidates,
-      web_sources:Array.isArray(parsed.web_sources)?parsed.web_sources.filter(x=>x&&/^https?:\/\//i.test(String(x.url||""))).slice(0,5):[],
-      note:parsed.note||"",model_name:model,version:"4.9.2",api_calls:1
-    });
+
+// AIが返す項目名の揺れを、酒ログ側の項目名に統一
+const nf={
+  ...f,
+  classification:f.classification||f.type||"",
+  ingredients:f.ingredients||f.rice||"",
+  rice_variety:f.rice_variety||f.rice||f.ingredients||"",
+  polishing_ratio:f.polishing_ratio||f.polishing||"",
+  alcohol:f.alcohol||"",
+  volume:f.volume||""
+};
+
+// 銘柄候補にも、写真から読み取ったラベル情報を引き継ぐ
+const candidates=Array.isArray(parsed.candidates)
+  ? parsed.candidates
+      .filter(c=>c&&c.brand&&Number(c.confidence||0)>=0.45)
+      .slice(0,3)
+      .map(c=>({
+        ...c,
+        classification:c.classification||c.type||nf.classification,
+        ingredients:c.ingredients||nf.ingredients,
+        rice_variety:c.rice_variety||nf.rice_variety,
+        polishing_ratio:c.polishing_ratio||nf.polishing_ratio,
+        alcohol:c.alcohol||nf.alcohol,
+        volume:c.volume||nf.volume
+      }))
+  :[];
+
+return json({
+  ocr_text:nf.ocr||"",
+  label_facts:{
+    brand:nf.brand||"",
+    product:nf.product||"",
+    brewery:nf.brewery||"",
+    prefecture:nf.prefecture||"",
+    classification:nf.classification||"",
+    ingredients:nf.ingredients||"",
+    rice_variety:nf.rice_variety||"",
+    polishing_ratio:nf.polishing_ratio||"",
+    alcohol:nf.alcohol||"",
+    volume:nf.volume||"",
+    other:nf.other||[]
+  },
+  candidates,
+  web_sources:Array.isArray(parsed.web_sources)
+    ? parsed.web_sources
+        .filter(x=>x&&/^https?:\/\//i.test(String(x.url||"")))
+        .slice(0,5)
+    :[],
+  note:parsed.note||"",
+  model_name:model,
+  version:"4.9.2",
+  api_calls:1
+});
   } catch(e) { return json({error:e.message},500); }
 }
 
