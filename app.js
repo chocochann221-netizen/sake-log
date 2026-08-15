@@ -235,8 +235,8 @@ function renderCandidates(items){
  $("candidateBox").innerHTML='<div class="msg info"><b>AI・Web照合結果</b><br>'+
  items.map((c,i)=>{
    const pct=Math.round(Math.max(0,Math.min(1,Number(c.confidence)||0))*100);
-   const verified=c.web_verified===true;
-  const spec=productSpecScore(S.recognition?.label_facts||{},c);
+   const spec=productSpecScore(S.recognition?.label_facts||{},c);
+const verified=c.web_verified===true || (pct>=90 && spec>=0.9);
    const checks=[
      c.evidence?.front_label?`表: ${escapeHtml(c.evidence.front_label)}`:"",
      c.evidence?.back_label?`裏: ${escapeHtml(c.evidence.back_label)}`:"",
