@@ -581,7 +581,6 @@ $("analyzeBtn").onclick=async()=>{
      S.recognition=confirmed.recognition||null;
      renderCandidates(S.recognition?.candidates||[]);
      msg($("analysisMsg"),"✅ 同じ写真の「確定済み記録」を再利用しました。AIは使っていません。","ok");
-     return;
    }
 
    // 2. AI解析済みキャッシュ
@@ -602,7 +601,24 @@ $("analyzeBtn").onclick=async()=>{
    renderCandidates(d.candidates||[]);
    const top=(d.candidates||[])[0];
    if(top){
-     applyCandidate(top);
+     if(!confirmed){
+  applyCandidate(top);
+}else{
+  const setAiIfEmpty=(id,v)=>{
+    const el=$(id);
+    if(el && !el.value.trim() && v) el.value=v;
+  };
+  setAiIfEmpty("brand",top.brand);
+  setAiIfEmpty("product",top.product);
+  setAiIfEmpty("brewery",top.brewery);
+  setAiIfEmpty("prefecture",top.prefecture);
+  setAiIfEmpty("classification",top.classification);
+  setAiIfEmpty("rice",top.ingredients);
+  setAiIfEmpty("riceVariety",top.rice_variety);
+  setAiIfEmpty("polishing",top.polishing_ratio);
+  setAiIfEmpty("alcohol",top.alcohol);
+  setAiIfEmpty("volume",top.volume);
+}
    }else{
      const f=d.label_facts||{};
      $("brand").value=f.brand||"";
