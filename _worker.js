@@ -79,7 +79,16 @@ brand が読めているのに product が完全には読めない場合でも�
     }
     const extractText=(d)=>d.output_text||(d.output||[]).flatMap(x=>x.content||[]).map(x=>x.text||"").join("");
     const cleanJson=(x)=>String(x||"").replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```\s*$/,"").trim();
-    let parsed={}; try{parsed=JSON.parse(cleanJson(extractText(data)))}catch{}
+    const rawText=extractText(data);
+let parsed={};
+try{
+  parsed=JSON.parse(cleanJson(rawText));
+}catch(e){
+  return json({
+    error:"AI返答JSON解析失敗: "+e.message,
+    raw_text:rawText.slice(0,1500)
+  },500);
+}
     const f=parsed.label_facts||{};
     const candidates=Array.isArray(parsed.candidates)?parsed.candidates.filter(c=>c&&c.brand&&Number(c.confidence||0)>=0.45).slice(0,3):[];
     for(const c of candidates){delete c.ingredients;delete c.rice;delete c.rice_variety;delete c.polishing_ratio;delete c.alcohol;delete c.volume;}
