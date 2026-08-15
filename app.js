@@ -586,7 +586,7 @@ $("analyzeBtn").onclick=async()=>{
    }
 
    // 2. AI解析済みキャッシュ
-   let d=loadAiCache(cacheKey);
+   let d=null;
    if(d){
      d={...d,cache_hit:true};
    }else{
