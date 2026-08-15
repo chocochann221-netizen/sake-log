@@ -95,8 +95,8 @@ try{
 const nf={
   ...f,
   classification:f.classification||f.type||"",
-  ingredients:f.ingredients||f.rice||"",
-  rice_variety:f.rice_variety||f.rice||f.ingredients||"",
+  ingredients:f.ingredients||"",
+  rice_variety:f.rice_variety||f.rice||"",
   polishing_ratio:f.polishing_ratio||f.polishing||"",
   alcohol:f.alcohol||"",
   volume:f.volume||""
