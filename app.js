@@ -196,24 +196,36 @@ function productSpecScore(f,c){
   let score=0;
   let total=0;
 
+  const norm=v=>String(v||"")
+    .toLowerCase()
+    .replace(/\s+/g,"")
+    .replace(/[‐-‒–—―ー\-・･]/g,"");
+
   const add=(a,b,weight=1)=>{
     if(!a) return;
     total+=weight;
     if(!b) return;
 
-    const aa=String(a).toLowerCase().replace(/\s+/g,"");
-    const bb=String(b).toLowerCase().replace(/\s+/g,"");
+    const aa=norm(a);
+    const bb=norm(b);
 
-    if(aa.includes(bb) || bb.includes(aa)){
+    if(aa && bb && (aa===bb || aa.includes(bb) || bb.includes(aa))){
       score+=weight;
     }
   };
 
-  add(f.product,c.product,3);
+  // 商品そのものを特定する情報を重視
+  add(f.product,c.product,4);
+  add(f.rice_variety,c.rice_variety,3);
+  add(f.polishing_ratio,c.polishing_ratio,3);
+
+  // 補助情報
   add(f.classification,c.classification,2);
-  add(f.rice_variety,c.rice_variety,2);
-  add(f.polishing_ratio,c.polishing_ratio,2);
   add(f.alcohol,c.alcohol,1);
+
+  // 銘柄・蔵元も取れていれば照合
+  add(f.brand,c.brand,3);
+  add(f.brewery,c.brewery,2);
 
   return total ? score/total : 0;
 }
