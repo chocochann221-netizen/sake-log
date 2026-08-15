@@ -318,7 +318,7 @@ async function matchSakenowaFacts(f){
 function renderSakenowaMatches(items){
  const old=document.getElementById("sakenowaMatches");if(old)old.remove();if(!items?.length)return;
  const box=document.createElement("div");box.id="sakenowaMatches";box.className="sakenowa-box";
- box.innerHTML="<b>🍶 さけのわ銘柄DB照合</b>"+items.slice(0,3).map(x=>`<div class="sakenowa-candidate"><b>${escapeHtml(x.brand)}</b>${x.brewery?" ／ "+escapeHtml(x.brewery):""}${x.prefecture?"（"+escapeHtml(x.prefecture)+"）":""} <span class="small">一致度 ${Math.round(x.score*100)}%</span></div>`).join("")+'<div class="small"><a href="https://sakenowa.com" target="_blank" rel="noopener">さけのわデータ</a>を利用しています。</div>';
+ box.innerHTML="<b>🍶 さけのわ銘柄DB照合</b>"+items.slice(0,3).map(x=>`<div class="sakenowa-candidate"><b>${escapeHtml(x.brand)}</b>${x.brewery?" ／ "+escapeHtml(x.brewery):""}${x.prefecture?"（"+escapeHtml(x.prefecture)+"）":""} <span class="small">銘柄一致度 ${Math.round(x.score*100)}%</span></div>`).join("")+'<div class="small"><a href="https://sakenowa.com" target="_blank" rel="noopener">さけのわデータ</a>を利用しています。</div>';
  $("analysisMsg").insertAdjacentElement("afterend",box)
 }
 
