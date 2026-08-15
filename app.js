@@ -570,9 +570,8 @@ $("analyzeBtn").onclick=async()=>{
      const swDict=await matchSakenowaFacts(dictionaryRecordToFacts(dict.row));
      renderSakenowaMatches(swDict);
      msg($("analysisMsg"),
-       `📚 酒ログ共有辞書から候補を見つけました（画像一致度 ${Math.round(dict.sim.score*100)}%）。AIは使っていません。${swDict[0]&&swDict[0].score>=.72?" さけのわ銘柄DBでも確認できました。":""} 現物ラベルを確認して保存してください。`,
+       `📚 酒ログ共有辞書から候補を見つけました（画像一致度 ${Math.round(dict.sim.score*100)}%）。不足項目はAIでラベルから補完します。${swDict[0]&&swDict[0].score>=.72?" さけのわ銘柄DBでも確認できました。":""} 現物ラベルを確認して保存してください。`,
        "ok");
-     return;
    }
 
    // 1. この端末でユーザーが以前「保存」まで確定した同じ写真
