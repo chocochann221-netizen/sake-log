@@ -192,6 +192,31 @@ function applyCandidate(c){
  $("alcohol").value=f.alcohol||"";
  $("volume").value=f.volume||"";
 }
+function productSpecScore(f,c){
+  let score=0;
+  let total=0;
+
+  const add=(a,b,weight=1)=>{
+    if(!a) return;
+    total+=weight;
+    if(!b) return;
+
+    const aa=String(a).toLowerCase().replace(/\s+/g,"");
+    const bb=String(b).toLowerCase().replace(/\s+/g,"");
+
+    if(aa.includes(bb) || bb.includes(aa)){
+      score+=weight;
+    }
+  };
+
+  add(f.product,c.product,3);
+  add(f.classification,c.classification,2);
+  add(f.rice_variety,c.rice_variety,2);
+  add(f.polishing_ratio,c.polishing_ratio,2);
+  add(f.alcohol,c.alcohol,1);
+
+  return total ? score/total : 0;
+}
 function renderCandidates(items){
  $("candidateBox").classList.remove("hidden");
  if(!items?.length){
@@ -211,6 +236,7 @@ function renderCandidates(items){
  items.map((c,i)=>{
    const pct=Math.round(Math.max(0,Math.min(1,Number(c.confidence)||0))*100);
    const verified=c.web_verified===true;
+  const spec=productSpecScore(S.recognition?.label_facts||{},c);
    const checks=[
      c.evidence?.front_label?`表: ${escapeHtml(c.evidence.front_label)}`:"",
      c.evidence?.back_label?`裏: ${escapeHtml(c.evidence.back_label)}`:"",
@@ -220,6 +246,7 @@ function renderCandidates(items){
      <b>${i+1}. ${escapeHtml([c.brand,c.product].filter(Boolean).join(" "))}</b><br>
      <span class="small">${escapeHtml(c.brewery||"蔵元不明")}</span><br>
      <span class="small">一致度 ${pct}%（${confidenceLabel(c.confidence)}） ${verified?"✓ Web確認済み":"△ Web確認不十分"}</span>
+    <span class="small">商品仕様一致 ${Math.round(spec*100)}%</span><br>
      ${checks?`<div class="small" style="margin-top:6px">${checks}</div>`:""}
    </button>`;
  }).join("")+
