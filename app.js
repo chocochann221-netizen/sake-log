@@ -449,16 +449,27 @@ function dictionaryRecordToFacts(row){
 }
 function applyDictionaryRow(row){
   const f=dictionaryRecordToFacts(row);
-  $("brand").value=f.brand;
-  $("product").value=f.product;
-  $("brewery").value=f.brewery;
-  $("prefecture").value=f.prefecture;
-  $("classification").value=f.classification;
-  $("rice").value=f.ingredients;
-  if($("riceVariety"))$("riceVariety").value=f.rice_variety;
-  $("polishing").value=f.polishing_ratio;
-  $("alcohol").value=f.alcohol;
-  $("volume").value=f.volume;
+
+  const setIfEmpty=(id,v)=>{
+    const el=$(id);
+    if(el && !el.value.trim() && v){
+      el.value=v;
+    }
+  };
+
+  // 辞書は補助情報としてのみ使用
+  setIfEmpty("brand",f.brand);
+  setIfEmpty("brewery",f.brewery);
+  setIfEmpty("prefecture",f.prefecture);
+
+  // 商品個体の情報は今回の写真を優先
+  setIfEmpty("product",f.product);
+  setIfEmpty("classification",f.classification);
+  setIfEmpty("rice",f.ingredients);
+  setIfEmpty("riceVariety",f.rice_variety);
+  setIfEmpty("polishing",f.polishing_ratio);
+  setIfEmpty("alcohol",f.alcohol);
+  setIfEmpty("volume",f.volume);
 }
 async function saveToSharedDictionary(){
   if(!S.currentFrontHash&&!S.currentBackHash)return;
