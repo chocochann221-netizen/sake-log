@@ -230,6 +230,25 @@ function productSpecScore(f,c){
   return total ? score/total : 0;
 }
 function renderCandidates(items){
+  // 同一商品の重複候補をまとめる
+  const normalizeCandidateText=v=>String(v||"")
+    .toLowerCase()
+    .replace(/1800\s*ml|1\.8\s*l|720\s*ml|300\s*ml|一升瓶/g,"")
+    .replace(/\s+/g,"")
+    .replace(/[（）()・\-ー_]/g,"");
+
+  const seen=new Set();
+  const uniqueItems=(items||[]).filter(c=>{
+    const key=[
+      normalizeCandidateText(c.brand),
+      normalizeCandidateText(c.product),
+      normalizeCandidateText(c.brewery)
+    ].join("|");
+
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
  $("candidateBox").classList.remove("hidden");
  if(!items?.length){
    const f=S.recognition?.label_facts||{};
@@ -245,7 +264,7 @@ function renderCandidates(items){
    return;
  }
  $("candidateBox").innerHTML='<div class="msg info"><b>AI・Web照合結果</b><br>'+
- items.map((c,i)=>{
+ uniqueItems.map((c,i)=>{
    const pct=Math.round(Math.max(0,Math.min(1,Number(c.confidence)||0))*100);
    const spec=productSpecScore(S.recognition?.label_facts||{},c);
 const webVerified=c.web_verified===true;
@@ -270,7 +289,7 @@ const labelSpecVerified=pct>=90 && spec>=0.9;
  renderSources(S.recognition?.web_sources||[])+
  '<div class="small" style="margin-top:10px">※Web情報は本人確認用です。度数・容量などは現物ラベルを優先します。</div></div>';
  document.querySelectorAll(".candidate").forEach(b=>b.onclick=()=>{
-   const c=items[Number(b.dataset.i)];
+   const c=uniqueItems[Number(b.dataset.i)];
    applyCandidate(c);
    msg($("analysisMsg"),"この候補を入力欄へ反映しました。度数・容量などは現物ラベルを確認して保存してください。","ok");
  });
