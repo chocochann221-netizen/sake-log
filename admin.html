@@ -294,12 +294,11 @@
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
     } catch (error) {
-      console.error(error);
+  console.error(error);
 
-      statusText.textContent =
-        "管理データの取得に失敗しました。";
-    }
-  }
+  statusText.textContent =
+    "管理データ取得エラー：" + error.message;
+}
 
     function showAdminPanel(title, html) {
   let panel = document.getElementById("adminDetailPanel");
