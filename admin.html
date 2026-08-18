@@ -207,9 +207,7 @@
   const BASE = "https://mtshsijgfmottgkbgnir.supabase.co";
 
   const cfgKey = () =>
-    localStorage.getItem("sakelog_key") ||
-    localStorage.getItem("sakelog_anon_key") ||
-    localStorage.getItem("supabase_key");
+  localStorage.getItem("sakelog_pubkey") || "";
 
   const token =
     localStorage.getItem("sakelog_token") ||
