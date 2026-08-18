@@ -203,5 +203,94 @@
 
 </main>
 
+  <script>
+  const BASE = "https://mtshsijgfmottgkbgnir.supabase.co";
+
+  const cfgKey = () =>
+    localStorage.getItem("sakelog_key") ||
+    localStorage.getItem("sakelog_anon_key") ||
+    localStorage.getItem("supabase_key");
+
+  const token =
+    localStorage.getItem("sakelog_token") ||
+    localStorage.getItem("sakelog_access_token");
+
+  async function loadAdminDashboard() {
+    const statusText = document.querySelector(".status-text");
+
+    try {
+      if (!token) {
+        statusText.textContent =
+          "ログイン情報がありません。和酒ログへログインしてください。";
+        return;
+      }
+
+      const key = cfgKey();
+
+      if (!key) {
+        statusText.textContent =
+          "Supabase接続情報が見つかりません。";
+        return;
+      }
+
+      const response = await fetch(
+        BASE + "/rest/v1/rpc/admin_dashboard_stats",
+        {
+          method: "POST",
+          headers: {
+            "apikey": key,
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: "{}"
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      const data = await response.json();
+
+      if (!data) {
+        statusText.textContent =
+          "管理者権限がありません。";
+        return;
+      }
+
+      document.getElementById("users").textContent =
+        data.users ?? 0;
+
+      document.getElementById("drinking").textContent =
+        data.drinking_records ?? 0;
+
+      document.getElementById("photos").textContent =
+        data.sake_photos ?? 0;
+
+      document.getElementById("recognition").textContent =
+        data.recognition_results ?? 0;
+
+      document.getElementById("corrections").textContent =
+        data.corrections ?? 0;
+
+      document.getElementById("dictionary").textContent =
+        data.sake_dictionary ?? 0;
+
+      document.getElementById("master").textContent =
+        data.sake_master ?? 0;
+
+      statusText.textContent =
+        "管理者認証済み・Supabase接続中";
+    } catch (error) {
+      console.error(error);
+
+      statusText.textContent =
+        "管理データの取得に失敗しました。";
+    }
+  }
+
+  loadAdminDashboard();
+</script>
 </body>
 </html>
