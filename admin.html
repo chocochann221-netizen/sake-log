@@ -392,7 +392,72 @@ async function showUsers() {
     );
   }
 }
-  
+  async function showRecognition() {
+
+  showAdminPanel(
+    "🔍 AI認識結果",
+    "<p>AI認識データを読み込んでいます...</p>"
+  );
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/recognition_results?select=id,predicted_brand,predicted_product,predicted_brewery,confidence,processing_ms,model_name,created_at&order=created_at.desc&limit=50",
+      {
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const items = JSON.parse(text);
+
+    const rows = items.map(item => `
+      <div style="
+        padding:14px 0;
+        border-bottom:1px solid #eee;
+      ">
+        <strong>
+          ${item.predicted_brand || "銘柄不明"}
+          ${item.predicted_product ? " " + item.predicted_product : ""}
+        </strong><br>
+
+        <span style="font-size:13px;color:#777">
+          蔵元：${item.predicted_brewery || "未取得"}<br>
+          信頼度：${item.confidence ?? "—"}<br>
+          処理時間：${item.processing_ms ?? "—"} ms<br>
+          モデル：${item.model_name || "—"}<br>
+          日時：${item.created_at
+            ? new Date(item.created_at).toLocaleString("ja-JP")
+            : "—"}
+        </span>
+      </div>
+    `).join("");
+
+    showAdminPanel(
+      "🔍 AI認識結果",
+      rows || "<p>AI認識データはありません。</p>"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showAdminPanel(
+      "🔍 AI認識結果",
+      "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
   loadAdminDashboard();
 </script>
 </body>
