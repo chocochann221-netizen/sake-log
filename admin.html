@@ -544,7 +544,85 @@ async function showCorrections() {
     );
   }
 }
-    
+    async function showSakeMaster() {
+
+  showAdminPanel(
+    "🍶 日本酒マスター管理",
+    "<p>日本酒マスターを読み込んでいます...</p>"
+  );
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/sake_master?select=id,brand_name,product_name,brewery_name,prefecture,sake_type,rice,polishing_ratio,alcohol,verified,created_at&order=created_at.desc&limit=100",
+      {
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const items = JSON.parse(text);
+
+    const rows = items.map(item => `
+      <div style="
+        padding:14px 0;
+        border-bottom:1px solid #eee;
+      ">
+
+        <strong style="font-size:17px;">
+          ${item.brand_name || "銘柄未設定"}
+          ${item.product_name ? " " + item.product_name : ""}
+        </strong><br>
+
+        <span style="font-size:13px;color:#777">
+          蔵元：${item.brewery_name || "未設定"}<br>
+          都道府県：${item.prefecture || "未設定"}<br>
+          分類：${item.sake_type || "未設定"}<br>
+          酒米：${item.rice || "未設定"}<br>
+          精米歩合：${
+            item.polishing_ratio !== null && item.polishing_ratio !== undefined
+              ? item.polishing_ratio + "%"
+              : "未設定"
+          }<br>
+          アルコール度数：${
+            item.alcohol !== null && item.alcohol !== undefined
+              ? item.alcohol + "%"
+              : "未設定"
+          }<br>
+          確認済み：${item.verified ? "✅ はい" : "未確認"}<br>
+          登録日時：${item.created_at
+            ? new Date(item.created_at).toLocaleString("ja-JP")
+            : "—"}
+        </span>
+
+      </div>
+    `).join("");
+
+    showAdminPanel(
+      "🍶 日本酒マスター管理",
+      rows || "<p>日本酒マスターはありません。</p>"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showAdminPanel(
+      "🍶 日本酒マスター管理",
+      "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
    
     loadAdminDashboard();
 </script>
