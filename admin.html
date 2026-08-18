@@ -458,7 +458,95 @@ async function showUsers() {
     );
   }
 }
-  loadAdminDashboard();
+async function showCorrections() {
+
+  showAdminPanel(
+    "✏️ 誤認識・修正データ",
+    "<p>修正データを読み込んでいます...</p>"
+  );
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/corrections?select=id,predicted_brand,predicted_product,correct_brand,correct_product,correct_brewery,reason,created_at&order=created_at.desc&limit=50",
+      {
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const items = JSON.parse(text);
+
+    const rows = items.map(item => `
+      <div style="
+        padding:14px 0;
+        border-bottom:1px solid #eee;
+      ">
+
+        <div style="font-size:13px;color:#999;margin-bottom:6px;">
+          AI判定
+        </div>
+
+        <strong>
+          ${item.predicted_brand || "不明"}
+          ${item.predicted_product ? " " + item.predicted_product : ""}
+        </strong>
+
+        <div style="
+          margin:10px 0;
+          font-size:20px;
+        ">
+          ↓
+        </div>
+
+        <div style="font-size:13px;color:#999;margin-bottom:6px;">
+          正しい情報
+        </div>
+
+        <strong>
+          ${item.correct_brand || "未設定"}
+          ${item.correct_product ? " " + item.correct_product : ""}
+        </strong><br>
+
+        <span style="font-size:13px;color:#777">
+          蔵元：${item.correct_brewery || "未設定"}<br>
+          修正理由：${item.reason || "—"}<br>
+          日時：${item.created_at
+            ? new Date(item.created_at).toLocaleString("ja-JP")
+            : "—"}
+        </span>
+
+      </div>
+    `).join("");
+
+    showAdminPanel(
+      "✏️ 誤認識・修正データ",
+      rows || "<p>修正データはありません。</p>"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showAdminPanel(
+      "✏️ 誤認識・修正データ",
+      "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
+    
+   
+    loadAdminDashboard();
 </script>
 </body>
 </html>
