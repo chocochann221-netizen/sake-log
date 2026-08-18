@@ -300,8 +300,99 @@
          "管理データ取得エラー：" + error.message;
     }
   }
+function showAdminPanel(title, html) {
+  let panel = document.getElementById("adminDetailPanel");
 
-  alert("JavaScriptはここまで動いています");
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = "adminDetailPanel";
+    panel.style.cssText = `
+      margin-top:20px;
+      background:white;
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 2px 10px #0000000d;
+    `;
+
+    const menu = document.querySelector(".menu");
+    menu.insertAdjacentElement("afterend", panel);
+  }
+
+  panel.innerHTML = `
+    <h2 style="margin-top:0">${title}</h2>
+    ${html}
+  `;
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+
+async function showUsers() {
+
+  showAdminPanel(
+    "👥 ユーザー管理",
+    "<p>ユーザーデータを読み込んでいます...</p>"
+  );
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_list_users",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const users = JSON.parse(text);
+
+    const rows = users.map(user => `
+      <div style="
+        padding:14px 0;
+        border-bottom:1px solid #eee;
+      ">
+        <strong>${user.display_name || "名前未設定"}</strong><br>
+        <span style="font-size:13px;color:#777">
+          ${user.email || ""}<br>
+          権限：${user.role || "user"}
+          ／ プラン：${user.plan || "free"}
+          ／ 記録：${user.record_count ?? 0}件
+        </span>
+      </div>
+    `).join("");
+
+    showAdminPanel(
+      "👥 ユーザー管理",
+      rows || "<p>ユーザーはいません。</p>"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showAdminPanel(
+      "👥 ユーザー管理",
+      "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
+  
   loadAdminDashboard();
 </script>
 </body>
