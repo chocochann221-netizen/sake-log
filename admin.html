@@ -932,7 +932,19 @@ async function loadDuplicateCount() {
 loadDuplicateCount().then(count => {
   if (count !== null) {
     const el = document.getElementById("duplicates");
-    if (el) el.textContent = count;
+
+    if (el) {
+      el.textContent = count;
+
+      if (count > 0) {
+        const card = el.closest(".card");
+
+        if (card) {
+          card.style.border = "2px solid #e6a700";
+          card.style.background = "#fff8df";
+        }
+      }
+    }
   }
 });
     
