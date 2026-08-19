@@ -192,12 +192,13 @@
       <div class="number" id="dictionary">—</div>
     </div>
 
-    <div class="card" onclick="showDuplicateGroups()" style="cursor:pointer;">
+    
+      <div class="card" onclick="showDuplicateGroups()" style="cursor:pointer;">
   <div class="icon">⚠️</div>
   <div class="label">重複候補</div>
   <div class="number" id="duplicates">—</div>
 </div>
-      
+
     <div class="card">
       <div class="icon">📚</div>
       <div class="label">日本酒マスター</div>
@@ -926,10 +927,8 @@ async function loadDuplicateCount() {
     return null;
   }
 }
-    
-    loadAdminDashboard();
 
-    async function showDuplicateGroups() {
+async function showDuplicateGroups() {
 
   showAdminPanel(
     "⚠️ 重複候補",
@@ -1001,25 +1000,10 @@ async function loadDuplicateCount() {
     );
   }
 }
+    
+    loadAdminDashboard();
 
-loadDuplicateCount().then(count => {
-  if (count !== null) {
-    const el = document.getElementById("duplicates");
 
-    if (el) {
-      el.textContent = count;
-
-      if (count > 0) {
-        const card = el.closest(".card");
-
-        if (card) {
-          card.style.border = "2px solid #e6a700";
-          card.style.background = "#fff8df";
-        }
-      }
-    }
-  }
-});
     
 </script>
 </body>
