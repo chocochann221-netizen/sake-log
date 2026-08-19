@@ -193,6 +193,12 @@
     </div>
 
     <div class="card">
+  <div class="icon">⚠️</div>
+  <div class="label">重複候補</div>
+  <div class="number" id="duplicates">—</div>
+</div>
+
+    <div class="card">
       <div class="icon">📚</div>
       <div class="label">日本酒マスター</div>
       <div class="number" id="master">—</div>
@@ -925,9 +931,11 @@ async function loadDuplicateCount() {
 
 loadDuplicateCount().then(count => {
   if (count !== null) {
-    alert("⚠️ 重複候補：" + count + "件");
+    const el = document.getElementById("duplicates");
+    if (el) el.textContent = count;
   }
 });
+    
 </script>
 </body>
 </html>
