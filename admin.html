@@ -221,6 +221,8 @@
   <button class="menu-item" onclick="showCorrections()">✏️ 誤認識・修正データ</button>
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
+<button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
+  
 </div>
   
   <footer>
@@ -1043,6 +1045,58 @@ async function showDuplicateGroups() {
     showAdminPanel(
       "⚠️ 重複候補",
       "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
+
+async function runAutoPromotion() {
+  try {
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_run_auto_promotion",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const result = JSON.parse(text);
+
+    if (result.status === "no_candidate") {
+      alert("🤖 自動昇格候補はありません");
+    } else if (result.status === "created") {
+      alert(
+        "🍶 日本酒マスターへ自動昇格しました！\n\n" +
+        result.brand_name + "\n" +
+        result.product_name + "\n" +
+        "確認回数：" + result.confirmed_count + "回"
+      );
+    } else if (result.status === "duplicate") {
+      alert("⚠️ すでに日本酒マスターへ登録されています");
+    } else {
+      alert("自動昇格処理が完了しました");
+    }
+
+    await loadAdminDashboard();
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      "自動昇格に失敗しました。\n\n" +
+      error.message
     );
   }
 }
