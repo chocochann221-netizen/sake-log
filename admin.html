@@ -636,7 +636,7 @@ async function showDictionary() {
     const key = cfgKey();
 
     const r = await fetch(
-      BASE + "/rest/v1/sake_dictionary_signatures?select=id,brand_name,product_name,brewery_name,prefecture,classification,rice_variety,polishing_ratio,alcohol,volume,created_at&order=created_at.desc&limit=100",
+      BASE + "/rest/v1/sake_dictionary_signatures?select=id,brand_name,product_name,brewery_name,prefecture,classification,rice_variety,polishing_ratio,alcohol,volume,confirmed_count,created_at&order=created_at.desc&limit=100",
       {
         headers: {
           "apikey": key,
