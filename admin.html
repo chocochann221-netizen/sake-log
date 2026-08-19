@@ -713,6 +713,66 @@ async function showDictionary() {
     );
   }
 }
+
+async function promoteToMaster(dictionaryId) {
+
+  const ok = confirm(
+    "この日本酒を日本酒マスターへ登録しますか？"
+  );
+
+  if (!ok) return;
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_promote_dictionary_to_master",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          p_dictionary_id: dictionaryId
+        })
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const result = JSON.parse(text);
+
+    if (result.status === "duplicate") {
+      alert("⚠️ すでに同じ銘柄・商品名が日本酒マスターにあります。");
+      return;
+    }
+
+    if (result.status === "created") {
+      alert("🍶 日本酒マスターへ登録しました！");
+      await loadAdminDashboard();
+      await showDictionary();
+      return;
+    }
+
+    alert("処理結果：" + text);
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "マスター登録に失敗しました。\n\n" +
+      error.message
+    );
+  }
+}
     
     loadAdminDashboard();
 </script>
