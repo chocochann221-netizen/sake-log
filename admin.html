@@ -928,6 +928,38 @@ async function loadDuplicateCount() {
   }
 }
 
+async function loadAutoPromotionCount() {
+  try {
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_auto_promotion_candidates",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const items = JSON.parse(text);
+    return items.length;
+
+  } catch (error) {
+    console.error("自動昇格候補取得エラー:", error);
+    return null;
+  }
+}
+    
 async function showDuplicateGroups() {
 
   showAdminPanel(
