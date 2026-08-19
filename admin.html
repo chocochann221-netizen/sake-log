@@ -791,6 +791,102 @@ async function promoteToMaster(dictionaryId) {
     );
   }
 }
+
+let mergeTarget = null;
+
+async function selectMergeTarget(id, brand, product) {
+
+  if (!mergeTarget) {
+    mergeTarget = { id, brand, product };
+
+    alert(
+      "1件目を選びました。\n\n" +
+      brand + " " + product +
+      "\n\n統合したいもう1件を押してください。"
+    );
+
+    return;
+  }
+
+  if (mergeTarget.id === id) {
+    alert("同じデータは選べません。");
+    return;
+  }
+
+  const same =
+    mergeTarget.brand === brand &&
+    mergeTarget.product === product;
+
+  if (!same) {
+    alert(
+      "⚠️ 銘柄・商品名が一致しません。\n\n" +
+      "統合を中止します。"
+    );
+
+    mergeTarget = null;
+    return;
+  }
+
+  const ok = confirm(
+    "この2件を1件に統合しますか？\n\n" +
+    brand + " " + product
+  );
+
+  if (!ok) {
+    mergeTarget = null;
+    return;
+  }
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_merge_dictionary_duplicates",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          p_keep_id: mergeTarget.id,
+          p_delete_id: id
+        })
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const result = JSON.parse(text);
+
+    alert(
+      "🔗 統合しました！\n\n" +
+      "確認回数：" + result.confirmed_count + "回"
+    );
+
+    mergeTarget = null;
+
+    await loadAdminDashboard();
+    await showDictionary();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "統合に失敗しました。\n\n" +
+      error.message
+    );
+
+    mergeTarget = null;
+  }
+}
     
     loadAdminDashboard();
 </script>
