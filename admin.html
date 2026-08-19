@@ -887,8 +887,47 @@ async function selectMergeTarget(id, brand, product) {
     mergeTarget = null;
   }
 }
+
+async function loadDuplicateCount() {
+  try {
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_dictionary_duplicate_groups",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const duplicates = JSON.parse(text);
+
+    return duplicates.length;
+
+  } catch (error) {
+    console.error("重複候補取得エラー:", error);
+    return null;
+  }
+}
     
     loadAdminDashboard();
+
+loadDuplicateCount().then(count => {
+  if (count !== null) {
+    alert("⚠️ 重複候補：" + count + "件");
+  }
+});
 </script>
 </body>
 </html>
