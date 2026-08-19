@@ -199,6 +199,12 @@
   <div class="number" id="duplicates">—</div>
 </div>
 
+<div class="card">
+  <div class="icon">🤖</div>
+  <div class="label">自動昇格候補</div>
+  <div class="number" id="autoPromotion">—</div>
+</div>
+    
     <div class="card">
       <div class="icon">📚</div>
       <div class="label">日本酒マスター</div>
@@ -277,6 +283,8 @@
         return;
       }
 
+const autoPromotionCount = await loadAutoPromotionCount();
+      
       document.getElementById("users").textContent =
         data.users ?? 0;
 
@@ -298,6 +306,12 @@
       document.getElementById("master").textContent =
         data.sake_master ?? 0;
 
+document.getElementById("duplicates").textContent =
+  await loadDuplicateCount() ?? "—";
+
+document.getElementById("autoPromotion").textContent =
+  autoPromotionCount ?? "—";
+      
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
     } catch (error) {
