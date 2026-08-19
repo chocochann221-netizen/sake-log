@@ -654,39 +654,33 @@ async function showDictionary() {
     const items = JSON.parse(text);
 
     const rows = items.map(item => `
-      <div style="
-        padding:14px 0;
-        border-bottom:1px solid #eee;
-      ">
+  <div style="
+    padding:14px 0;
+    border-bottom:1px solid #eee;
+  ">
 
-        <strong style="font-size:17px;">
-          ${item.brand_name || "銘柄未設定"}
-          ${item.product_name ? " " + item.product_name : ""}
-        </strong><br>
+    <strong style="font-size:17px;">
+      ${item.brand_name || "銘柄未設定"}
+      ${item.product_name ? " " + item.product_name : ""}
+    </strong><br>
 
-        <span style="font-size:13px;color:#777">
-          蔵元：${item.brewery_name || "未設定"}<br>
-          都道府県：${item.prefecture || "未設定"}<br>
-          分類：${item.classification || "未設定"}<br>
-          酒米：${item.rice_variety || "未設定"}<br>
-          精米歩合：${
-            item.polishing_ratio !== null && item.polishing_ratio !== undefined
-              ? item.polishing_ratio + "%"
-              : "未設定"
-          }<br>
-          アルコール度数：${
-            item.alcohol !== null && item.alcohol !== undefined
-              ? item.alcohol + "%"
-              : "未設定"
-          }<br>
-          容量：${item.volume || "未設定"}<br>
-          登録日時：${item.created_at
-            ? new Date(item.created_at).toLocaleString("ja-JP")
-            : "—"}
-        </span>
+    <span style="font-size:13px;color:#777">
+      蔵元：${item.brewery_name || "未設定"}<br>
+      都道府県：${item.prefecture || "未設定"}<br>
+      分類：${item.classification || "未設定"}<br>
+      酒米：${item.rice_variety || "未設定"}<br>
+      精米歩合：${item.polishing_ratio || "未設定"}<br>
+      アルコール度数：${item.alcohol || "未設定"}<br>
+      容量：${item.volume || "未設定"}<br>
+      登録日時：${
+        item.created_at
+          ? new Date(item.created_at).toLocaleString("ja-JP")
+          : "—"
+      }
+    </span>
 
-      </div>
-    `).join("");
+  </div>
+`).join("");
 
     showAdminPanel(
       "🧠 学習辞書管理",
