@@ -672,6 +672,7 @@ async function showDictionary() {
       精米歩合：${item.polishing_ratio || "未設定"}<br>
       アルコール度数：${item.alcohol || "未設定"}<br>
       容量：${item.volume || "未設定"}<br>
+      確認回数：${item.confirmed_count ?? 1}回<br>
       登録日時：${
         item.created_at
           ? new Date(item.created_at).toLocaleString("ja-JP")
