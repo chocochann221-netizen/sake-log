@@ -929,6 +929,79 @@ async function loadDuplicateCount() {
     
     loadAdminDashboard();
 
+    async function showDuplicateGroups() {
+
+  showAdminPanel(
+    "⚠️ 重複候補",
+    "<p>重複候補を読み込んでいます...</p>"
+  );
+
+  try {
+
+    const key = cfgKey();
+
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_dictionary_duplicate_groups",
+      {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+
+    const text = await r.text();
+
+    if (!r.ok) {
+      throw new Error(text);
+    }
+
+    const groups = JSON.parse(text);
+
+    if (!groups.length) {
+      showAdminPanel(
+        "⚠️ 重複候補",
+        "<p>現在、重複候補はありません ✅</p>"
+      );
+      return;
+    }
+
+    const rows = groups.map(group => `
+      <div style="
+        padding:14px 0;
+        border-bottom:1px solid #eee;
+      ">
+        <strong style="font-size:17px;">
+          ${group.brand_name || "銘柄未設定"}
+          ${group.product_name ? " " + group.product_name : ""}
+        </strong><br>
+
+        <span style="font-size:13px;color:#777">
+          重複データ：${group.record_count}件<br>
+          合計確認回数：${group.total_confirmed}回
+        </span>
+      </div>
+    `).join("");
+
+    showAdminPanel(
+      "⚠️ 重複候補",
+      rows
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showAdminPanel(
+      "⚠️ 重複候補",
+      "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
+
 loadDuplicateCount().then(count => {
   if (count !== null) {
     const el = document.getElementById("duplicates");
