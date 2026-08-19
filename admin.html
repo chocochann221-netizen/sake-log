@@ -696,6 +696,23 @@ async function showDictionary() {
   🍶 日本酒マスターへ登録
 </button>
 
+<br><br>
+
+<button
+  onclick="selectMergeTarget('${item.id}', '${item.brand_name || ""}', '${item.product_name || ""}')"
+  style="
+    padding:10px 14px;
+    border:1px solid #aaa;
+    border-radius:10px;
+    background:white;
+    color:#292722;
+    font-size:14px;
+    cursor:pointer;
+  "
+>
+  🔗 重複を統合
+</button>
+
   </div>
 `).join("");
 
