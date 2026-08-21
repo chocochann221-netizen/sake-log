@@ -163,7 +163,34 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <label>飲んだ店</label><input id="restaurant">
 <label>価格（円・任意）</label><input id="price" inputmode="numeric">
 <label>コメント</label><textarea id="comment"></textarea>
-<button id="locateBtn" class="btn outline">📍 現在地を記録</button>
+<div class="memory-photo-section">
+  <h3 style="margin-top:18px">この日の思い出</h3>
+
+  <div class="grid">
+    <button id="foodCameraBtn" class="btn outline" type="button">
+      🍽️ 料理を撮影
+    </button>
+
+    <button id="foodGalleryBtn" class="btn outline" type="button">
+      🖼️ 料理写真を選ぶ
+    </button>
+  </div>
+
+  <img id="foodPreview" class="hidden" alt="料理写真">
+
+  <div class="grid" style="margin-top:10px">
+    <button id="memoryCameraBtn" class="btn outline" type="button">
+      📷 思い出を撮影
+    </button>
+
+    <button id="memoryGalleryBtn" class="btn outline" type="button">
+      🖼️ 思い出写真を選ぶ
+    </button>
+  </div>
+
+  <img id="memoryPreview" class="hidden" alt="思い出写真">
+</div>
+  <button id="locateBtn" class="btn outline">📍 現在地を記録</button>
 <div id="locMsg" class="small"></div>
 <button id="saveRecordBtn" class="btn primary">Supabaseに保存</button>
 <div id="recordMsg"></div>
