@@ -127,6 +127,25 @@ $("cameraInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachPhoto(f)};
 $("galleryInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachPhoto(f)};
 $("backCameraInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachBackPhoto(f)};
 $("backGalleryInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachBackPhoto(f)};
+$("foodCameraInput").onchange=e=>{
+  const f=e.target.files?.[0];
+  if(f)attachFoodPhoto(f);
+};
+
+$("foodGalleryInput").onchange=e=>{
+  const f=e.target.files?.[0];
+  if(f)attachFoodPhoto(f);
+};
+
+$("memoryCameraInput").onchange=e=>{
+  const f=e.target.files?.[0];
+  if(f)attachMemoryPhoto(f);
+};
+
+$("memoryGalleryInput").onchange=e=>{
+  const f=e.target.files?.[0];
+  if(f)attachMemoryPhoto(f);
+};
 $("recordFrontGalleryBtn").onclick=()=> $("galleryInput").click();
 $("recordBackGalleryBtn").onclick=()=> $("backGalleryInput").click();
 $("recordFrontCameraBtn").onclick=()=> $("cameraInput").click();
