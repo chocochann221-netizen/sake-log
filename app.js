@@ -998,13 +998,22 @@ async function openRecordDetail(recordId){
    const photos=await getRecordPhotos(recordId);
    const front=photos.find(p=>p.photo_type==="front");
    const back=photos.find(p=>p.photo_type==="back");
-   const frontHtml=await renderPhotoForPath(front?.storage_path,[r.brand_name,r.product_name].filter(Boolean).join(" "));
+   const food=photos.find(p=>p.photo_type==="food");
+const memory=photos.find(p=>p.photo_type==="memory");
+  const frontHtml=await renderPhotoForPath(front?.storage_path,[r.brand_name,r.product_name].filter(Boolean).join(" "));
    const backHtml=await renderPhotoForPath(back?.storage_path,"裏ラベル");
-   const tags=[r.prefecture,r.classification].filter(Boolean);
+   const foodHtml=food
+  ? await renderPhotoForPath(food.storage_path,"料理写真")
+  : "";
+
+const memoryHtml=memory
+  ? await renderPhotoForPath(memory.storage_path,"思い出写真")
+  : "";
+  const tags=[r.prefecture,r.classification].filter(Boolean);
    const title=[r.brand_name,r.product_name].filter(Boolean).join(" ");
    $("detailBody").innerHTML=`
-     <div class="detail-hero">${frontHtml}${backHtml}</div>
-     <div class="detail-title">${escapeHtml(title||"名称未登録")}</div>
+     <div class="detail-hero">${frontHtml}${backHtml}${foodHtml}${memoryHtml}</div>
+     <div ="detail-title">${escapeHtml(title||"名称未登録")}</div>
      <div class="detail-brewery">${escapeHtml(r.brewery_name||"蔵元未登録")}</div>
      ${tags.length?`<div class="detail-tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>`:""}
      <div class="detail-rating">${escapeHtml(stars(r.rating))} <span class="small">${Number(r.rating||0).toFixed(1)}</span></div>
