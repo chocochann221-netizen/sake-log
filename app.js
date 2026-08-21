@@ -132,6 +132,11 @@ $("recordBackGalleryBtn").onclick=()=> $("backGalleryInput").click();
 $("recordFrontCameraBtn").onclick=()=> $("cameraInput").click();
 $("recordBackCameraBtn").onclick=()=> $("backCameraInput").click();
 
+$("foodCameraBtn").onclick=()=> $("foodCameraInput").click();
+$("foodGalleryBtn").onclick=()=> $("foodGalleryInput").click();
+$("memoryCameraBtn").onclick=()=> $("memoryCameraInput").click();
+$("memoryGalleryBtn").onclick=()=> $("memoryGalleryInput").click();
+
 async function fileToDataURL(file,mode="front"){
  const raw=await new Promise((resolve,reject)=>{
    const r=new FileReader();
@@ -139,6 +144,7 @@ async function fileToDataURL(file,mode="front"){
    r.onerror=reject;
    r.readAsDataURL(file);
  });
+ 
  return await new Promise((resolve)=>{
    const img=new Image();
    img.onload=()=>{
