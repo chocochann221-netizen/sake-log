@@ -120,6 +120,17 @@ function attachBackPhoto(file){
  S.backPhoto=file;$("backPreview").src=URL.createObjectURL(file);$("backPreview").classList.remove("hidden");
  updateAnalyzeButton();msg($("recordMsg"),"裏ラベルを追加しました。表＋裏を同じ1本として保存します。","info");
 }
+function attachFoodPhoto(file){
+  S.foodPhoto=file;
+  $("foodPreview").src=URL.createObjectURL(file);
+  $("foodPreview").classList.remove("hidden");
+}
+
+function attachMemoryPhoto(file){
+  S.memoryPhoto=file;
+  $("memoryPreview").src=URL.createObjectURL(file);
+  $("memoryPreview").classList.remove("hidden");
+}
 $("cameraBtn").onclick=()=> $("cameraInput").click();
 $("galleryBtn").onclick=()=> $("galleryInput").click();
 $("backCameraBtn").onclick=()=> $("backCameraInput").click();
