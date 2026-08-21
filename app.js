@@ -832,12 +832,9 @@ $("saveRecordBtn").onclick=async()=>{
     });
   }
   await saveToSharedDictionary();
-  const masterLearn=await learnToSakeMaster(currentConfirmedValues());
   msg($("recordMsg"),
-    masterLearn?.ok
-      ?"✓ Supabaseに保存しました。訂正内容を共有辞書＋日本酒マスターへ学習しました。"
-      :"✓ Supabaseに保存しました。共有辞書へ学習しました。（日本酒マスターはv4.9.2 SQL適用後に自動学習します）",
-    "ok");
+  "✓ Supabaseに保存しました。共有辞書へ学習しました。",
+  "ok");
   setTimeout(()=>show("homeView"),700);
  }catch(e){msg($("recordMsg"),e.message,"err")}finally{$("saveRecordBtn").disabled=false}
 };
@@ -1015,19 +1012,7 @@ function renderRecordEditor(r){
        rating:$("eRating").value?Number($("eRating").value):null,
        comment:$("eComment").value.trim()||null
      });
-     const masterLearn=await learnToSakeMaster({
-       brand:$("eBrand").value.trim(),
-       product:$("eProduct").value.trim(),
-       brewery:$("eBrewery").value.trim(),
-       prefecture:$("ePrefecture").value.trim(),
-       classification:$("eClass").value.trim(),
-       ingredients:$("eRice").value.trim(),
-       rice_variety:"",
-       polishing_ratio:$("ePolishing").value.trim(),
-       alcohol:$("eAlcohol").value.trim(),
-       volume:$("eVolume").value.trim()
-     });
-     msg($("editMsg"),masterLearn?.ok?"✓ 更新し、日本酒マスターにも訂正を学習しました。":"✓ 更新しました。","ok");
+     msg($("editMsg"),"✓ 更新しました","ok");
      setTimeout(()=>openRecordDetail(r.id),500);
    }catch(e){msg($("editMsg"),e.message,"err")}
    finally{$("saveEditBtn").disabled=false}
