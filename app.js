@@ -831,6 +831,27 @@ $("saveRecordBtn").onclick=async()=>{
    const path=await uploadPhoto(S.backPhoto);
    await insert("sake_photos",{user_id:S.user.id,drinking_record_id:rec.id,photo_type:"back",storage_path:path,mime_type:S.backPhoto.type||"image/jpeg"});
   }
+if(S.foodPhoto){
+  const path=await uploadPhoto(S.foodPhoto);
+  await insert("sake_photos",{
+    user_id:S.user.id,
+    drinking_record_id:rec.id,
+    photo_type:"food",
+    storage_path:path,
+    mime_type:S.foodPhoto.type||"image/jpeg"
+  });
+}
+
+if(S.memoryPhoto){
+  const path=await uploadPhoto(S.memoryPhoto);
+  await insert("sake_photos",{
+    user_id:S.user.id,
+    drinking_record_id:rec.id,
+    photo_type:"memory",
+    storage_path:path,
+    mime_type:S.memoryPhoto.type||"image/jpeg"
+  });
+}
   if(S.recognition){
    const top=(S.recognition.candidates||[])[0]||{};
    const rr=await insert("recognition_results",{user_id:S.user.id,drinking_record_id:rec.id,photo_id:frontPhotoRow?.id||null,
