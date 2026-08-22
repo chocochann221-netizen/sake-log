@@ -1012,8 +1012,17 @@ const memoryHtml=memory
   const tags=[r.prefecture,r.classification].filter(Boolean);
    const title=[r.brand_name,r.product_name].filter(Boolean).join(" ");
    $("detailBody").innerHTML=`
-     <div class="detail-hero">${frontHtml}${backHtml}${foodHtml}${memoryHtml}</div>
-     <div ="detail-title">${escapeHtml(title||"名称未登録")}</div>
+     <div class="detail-photo-section">
+  <h3>ラベル</h3>
+  <div class="detail-hero">${frontHtml}${backHtml}</div>
+</div>
+${foodHtml||memoryHtml?`
+<div class="detail-photo-section">
+  <h3>この日の思い出</h3>
+  <div class="detail-hero">${foodHtml}${memoryHtml}</div>
+</div>
+`:""}
+    <div class="detail-title">${escapeHtml(title||"名称未登録")}</div>
      <div class="detail-brewery">${escapeHtml(r.brewery_name||"蔵元未登録")}</div>
      ${tags.length?`<div class="detail-tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>`:""}
      <div class="detail-rating">${escapeHtml(stars(r.rating))} <span class="small">${Number(r.rating||0).toFixed(1)}</span></div>
