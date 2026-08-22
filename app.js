@@ -822,8 +822,14 @@ async function deleteRows(table,query){
 }
 
 $("saveRecordBtn").onclick=async()=>{
+if(S.savingRecord)return;
+S.savingRecord=true;
  const brand=$("brand").value.trim();
- if(!brand){msg($("recordMsg"),"銘柄を入力してください。","err");return}
+ if(!brand){
+  S.savingRecord=false;
+  msg($("recordMsg"),"銘柄を入力してください","err");
+  return;
+}
  $("saveRecordBtn").disabled=true;msg($("recordMsg"),"保存中…","info");
  try{
   const rec=await insert("drinking_records",{
@@ -894,9 +900,15 @@ if(S.memoryPhoto){
   "✓ Supabaseに保存しました。共有辞書へ学習しました。",
   "ok");
   setTimeout(()=>show("homeView"),700);
- }catch(e){msg($("recordMsg"),e.message,"err")}finally{$("saveRecordBtn").disabled=false}
+}catch(e){
+  S.savingRecord=false;
+  $("saveRecordBtn").disabled=false;
+  msg($("recordMsg"),e.message,"err");
+}finally{
+  S.savingRecord=false;
+  $("saveRecordBtn").disabled=false;
+}
 };
-
 function formatDateJP(v){
  if(!v)return "";
  try{return new Intl.DateTimeFormat("ja-JP",{year:"numeric",month:"short",day:"numeric"}).format(new Date(v))}catch{return ""}
