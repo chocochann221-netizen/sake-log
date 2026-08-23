@@ -6,6 +6,27 @@ const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||"";
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 
+window.addEventListener("error",e=>{
+  console.error("JavaScript error:",e.error||e.message);
+  const el=$("recordMsg")||$("editMsg");
+  if(el){
+    el.innerHTML='<div class="msg err">システムエラー：'+
+      escapeHtml(e.message||"JavaScriptエラーが発生しました")+
+      '</div>';
+  }
+});
+
+window.addEventListener("unhandledrejection",e=>{
+  console.error("Unhandled promise rejection:",e.reason);
+  const text=e.reason?.message||String(e.reason||"処理エラーが発生しました");
+  const el=$("recordMsg")||$("editMsg");
+  if(el){
+    el.innerHTML='<div class="msg err">処理エラー：'+
+      escapeHtml(text)+
+      '</div>';
+  }
+});
+
 function show(id){
  ["setupView","authView",...Array.from(document.querySelectorAll(".page")).map(x=>x.id)].forEach(x=>$(x)?.classList.add("hidden"));
  $(id).classList.remove("hidden");
