@@ -1075,21 +1075,27 @@ function renderRecordEditor(r){
      <div><label>評価（1〜5）</label><input id="eRating" type="number" min="1" max="5" step="0.5" value="${escapeHtml(r.rating??4)}"></div>
      <div class="full"><label>コメント</label><textarea id="eComment">${escapeHtml(r.comment||"")}</textarea></div>
    </div>
-   <div class="full">
+
+<div class="full">
   <h3>📷 写真を編集</h3>
 
   <label>表ラベル</label>
   <input id="editFrontPhoto" type="file" accept="image/*">
+  <label><input id="deleteFrontPhoto" type="checkbox"> この写真を削除</label>
 
   <label>裏ラベル</label>
   <input id="editBackPhoto" type="file" accept="image/*">
+  <label><input id="deleteBackPhoto" type="checkbox"> この写真を削除</label>
 
   <label>料理写真</label>
   <input id="editFoodPhoto" type="file" accept="image/*">
+  <label><input id="deleteFoodPhoto" type="checkbox"> この写真を削除</label>
 
   <label>思い出写真</label>
   <input id="editMemoryPhoto" type="file" accept="image/*">
+  <label><input id="deleteMemoryPhoto" type="checkbox"> この写真を削除</label>
 </div>
+   
    <div class="detail-actions">
      <button id="saveEditBtn" class="btn primary">変更を保存</button>
      <button id="cancelEditBtn" class="btn outline">キャンセル</button>
@@ -1115,21 +1121,28 @@ function renderRecordEditor(r){
        rating:$("eRating").value?Number($("eRating").value):null,
        comment:$("eComment").value.trim()||null
      });
-    const photoInputs=[
-  ["editFrontPhoto","front"],
-  ["editBackPhoto","back"],
-  ["editFoodPhoto","food"],
-  ["editMemoryPhoto","memory"]
+    
+const photoInputs=[
+  ["editFrontPhoto","deleteFrontPhoto","front"],
+  ["editBackPhoto","deleteBackPhoto","back"],
+  ["editFoodPhoto","deleteFoodPhoto","food"],
+  ["editMemoryPhoto","deleteMemoryPhoto","memory"]
 ];
+    
+for(const [inputId,deleteId,photoType] of photoInputs){
+    const file=$(inputId)?.files?.[0];
+const shouldDelete=$(deleteId)?.checked;
 
-for(const [inputId,photoType] of photoInputs){
-  const file=$(inputId)?.files?.[0];
-  if(!file)continue;
+if(!file && !shouldDelete)continue;
 
   const oldPhotos=await getRecordPhotos(r.id);
- const path=await uploadPhoto(file);
-  const old=oldPhotos.find(p=>p.photo_type===photoType);
+ 
+const old=oldPhotos.find(p=>p.photo_type===photoType);
 
+let path=null;
+if(file){
+  path=await uploadPhoto(file);
+}
   if(old){
     await deleteRows(
       "sake_photos",
@@ -1143,7 +1156,7 @@ for(const [inputId,photoType] of photoInputs){
     ).catch(()=>{});
   }
 
-
+if(file){
   await insert("sake_photos",{
     user_id:S.user.id,
     drinking_record_id:r.id,
@@ -1152,6 +1165,7 @@ for(const [inputId,photoType] of photoInputs){
     mime_type:file.type||"image/jpeg"
   });
 }
+  
      msg($("editMsg"),"✓ 更新しました","ok");
      setTimeout(()=>openRecordDetail(r.id),500);
    }catch(e){msg($("editMsg"),e.message,"err")}
