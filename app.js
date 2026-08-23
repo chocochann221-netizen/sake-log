@@ -1165,7 +1165,7 @@ if(file){
     mime_type:file.type||"image/jpeg"
   });
 }
-  
+  }
      msg($("editMsg"),"✓ 更新しました","ok");
      setTimeout(()=>openRecordDetail(r.id),500);
    }catch(e){msg($("editMsg"),e.message,"err")}
