@@ -1,6 +1,19 @@
 let sakenowaCache = null;
 let sakenowaCacheAt = 0;
 const SAKENOWA_TTL = 6 * 60 * 60 * 1000;
+const SUPABASE_URL = "https://mtshsijgfmottgkbgnir.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
+
+async function requireUser(request) {
+  const authorization=request.headers.get("Authorization")||"";
+  if(!authorization.startsWith("Bearer ")) return null;
+  const response=await fetch(SUPABASE_URL+"/auth/v1/user",{
+    headers:{apikey:SUPABASE_PUBLISHABLE_KEY,Authorization:authorization}
+  });
+  if(!response.ok)return null;
+  const user=await response.json().catch(()=>null);
+  return user?.id?user:null;
+}
 
 const json = (body, status = 200, cacheControl = "no-store") =>
   new Response(JSON.stringify(body), {
@@ -10,6 +23,8 @@ const json = (body, status = 200, cacheControl = "no-store") =>
 
 async function recognizeSake(request, env) {
   if (request.method !== "POST") return json({error:"Method not allowed"}, 405);
+  const user=await requireUser(request);
+  if(!user)return json({error:"ログインが必要です"},401);
   if (!env.OPENAI_API_KEY) return json({error:"Cloudflare環境変数 OPENAI_API_KEY が未設定です"}, 503);
   try {
     const {front, back} = await request.json();
