@@ -1,8 +1,9 @@
 const BASE="https://mtshsijgfmottgkbgnir.supabase.co";
+const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
 const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null};
 const photoObjectUrls=new Map();
-const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||"";
+const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 
@@ -28,6 +29,8 @@ window.addEventListener("unhandledrejection",e=>{
 });
 
 function show(id){
+ const protectedViews=new Set(["homeView","recordView","historyView","detailView","analysisView","profileView"]);
+ if(protectedViews.has(id)&&!S.user){id="authView"}
  ["setupView","authView",...Array.from(document.querySelectorAll(".page")).map(x=>x.id)].forEach(x=>$(x)?.classList.add("hidden"));
  $(id).classList.remove("hidden");
  $("bottomNav").classList.toggle("hidden",!S.user);
@@ -102,16 +105,42 @@ $("authBtn").onclick=async()=>{
  }catch(e){msg($("authMsg"),e.message,"err")}
 };
 
-function restore(){
+function clearSession(){
+ ["sakelog_token","sakelog_refresh_token","sakelog_user","sakelog_access_token"].forEach(k=>localStorage.removeItem(k));
+ S.user=null;S.token=null;S.refreshToken=null;
+}
+async function verifyCurrentUser(){
+ if(!S.token)return false;
+ const r=await fetch(BASE+"/auth/v1/user",{headers:{apikey:cfgKey(),Authorization:"Bearer "+S.token}});
+ if(r.status===401&&S.refreshToken){
+   try{await refreshSession()}catch{return false}
+   return verifyCurrentUser();
+ }
+ if(!r.ok)return false;
+ const user=await r.json().catch(()=>null);
+ if(!user?.id)return false;
+ S.user=user;
+ localStorage.setItem("sakelog_user",JSON.stringify(user));
+ return true;
+}
+async function restore(){
  S.token=localStorage.getItem("sakelog_token");
  S.refreshToken=localStorage.getItem("sakelog_refresh_token");
- try{S.user=JSON.parse(localStorage.getItem("sakelog_user")||"null")}catch{}
- if(cfgKey()&&S.token&&S.user){$("userEmail").textContent=S.user.email||"";show("homeView")}
- else if(cfgKey())show("authView");else show("setupView");
+ show("authView");
+ if(await verifyCurrentUser()){
+   $("userEmail").textContent=S.user.email||"";
+   show("homeView");
+ }else{
+   clearSession();
+   show("authView");
+ }
 }
-function logout(){
- ["sakelog_token","sakelog_refresh_token","sakelog_user"].forEach(k=>localStorage.removeItem(k));
- S.user=null;S.token=null;S.refreshToken=null;show("authView");
+async function logout(){
+ if(S.token){
+   await fetch(BASE+"/auth/v1/logout",{method:"POST",headers:{apikey:cfgKey(),Authorization:"Bearer "+S.token}}).catch(()=>{});
+ }
+ clearSession();
+ show("authView");
 }
 $("logoutTop").onclick=logout;
 
@@ -723,7 +752,7 @@ $("analyzeBtn").onclick=async()=>{
      // 3. 完全新規だけAI
      msg($("analysisMsg"),"共有辞書に未登録の新しい日本酒です。AIでラベル読取＋Web照合を行っています…","info");
      const body={front:frontData,back:backData};
-     const r=await fetch("/.netlify/functions/recognize-sake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+     const r=await authFetch("/.netlify/functions/recognize-sake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
      d=await r.json().catch(()=>({}));
      if(!r.ok) throw new Error(d.error||"AI解析 HTTP "+r.status);
      saveAiCache(cacheKey,d);
