@@ -233,9 +233,10 @@
 
   <script>
   const BASE = "https://mtshsijgfmottgkbgnir.supabase.co";
+  const PUBLISHABLE_KEY = "sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 
   const cfgKey = () =>
-  localStorage.getItem("sakelog_pubkey") || "";
+  localStorage.getItem("sakelog_pubkey") || PUBLISHABLE_KEY;
 
   const token =
     localStorage.getItem("sakelog_token") ||
@@ -243,6 +244,8 @@
 
   async function loadAdminDashboard() {
     const statusText = document.querySelector(".status-text");
+    const protectedContent = document.querySelectorAll(".grid, .menu, main > h2");
+    protectedContent.forEach(el => el.style.display = "none");
 
     try {
       if (!token) {
@@ -258,6 +261,27 @@
           "Supabase接続情報が見つかりません。";
         return;
       }
+
+      const userResponse = await fetch(BASE + "/auth/v1/user", {
+        headers: {"apikey": key, "Authorization": "Bearer " + token}
+      });
+      if (!userResponse.ok) {
+        localStorage.removeItem("sakelog_token");
+        statusText.textContent = "ログインの有効期限が切れています。和酒ログから再ログインしてください。";
+        return;
+      }
+
+      const adminResponse = await fetch(BASE + "/rest/v1/rpc/is_admin", {
+        method: "POST",
+        headers: {"apikey": key, "Authorization": "Bearer " + token, "Content-Type": "application/json"},
+        body: "{}"
+      });
+      const isAdmin = adminResponse.ok && await adminResponse.json();
+      if (!isAdmin) {
+        statusText.textContent = "管理者権限がありません。";
+        return;
+      }
+      protectedContent.forEach(el => el.style.display = "");
 
       const response = await fetch(
         BASE + "/rest/v1/rpc/admin_dashboard_stats",
