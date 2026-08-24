@@ -18,7 +18,6 @@ textarea{min-height:90px}.btn{width:100%;padding:14px;border:0;border-radius:14p
 .preview{width:100%;max-height:300px;object-fit:contain;border-radius:14px;background:#f0f1f0}.record{padding:11px 0;border-bottom:1px solid #e6ebe7}.record:last-child{border-bottom:0}.record b{display:block}
 nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #dfe4e0;z-index:30}.navin{max-width:680px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr)}.navbtn{border:0;background:transparent;padding:10px 4px;font-size:11px;color:#6f7773}.navbtn span{display:block;font-size:20px}.navbtn.active{color:#238464;font-weight:800}
 .hero{background:linear-gradient(135deg,#eaf7f1,#fff)}
-
 .history-grid{display:grid;gap:14px}
 .sake-card{display:grid;grid-template-columns:96px 1fr;gap:13px;padding:12px;border:1px solid #e1e7e3;border-radius:18px;background:#fff}
 .sake-thumb{width:96px;height:128px;border-radius:14px;object-fit:cover;background:#eef1ef}
@@ -32,8 +31,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:8px;font-size:12px}
 .spec-grid div{min-width:0}.spec-grid b{display:block;color:#7a827e;font-size:10px;margin-bottom:1px}
 @media(max-width:420px){.sake-card{grid-template-columns:82px 1fr}.sake-thumb{width:82px;height:112px}}
-
-
 .detail-hero{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .detail-photo{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:16px;background:#eef1ef}
 .detail-photo.empty{display:flex;align-items:center;justify-content:center;font-size:38px;color:#9aa39e}
@@ -50,8 +47,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .edit-grid .full{grid-column:1/-1}
 @media(max-width:520px){.detail-info,.edit-grid{grid-template-columns:1fr}.detail-actions{grid-template-columns:1fr}}
-
-
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
 .stat-card{background:#f7f9f7;border-radius:16px;padding:14px}
 .stat-card b{display:block;font-size:11px;color:#7a827e;margin-bottom:4px}
@@ -65,8 +60,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 .top-sake{padding:12px;border:1px solid #e1e7e3;border-radius:14px;margin-top:8px}
 .insight{margin-top:12px;padding:12px;border-radius:14px;background:#eef5ff;color:#235a90;line-height:1.6}
 @media(max-width:420px){.stats-grid{grid-template-columns:1fr 1fr}}
-
-
 .sakenowa-box{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff8e8;border:1px solid #f0dfb8;font-size:12px;line-height:1.55}
 .sakenowa-candidate{padding:7px 0;border-top:1px solid #eee}.sakenowa-candidate:first-of-type{border-top:0}
 </style>
@@ -76,7 +69,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <div class="brand">🍶 酒ログ <span class="pill">Demo v4.9.2</span></div>
 <button id="logoutTop" class="outline" style="padding:8px 11px;border-radius:10px">ログアウト</button>
 </header>
-
 <main>
 <section id="setupView">
 <div class="card">
@@ -91,7 +83,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <div id="setupMsg"></div>
 </div>
 </section>
-
 <section id="authView" class="hidden">
 <div class="card">
 <h2 id="authTitle">ログイン</h2>
@@ -102,7 +93,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <div id="authMsg"></div>
 </div>
 </section>
-
 <section id="homeView" class="page hidden">
 <div class="card hero">
 <h2>日本酒を記録する</h2>
@@ -119,19 +109,17 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <input id="galleryInput" type="file" accept="image/*" class="hidden">
 <input id="backCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
 <input id="backGalleryInput" type="file" accept="image/*" class="hidden">
-  <input id="foodCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
+<input id="foodCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
 <input id="foodGalleryInput" type="file" accept="image/*" class="hidden">
 <input id="memoryCameraInput" type="file" accept="image/*" capture="environment" class="hidden">
 <input id="memoryGalleryInput" type="file" accept="image/*" class="hidden">
 <button id="manualBtn" class="btn outline">✍️ 写真なしで手入力</button>
 </div>
-
 <div class="card">
 <h3>最近の記録</h3>
 <div id="recentList">読み込み中…</div>
 </div>
 </section>
-
 <section id="recordView" class="page hidden">
 <div class="card">
 <h2>ラベル確認・AI候補</h2>
@@ -157,8 +145,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <label>都道府県</label><input id="prefecture" placeholder="例：奈良県">
 <label>特定名称・酒類区分</label><input id="classification" placeholder="例：純米吟醸">
 <label>原材料名</label><input id="rice" placeholder="例：米（国産）">
-<label>使用米・原料米</label>
-<input id="riceVariety" placeholder="例：朝日米100%">
+<label>使用米・原料米</label><input id="riceVariety" placeholder="例：朝日米100%">
 <label>精米歩合</label><input id="polishing" placeholder="例：60%">
 <label>アルコール度数</label><input id="alcohol" placeholder="例：14%">
 <label>容量</label><input id="volume" placeholder="例：720ml">
@@ -168,71 +155,51 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <label>価格（円・任意）</label><input id="price" inputmode="numeric">
 <label>コメント</label><textarea id="comment"></textarea>
 <div class="memory-photo-section">
-  <h3 style="margin-top:18px">この日の思い出</h3>
-
-  <div class="grid">
-    <button id="foodCameraBtn" class="btn outline" type="button">
-      🍽️ 料理を撮影
-    </button>
-
-    <button id="foodGalleryBtn" class="btn outline" type="button">
-      🖼️ 料理写真を選ぶ
-    </button>
-  </div>
-
-  <img id="foodPreview" class="hidden" alt="料理写真">
-
-  <div class="grid" style="margin-top:10px">
-    <button id="memoryCameraBtn" class="btn outline" type="button">
-      📷 思い出を撮影
-    </button>
-
-    <button id="memoryGalleryBtn" class="btn outline" type="button">
-      🖼️ 思い出写真を選ぶ
-    </button>
-  </div>
-
-  <img id="memoryPreview" class="hidden" alt="思い出写真">
+<h3 style="margin-top:18px">この日の思い出</h3>
+<div class="grid">
+<button id="foodCameraBtn" class="btn outline" type="button">🍽️ 料理を撮影</button>
+<button id="foodGalleryBtn" class="btn outline" type="button">🖼️ 料理写真を選ぶ</button>
 </div>
-  <button id="locateBtn" class="btn outline">📍 現在地を記録</button>
+<img id="foodPreview" class="hidden" alt="料理写真">
+<div class="grid" style="margin-top:10px">
+<button id="memoryCameraBtn" class="btn outline" type="button">📷 思い出を撮影</button>
+<button id="memoryGalleryBtn" class="btn outline" type="button">🖼️ 思い出写真を選ぶ</button>
+</div>
+<img id="memoryPreview" class="hidden" alt="思い出写真">
+</div>
+<button id="locateBtn" class="btn outline">📍 現在地を記録</button>
 <div id="locMsg" class="small"></div>
 <button id="saveRecordBtn" class="btn primary">Supabaseに保存</button>
 <div id="recordMsg"></div>
 </div>
 </section>
-
 <section id="historyView" class="page hidden">
 <div class="card">
 <h2>🍶 飲んだ記録</h2><div class="small" style="margin-bottom:12px">これまで飲んだ一本を、写真・評価・場所と一緒に残します。</div>
 <div id="historyList">読み込み中…</div>
 </div>
 </section>
-
-
 <section id="detailView" class="page hidden">
-  <div class="card">
-    <button id="detailBackBtn" class="btn outline" style="margin-top:0">← 記録一覧へ戻る</button>
-    <div id="detailBody" style="margin-top:14px">読み込み中…</div>
-  </div>
+<div class="card">
+<button id="detailBackBtn" class="btn outline" style="margin-top:0">← 記録一覧へ戻る</button>
+<div id="detailBody" style="margin-top:14px">読み込み中…</div>
+</div>
 </section>
-
-
 <section id="analysisView" class="page hidden">
-  <div class="card">
-    <h2>📊 マイ酒ログ分析</h2>
-    <div class="small" style="margin-bottom:12px">これまでの記録から、あなたの日本酒の好みを自動集計します。</div>
-    <div id="analysisBody">読み込み中…</div>
-  </div>
+<div class="card">
+<h2>📊 マイ酒ログ分析</h2>
+<div class="small" style="margin-bottom:12px">これまでの記録から、あなたの日本酒の好みを自動集計します。</div>
+<div id="analysisBody">読み込み中…</div>
+</div>
 </section>
-
 <section id="profileView" class="page hidden">
 <div class="card">
 <h2>マイページ</h2>
 <div id="profileBody"></div>
+<a href="knowledge.html" class="btn secondary" style="display:block;text-align:center;text-decoration:none">📚 知識の蔵</a>
 </div>
 </section>
 <div class="small" style="text-align:center;margin:14px 8px 76px">銘柄・蔵元・地域の照合に <a href="https://sakenowa.com" target="_blank" rel="noopener">さけのわデータ</a> を利用しています。</div></main>
-
 <nav id="bottomNav" class="hidden">
 <div class="navin">
 <button class="navbtn active" data-page="homeView"><span>⌂</span>ホーム</button>
@@ -242,6 +209,5 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
 </div>
 </nav>
-
 <script src="app.js?v=497"></script>
 </body></html>
