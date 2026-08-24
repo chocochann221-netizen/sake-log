@@ -5,14 +5,39 @@
 
   const originalOpenRecordDetail=openRecordDetail;
 
+  function riceVarietyOf(r){
+    return r?.rice_variety || r?.riceVariety || r?.riceVarietyName || "";
+  }
+
   function buildKnowledgeUrl(r){
     const q=new URLSearchParams();
     if(r?.brand_name)q.set("brand",r.brand_name);
     if(r?.product_name)q.set("product",r.product_name);
     if(r?.rice)q.set("rice",r.rice);
+    const riceVariety=riceVarietyOf(r);
+    if(riceVariety)q.set("riceVariety",riceVariety);
     if(r?.polishing_ratio)q.set("polishing",r.polishing_ratio);
     if(r?.classification)q.set("classification",r.classification);
     return "knowledge-entry.html?"+q.toString();
+  }
+
+  function injectRiceVariety(r){
+    const body=document.getElementById("detailBody");
+    const riceVariety=riceVarietyOf(r);
+    if(!body||!riceVariety||body.querySelector("[data-rice-variety]")) return;
+
+    const info=body.querySelector(".detail-info");
+    if(!info) return;
+
+    const item=document.createElement("div");
+    item.setAttribute("data-rice-variety","");
+    item.innerHTML=`<b>使用米・原料米</b><span></span>`;
+    item.querySelector("span").textContent=riceVariety;
+
+    // Put the rice variety near the other sake specifications.
+    const polishing=[...info.children].find(el=>/精米歩合/.test(el.textContent||""));
+    if(polishing) info.insertBefore(item,polishing);
+    else info.appendChild(item);
   }
 
   function injectKnowledgeLink(r){
@@ -35,6 +60,10 @@
 
   openRecordDetail=async function(recordId){
     await originalOpenRecordDetail(recordId);
-    try{ injectKnowledgeLink(S?.detailRecord); }catch(e){ console.warn("knowledge link",e); }
+    try{
+      const r=S?.detailRecord;
+      injectRiceVariety(r);
+      injectKnowledgeLink(r);
+    }catch(e){ console.warn("detail knowledge bridge",e); }
   };
 })();
