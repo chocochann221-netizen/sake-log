@@ -1,4 +1,4 @@
-// Record detail -> Knowledge Cellar and official brewery bridge.
+// Record detail -> Knowledge Cellar, official brewery, and structured edit bridge.
 // Kept separate from app.js so the existing recording / photo flows stay untouched.
 (function(){
   if(typeof insert==="function"){
@@ -31,6 +31,11 @@
     const body=document.getElementById("detailBody");if(!body||!r||body.querySelector(".knowledge-entry-card"))return;const actions=body.querySelector(".detail-actions");if(!actions)return;
     const card=document.createElement("a");card.className="knowledge-entry-card";card.href=buildKnowledgeUrl(r);card.innerHTML=`<span class="knowledge-entry-kicker">この一本から、もう少し奥へ</span><strong>この一本を、もっと知る</strong><span class="knowledge-entry-copy">米、精米歩合、造り方など、この酒に関係するところだけを知識の蔵から案内します。</span><span class="knowledge-entry-arrow">知識の蔵へ →</span>`;actions.parentNode.insertBefore(card,actions);
   }
+  function connectStructuredEditor(r){
+    const btn=document.getElementById("editRecordBtn");
+    if(!btn||!r?.id)return;
+    btn.onclick=()=>{location.href="record-edit.html?id="+encodeURIComponent(r.id);};
+  }
   async function getOfficialMaster(r){
     if(!r?.brand_name||typeof authFetch!=="function")return null;
     try{
@@ -46,6 +51,6 @@
   }
   openRecordDetail=async function(recordId){
     await originalOpenRecordDetail(recordId);
-    try{const r=S?.detailRecord;injectRiceVariety(r);injectKnowledgeLink(r);injectOfficialLink(await getOfficialMaster(r));}catch(e){console.warn("detail knowledge bridge",e);}
+    try{const r=S?.detailRecord;connectStructuredEditor(r);injectRiceVariety(r);injectKnowledgeLink(r);injectOfficialLink(await getOfficialMaster(r));}catch(e){console.warn("detail bridge",e);}
   };
 })();
