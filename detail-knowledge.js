@@ -1,8 +1,20 @@
 // Record detail -> Knowledge Cellar bridge.
 // Kept separate from app.js so the existing recording / photo flows stay untouched.
 (function(){
-  if(typeof openRecordDetail!=="function") return;
+  // drinking_records now has rice_variety. Add it at the persistence boundary so
+  // the existing, stable save flow in app.js does not need a large rewrite.
+  if(typeof insert==="function"){
+    const originalInsert=insert;
+    insert=async function(table,obj){
+      if(table==="drinking_records" && obj && !("rice_variety" in obj)){
+        const el=document.getElementById("riceVariety");
+        obj={...obj,rice_variety:el?.value?.trim()||null};
+      }
+      return originalInsert(table,obj);
+    };
+  }
 
+  if(typeof openRecordDetail!=="function") return;
   const originalOpenRecordDetail=openRecordDetail;
 
   function riceVarietyOf(r){
@@ -33,8 +45,6 @@
     item.setAttribute("data-rice-variety","");
     item.innerHTML=`<b>使用米・原料米</b><span></span>`;
     item.querySelector("span").textContent=riceVariety;
-
-    // Put the rice variety near the other sake specifications.
     const polishing=[...info.children].find(el=>/精米歩合/.test(el.textContent||""));
     if(polishing) info.insertBefore(item,polishing);
     else info.appendChild(item);
@@ -43,7 +53,6 @@
   function injectKnowledgeLink(r){
     const body=document.getElementById("detailBody");
     if(!body||!r||body.querySelector(".knowledge-entry-card")) return;
-
     const actions=body.querySelector(".detail-actions");
     if(!actions) return;
 
