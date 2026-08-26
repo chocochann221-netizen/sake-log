@@ -3,7 +3,6 @@
 (function(){
   function valueOf(id){return document.getElementById(id)?.value?.trim()||"";}
 
-  // Keep record persistence compatible while adding v1 fields without touching the recognition core.
   if(typeof insert==="function"){
     const originalInsert=insert;
     insert=async function(table,obj){
@@ -37,7 +36,7 @@
     style.textContent=`
       :root{--washi:#f6f0e5;--ink:#29251f;--wood:#74533a;--wood2:#9a7758;--moss:#536656;--line:#ddd0bf;--paper:#fffdf8}
       body{background:var(--washi);color:var(--ink)}
-      header{background:rgba(255,253,248,.96);border-bottom-color:var(--line)}
+      header{background:rgba(255,253,248,.96);border-bottom-color:var(--line);backdrop-filter:blur(10px)}
       .brand{letter-spacing:.04em}.pill{background:#eee3d4;color:var(--wood)}
       .card{background:var(--paper);border-color:var(--line);box-shadow:0 5px 18px rgba(80,60,40,.045)}
       .hero{background:linear-gradient(145deg,#fffaf0,#eee4d4);position:relative;overflow:hidden}
@@ -47,9 +46,21 @@
       .tag{background:#eee8dc;color:#64513e}.sake-card{border-color:var(--line);background:#fffdf9}.sake-comment,.detail-info>div{background:#f7f1e7}
       .memory-prompt{margin:14px 0 2px;padding:14px 15px;border-left:3px solid var(--wood2);background:#f7f0e6;border-radius:4px 12px 12px 4px}
       .memory-prompt strong{display:block;margin-bottom:3px}.memory-prompt span{font-size:12px;color:#756b60;line-height:1.6}
-      .memory-strip{margin:14px 0;padding:13px 14px;background:#f7f0e6;border-radius:14px;line-height:1.7}
-      .memory-strip b{color:var(--wood)}
+      .memory-strip{margin:14px 0;padding:13px 14px;background:#f7f0e6;border-radius:14px;line-height:1.7}.memory-strip b{color:var(--wood)}
       #foodPreview,#memoryPreview{width:100%;max-height:260px;object-fit:cover;border-radius:14px;margin-top:8px}
+      .home-kicker{font-size:12px;letter-spacing:.12em;color:var(--wood2);font-weight:800;margin-bottom:6px}
+      .home-copy{font-size:13px;line-height:1.75;color:#72685e;margin:4px 0 16px;max-width:29em}
+      .home-capture{display:grid;grid-template-columns:1fr;gap:9px;position:relative;z-index:1}
+      .home-capture .btn{margin:0}.home-capture .primary{padding:18px 14px;font-size:18px}
+      .home-subactions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.home-subactions .btn{font-size:13px;padding:12px 9px}
+      .home-manual{font-size:12px!important;font-weight:700!important;padding:10px!important}
+      .window-scene{height:118px;margin:-2px 0 16px;border:10px solid #866247;border-bottom-width:14px;background:linear-gradient(#b9d3d7 0 42%,#d8d5b2 42% 62%,#738261 62%);position:relative;overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}
+      .window-scene:before{content:"";position:absolute;left:50%;top:0;width:8px;height:100%;background:#866247;transform:translateX(-50%);box-shadow:0 0 0 1px rgba(60,40,25,.15)}
+      .window-scene:after{content:"秋";position:absolute;right:8px;bottom:7px;background:rgba(255,253,248,.86);padding:3px 7px;font-size:10px;letter-spacing:.15em;color:#6e533e}
+      .window-leaf{position:absolute;width:52px;height:52px;border-radius:50%;background:#a36d45;left:11%;top:17px;box-shadow:23px 10px 0 #c38a50,9px 32px 0 #8c6346,154px 16px 0 #b07a4d,178px 30px 0 #c6955a}
+      .window-sun{position:absolute;width:22px;height:22px;border-radius:50%;background:#f3dfab;right:18%;top:13px;box-shadow:0 0 25px rgba(243,223,171,.9)}
+      .recent-heading{display:flex;align-items:end;justify-content:space-between;gap:10px}.recent-heading h3{margin:0}.recent-heading span{font-size:11px;color:#8a7d70}
+      @media(max-width:420px){.window-scene{height:104px}.home-subactions{grid-template-columns:1fr 1fr}}
     `;
     document.head.appendChild(style);
   }
@@ -86,8 +97,6 @@
     document.title="和酒ログ";
     const brand=document.querySelector("header .brand");
     if(brand)brand.innerHTML='🍶 和酒ログ <span class="pill">v1 preview</span>';
-    const homeTitle=document.querySelector("#homeView .hero h2");
-    if(homeTitle)homeTitle.textContent="今日、何を飲む？";
     const save=document.getElementById("saveRecordBtn");
     if(save)save.textContent="この一杯をLOGする";
     const historyTitle=document.querySelector("#historyView h2");
@@ -98,8 +107,52 @@
     if(analysisTitle)analysisTitle.textContent="📊 わたしの和酒ログ";
   }
 
+  function transformHome(){
+    const hero=document.querySelector("#homeView .hero");
+    if(!hero||hero.dataset.washuHome==="1")return;
+    hero.dataset.washuHome="1";
+    const user=document.getElementById("userEmail");
+    const camera=document.getElementById("cameraBtn");
+    const gallery=document.getElementById("galleryBtn");
+    const backCamera=document.getElementById("backCameraBtn");
+    const backGallery=document.getElementById("backGalleryBtn");
+    const manual=document.getElementById("manualBtn");
+    if(!camera||!gallery||!backCamera||!backGallery||!manual)return;
+
+    [...hero.children].forEach(el=>{
+      if(![user,camera,gallery,backCamera,backGallery,manual].includes(el) && !el.matches('input[type="file"]')) el.remove();
+    });
+
+    const top=document.createElement("div");
+    top.innerHTML='<div class="home-kicker">WASHU LOG</div><h2>今日の一杯を、残そう。</h2><div class="home-copy">ラベルを撮れば、銘柄を探して記録します。あとで見返したとき、その日の空気まで思い出せるように。</div><div class="window-scene" aria-hidden="true"><span class="window-leaf"></span><span class="window-sun"></span></div>';
+    hero.insertBefore(top,hero.firstChild);
+
+    const capture=document.createElement("div"); capture.className="home-capture";
+    const sub=document.createElement("div"); sub.className="home-subactions";
+    camera.textContent="📷 日本酒を撮る";
+    gallery.textContent="🖼 写真から選ぶ";
+    backCamera.textContent="📷 裏ラベルも撮る";
+    backGallery.textContent="🖼 裏ラベルを選ぶ";
+    manual.textContent="写真なしで記録する"; manual.classList.add("home-manual");
+    sub.append(gallery,backCamera);
+    capture.append(camera,sub,backGallery,manual);
+    hero.appendChild(capture);
+    if(user){user.style.marginTop="12px";hero.appendChild(user);}
+
+    const recentCard=document.querySelector("#homeView .card:not(.hero)");
+    const recentTitle=recentCard?.querySelector("h3");
+    if(recentTitle){
+      const wrap=document.createElement("div");wrap.className="recent-heading";
+      const hint=document.createElement("span");hint.textContent="思い出は、少しずつ積み重なる";
+      recentTitle.textContent="最近の一杯";
+      recentTitle.parentNode.insertBefore(wrap,recentTitle);
+      wrap.append(recentTitle,hint);
+    }
+  }
+
   addV1Styles();
   renameShell();
+  transformHome();
   ensureCompanionField();
   addMemoryPrompt();
 
@@ -112,7 +165,6 @@
     };
   }
 
-  // Show "who with" naturally in MY LOG, without turning the app into a social feed.
   if(typeof renderRows==="function"){
     const originalRenderRows=renderRows;
     renderRows=function(rows){
