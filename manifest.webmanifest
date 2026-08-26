@@ -1,9 +1,9 @@
 {
-  "name": "酒ログ",
-  "short_name": "酒ログ",
+  "name": "和酒ログ",
+  "short_name": "和酒ログ",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#238464",
+  "background_color": "#f6f1e7",
+  "theme_color": "#6f5a3e",
   "lang": "ja"
 }
