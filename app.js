@@ -774,6 +774,10 @@ $("analyzeBtn").onclick=async()=>{
    }else{
      // 3. 完全新規だけAI
      msg($("analysisMsg"),"共有辞書に未登録の新しい日本酒です。AIでラベル読取＋Web照合を行っています…","info");
+     // Android/Chrome can occasionally release blob preview URLs during a long AI request.
+     // Keep durable data URLs on the preview elements so the photos stay visible after analysis.
+     if(frontData){$("preview").src=frontData;$("preview").classList.remove("hidden");}
+     if(backData){$("backPreview").src=backData;$("backPreview").classList.remove("hidden");}
      const body={front:frontData,back:backData};
      const r=await authFetch("/api/recognize-sake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
      d=await r.json().catch(()=>({}));
