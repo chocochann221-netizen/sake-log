@@ -316,6 +316,25 @@ function productSpecScore(f,c){
 
   return total ? score/total : 0;
 }
+let CORRECTION_RULES=null;
+async function loadCorrectionRules(){
+ if(CORRECTION_RULES)return CORRECTION_RULES;
+ try{
+  const rows=await rpc("get_recognition_correction_rules",{});
+  CORRECTION_RULES=Array.isArray(rows)?rows:[];
+ }catch{CORRECTION_RULES=[]}
+ return CORRECTION_RULES;
+}
+function normCorrectionText(v){return String(v||"").normalize("NFKC").trim().toLowerCase()}
+async function applyCorrectionRulesToCandidates(items){
+ const rules=await loadCorrectionRules();
+ return (items||[]).map(c=>{
+  const pb=normCorrectionText(c.brand),pp=normCorrectionText(c.product),pbr=normCorrectionText(c.brewery);
+  const r=rules.find(x=>x.predicted_brand===pb && (!x.predicted_product||x.predicted_product===pp) && (!x.predicted_brewery||x.predicted_brewery===pbr));
+  if(!r)return c;
+  return {...c,brand:r.correct_brand||c.brand,product:r.correct_product||c.product,brewery:r.correct_brewery||c.brewery,reason:(c.reason?c.reason+" / ":"")+"過去の修正履歴を反映",correction_applied:true};
+ });
+}
 function renderCandidates(items){
   // 同一商品の重複候補をまとめる
   const normalizeCandidateText=v=>String(v||"")
@@ -758,6 +777,7 @@ $("analyzeBtn").onclick=async()=>{
      saveAiCache(cacheKey,d);
    }
 
+   d.candidates=await applyCorrectionRulesToCandidates(d.candidates||[]);
    S.recognition=d;
    renderCandidates(d.candidates||[]);
    const top=(d.candidates||[])[0];
