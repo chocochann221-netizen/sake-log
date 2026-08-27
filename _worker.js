@@ -183,8 +183,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     // Keep the existing frontend endpoints unchanged during the Netlify -> Cloudflare migration.
-    if (url.pathname === "/.netlify/functions/recognize-sake") return recognizeSake(request, env);
-    if (url.pathname === "/.netlify/functions/sakenowa-master") return sakenowaMaster();
+    if (url.pathname === "/.netlify/functions/recognize-sake" || url.pathname === "/api/recognize-sake") return recognizeSake(request, env);
+    if (url.pathname === "/.netlify/functions/sakenowa-master" || url.pathname === "/api/sakenowa-master") return sakenowaMaster();
     return env.ASSETS.fetch(request);
   }
 };
