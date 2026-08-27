@@ -221,6 +221,7 @@
   <button class="menu-item" onclick="showCorrections()">✏️ 誤認識・修正データ</button>
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
+  <button class="menu-item" onclick="showRecheck()">🔎 過去の記録を再確認</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -1125,6 +1126,24 @@ async function runAutoPromotion() {
   }
 }
     
+async function showRecheck(){
+ showAdminPanel("🔎 過去の記録を再確認","<p>マスター未接続の記録を読み込んでいます...</p>");
+ try{
+  const key=cfgKey(),h={"apikey":key,"Authorization":"Bearer "+token};
+  const r=await fetch(BASE+"/rest/v1/drinking_records?select=id,brand_name,product_name,brewery_name,classification,polishing_ratio,alcohol,drank_at&sake_id=is.null&order=drank_at.desc",{headers:h});
+  if(!r.ok)throw new Error(await r.text()); const items=await r.json();
+  const blocks=[];
+  for(const d of items){
+   const pr=await fetch(BASE+"/rest/v1/sake_photos?select=photo_type,storage_path&drinking_record_id=eq."+encodeURIComponent(d.id)+"&order=created_at",{headers:h});
+   const photos=pr.ok?await pr.json():[]; let imgs=[];
+   for(const p of photos){const ir=await fetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(p.storage_path),{headers:h});if(ir.ok){const u=URL.createObjectURL(await ir.blob());imgs.push('<div><img src="'+u+'" style="width:100%;max-height:240px;object-fit:contain;background:#f5f3ee;border-radius:12px"><small>'+ (p.photo_type==="front"?"表ラベル":"裏ラベル") +'</small></div>')}}
+   blocks.push('<div style="padding:18px 0;border-bottom:1px solid #ddd"><strong style="font-size:18px">'+(d.brand_name||"銘柄不明")+(d.product_name?" "+d.product_name:"")+'</strong><div style="font-size:13px;color:#666;line-height:1.7;margin:6px 0">蔵元：'+(d.brewery_name||"未設定")+'<br>分類：'+(d.classification||"未設定")+' ／ 精米歩合：'+(d.polishing_ratio||"未設定")+' ／ 度数：'+(d.alcohol||"未設定")+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+imgs.join("")+'</div><button onclick="openRecheckRecord(\''+d.id+'\')" style="margin-top:10px;padding:10px 13px;border:1px solid #aaa;border-radius:10px;background:white">この記録を詳しく確認</button></div>');
+  }
+  showAdminPanel("🔎 過去の記録を再確認",blocks.join("")||"<p>再確認が必要な記録はありません ✅</p>");
+ }catch(e){showAdminPanel("🔎 過去の記録を再確認","<p>取得エラー："+e.message+"</p>")}
+}
+function openRecheckRecord(id){window.open("record-detail.html?id="+encodeURIComponent(id),"_blank")}
+
     loadAdminDashboard();
 
 
