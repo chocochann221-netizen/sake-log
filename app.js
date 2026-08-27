@@ -882,8 +882,12 @@ S.savingRecord=true;
 }
  $("saveRecordBtn").disabled=true;msg($("recordMsg"),"保存中…","info");
  try{
+  const confirmed=currentConfirmedValues();
+  const learned=await learnToSakeMaster(confirmed);
+  const learnedRaw=learned?.ok?learned.data:null;
+  const sakeId=Array.isArray(learnedRaw)?learnedRaw[0]:learnedRaw;
   const rec=await insert("drinking_records",{
-   user_id:S.user.id,brand_name:brand,product_name:$("product").value.trim()||null,brewery_name:$("brewery").value.trim()||null,
+   user_id:S.user.id,sake_id:sakeId||null,brand_name:brand,product_name:$("product").value.trim()||null,brewery_name:$("brewery").value.trim()||null,
    prefecture:$("prefecture").value.trim()||null,classification:$("classification").value.trim()||null,
    rice:$("rice").value.trim()||null,polishing_ratio:$("polishing").value.trim()||null,
    alcohol:$("alcohol").value.trim()||null,volume:$("volume").value.trim()||null,
