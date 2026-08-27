@@ -336,7 +336,8 @@ function candidateConsistencyScore(c,facts){let s=Number(c.confidence||0)*100;co
  // Candidate names that look like marketing/description prose are less likely to be the printed product name.
  if(/使用|仕込|限定|おすすめ|相性|兵庫県産|国産/.test(String(c.product||""))&&!/使用|仕込|限定/.test(String(facts?.product||"")))s-=24;
  for(const k of [["classification",15],["polishing_ratio",12],["alcohol",10]]){const a=normCorrectionText(facts?.[k[0]]),b=normCorrectionText(c?.[k[0]]);if(a&&b)s+=a===b?k[1]:-Math.ceil(k[1]/2)}return s}
-function rankCandidatesByEvidence(items,facts){return (items||[]).map(x=>({...x,_evidence_score:candidateConsistencyScore(x,facts)})).filter(x=>x._evidence_score>=20).sort((a,b)=>b._evidence_score-a._evidence_score)}
+function normalizeCandidateProduct(c){const brand=String(c.brand||"").normalize("NFKC").trim(),product=String(c.product||"").normalize("NFKC").trim();if(!brand||!product)return c;const esc=brand.replace(/[.*+?^{}()|[\\]\\]/g,"\\function rankCandidatesByEvidence(items,facts){return (items||[]).map(x=>({...x,_evidence_score:candidateConsistencyScore(x,facts)})).filter(x=>x._evidence_score>=20).sort((a,b)=>b._evidence_score-a._evidence_score)}");let p=product.replace(new RegExp("^(?:"+esc+"[\\s　・]*)+","i"),"").trim();return {...c,product:p||product}}
+function rankCandidatesByEvidence(items,facts){return (items||[]).map(normalizeCandidateProduct).map(x=>({...x,_evidence_score:candidateConsistencyScore(x,facts)})).filter(x=>x._evidence_score>=20).sort((a,b)=>b._evidence_score-a._evidence_score)}
 
 async function applyCorrectionRulesToCandidates(items){
  const rules=await loadCorrectionRules();
