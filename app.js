@@ -471,7 +471,7 @@ function simText(a,b){
 }
 async function loadSakenowaMaster(){
  if(SAKENOWA_MASTER)return SAKENOWA_MASTER;
- try{const r=await fetch("/.netlify/functions/sakenowa-master"),d=await r.json();if(!r.ok)throw 0;return SAKENOWA_MASTER=d}catch{return null}
+ try{const r=await fetch("/api/sakenowa-master"),d=await r.json();if(!r.ok)throw 0;return SAKENOWA_MASTER=d}catch{return null}
 }
 async function matchSakenowaFacts(f){
  const m=await loadSakenowaMaster();if(!m)return [];
@@ -771,7 +771,7 @@ $("analyzeBtn").onclick=async()=>{
      // 3. 完全新規だけAI
      msg($("analysisMsg"),"共有辞書に未登録の新しい日本酒です。AIでラベル読取＋Web照合を行っています…","info");
      const body={front:frontData,back:backData};
-     const r=await authFetch("/.netlify/functions/recognize-sake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+     const r=await authFetch("/api/recognize-sake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
      d=await r.json().catch(()=>({}));
      if(!r.ok) throw new Error(d.error||"AI解析 HTTP "+r.status);
      saveAiCache(cacheKey,d);
