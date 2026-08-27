@@ -327,7 +327,13 @@ async function loadCorrectionRules(){
 }
 function normCorrectionText(v){return String(v||"").normalize("NFKC").trim().toLowerCase()}
 function compactSakeText(v){return normCorrectionText(v).replace(/株式会社|有限会社|合資会社|酒造|醸造|[\\s・　（）()]/g,"")}
-function candidateConsistencyScore(c,facts){let s=Number(c.confidence||0)*100;const fb=compactSakeText(facts?.brand),cb=compactSakeText(c.brand),fbr=compactSakeText(facts?.brewery),cbr=compactSakeText(c.brewery);if(fb&&cb)s+=fb===cb?40:-50;if(fbr&&cbr)s+=fbr===cbr?35:-60;for(const k of [["classification",15],["polishing_ratio",12],["alcohol",10]]){const a=normCorrectionText(facts?.[k[0]]),b=normCorrectionText(c?.[k[0]]);if(a&&b)s+=a===b?k[1]:-Math.ceil(k[1]/2)}return s}
+function candidateConsistencyScore(c,facts){let s=Number(c.confidence||0)*100;const fb=compactSakeText(facts?.brand),cb=compactSakeText(c.brand),fbr=compactSakeText(facts?.brewery),cbr=compactSakeText(c.brewery);if(fb&&cb)s+=fb===cb?40:-50;if(fbr&&cbr)s+=fbr===cbr?35:-60;
+ const fp=compactSakeText(facts?.product),cp=compactSakeText(c.product),labelText=compactSakeText([facts?.brand,facts?.product,facts?.rice_variety,facts?.ingredients].filter(Boolean).join(" "));
+ if(fp&&cp){if(fp===cp)s+=35;else if(fp.includes(cp)||cp.includes(fp))s+=18;else s-=18}
+ // Reward distinctive words actually visible/read from the label (e.g. 山田錦) so a precise variant outranks a generic product.
+ const tokens=[facts?.rice_variety,facts?.product].flatMap(v=>String(v||"").normalize("NFKC").split(/[\\s　・／/]+/)).map(compactSakeText).filter(x=>x.length>=2&&!["純米","吟醸","大吟醸","日本酒"].includes(x));
+ for(const t of [...new Set(tokens)]){if(cp.includes(t)&&labelText.includes(t))s+=24}
+ for(const k of [["classification",15],["polishing_ratio",12],["alcohol",10]]){const a=normCorrectionText(facts?.[k[0]]),b=normCorrectionText(c?.[k[0]]);if(a&&b)s+=a===b?k[1]:-Math.ceil(k[1]/2)}return s}
 function rankCandidatesByEvidence(items,facts){return (items||[]).map(x=>({...x,_evidence_score:candidateConsistencyScore(x,facts)})).filter(x=>x._evidence_score>=20).sort((a,b)=>b._evidence_score-a._evidence_score)}
 
 async function applyCorrectionRulesToCandidates(items){
