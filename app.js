@@ -914,7 +914,8 @@ S.savingRecord=true;
   const confirmed=currentConfirmedValues();
   const learned=await learnToSakeMaster(confirmed);
   const learnedRaw=learned?.ok?learned.data:null;
-  const sakeId=Array.isArray(learnedRaw)?learnedRaw[0]:learnedRaw;
+  // Supabase RPC may return a scalar UUID, a one-item array, or an object depending on client/gateway shape.
+  const sakeId=Array.isArray(learnedRaw)?(typeof learnedRaw[0]==="object"?(learnedRaw[0]?.learn_sake_master||learnedRaw[0]?.id):learnedRaw[0]):(typeof learnedRaw==="object"?(learnedRaw?.learn_sake_master||learnedRaw?.id):learnedRaw);
   const rec=await insert("drinking_records",{
    user_id:S.user.id,sake_id:sakeId||null,brand_name:brand,product_name:$("product").value.trim()||null,brewery_name:$("brewery").value.trim()||null,
    prefecture:$("prefecture").value.trim()||null,classification:$("classification").value.trim()||null,
