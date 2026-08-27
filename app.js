@@ -332,7 +332,9 @@ function candidateConsistencyScore(c,facts){let s=Number(c.confidence||0)*100;co
  if(fp&&cp){if(fp===cp)s+=35;else if(fp.includes(cp)||cp.includes(fp))s+=18;else s-=18}
  // Reward distinctive words actually visible/read from the label (e.g. 山田錦) so a precise variant outranks a generic product.
  const tokens=[facts?.rice_variety,facts?.product].flatMap(v=>String(v||"").normalize("NFKC").split(/[\\s　・／/]+/)).map(compactSakeText).filter(x=>x.length>=2&&!["純米","吟醸","大吟醸","日本酒"].includes(x));
- for(const t of [...new Set(tokens)]){if(cp.includes(t)&&labelText.includes(t))s+=24}
+ for(const t of [...new Set(tokens)]){if(labelText.includes(t)){if(cp.includes(t))s+=32;else s-=28}}
+ // Candidate names that look like marketing/description prose are less likely to be the printed product name.
+ if(/使用|仕込|限定|おすすめ|相性|兵庫県産|国産/.test(String(c.product||""))&&!/使用|仕込|限定/.test(String(facts?.product||"")))s-=24;
  for(const k of [["classification",15],["polishing_ratio",12],["alcohol",10]]){const a=normCorrectionText(facts?.[k[0]]),b=normCorrectionText(c?.[k[0]]);if(a&&b)s+=a===b?k[1]:-Math.ceil(k[1]/2)}return s}
 function rankCandidatesByEvidence(items,facts){return (items||[]).map(x=>({...x,_evidence_score:candidateConsistencyScore(x,facts)})).filter(x=>x._evidence_score>=20).sort((a,b)=>b._evidence_score-a._evidence_score)}
 
