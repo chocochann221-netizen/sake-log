@@ -326,6 +326,10 @@ async function loadCorrectionRules(){
  return CORRECTION_RULES;
 }
 function normCorrectionText(v){return String(v||"").normalize("NFKC").trim().toLowerCase()}
+function compactSakeText(v){return normCorrectionText(v).replace(/株式会社|有限会社|合資会社|酒造|醸造|[\\s・　（）()]/g,"")}
+function candidateConsistencyScore(c,facts){let s=Number(c.confidence||0)*100;const fb=compactSakeText(facts?.brand),cb=compactSakeText(c.brand),fbr=compactSakeText(facts?.brewery),cbr=compactSakeText(c.brewery);if(fb&&cb)s+=fb===cb?40:-50;if(fbr&&cbr)s+=fbr===cbr?35:-60;for(const k of [["classification",15],["polishing_ratio",12],["alcohol",10]]){const a=normCorrectionText(facts?.[k[0]]),b=normCorrectionText(c?.[k[0]]);if(a&&b)s+=a===b?k[1]:-Math.ceil(k[1]/2)}return s}
+function rankCandidatesByEvidence(items,facts){return (items||[]).map(x=>({...x,_evidence_score:candidateConsistencyScore(x,facts)})).filter(x=>x._evidence_score>=20).sort((a,b)=>b._evidence_score-a._evidence_score)}
+
 async function applyCorrectionRulesToCandidates(items){
  const rules=await loadCorrectionRules();
  return (items||[]).map(c=>{
@@ -778,6 +782,7 @@ $("analyzeBtn").onclick=async()=>{
    }
 
    d.candidates=await applyCorrectionRulesToCandidates(d.candidates||[]);
+   d.candidates=rankCandidatesByEvidence(d.candidates,d.label_facts||{});
    S.recognition=d;
    renderCandidates(d.candidates||[]);
    const top=(d.candidates||[])[0];
