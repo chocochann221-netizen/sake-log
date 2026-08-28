@@ -211,10 +211,11 @@
       <div class="number" id="master">—</div>
     </div>
 
-    <div class="card" onclick="showRepairCandidates()" style="cursor:pointer;">
+    <div class="card" id="unlinkedCard" onclick="showRepairCandidates()" style="cursor:pointer;">
       <div class="icon">🛠</div>
       <div class="label">未接続記録</div>
       <div class="number" id="unlinked">—</div>
+      <div id="unlinkedHint" style="margin-top:6px;font-size:11px;color:#777"></div>
     </div>
 
   </div>
@@ -363,6 +364,21 @@ document.getElementById("autoPromotion").textContent =
 
 document.getElementById("unlinked").textContent =
   unlinkedCount ?? "—";
+const unlinkedCard = document.getElementById("unlinkedCard");
+const unlinkedHint = document.getElementById("unlinkedHint");
+if(unlinkedCount === 0){
+  unlinkedCard.style.background = "#eef6f1";
+  unlinkedHint.textContent = "接続状態は正常です";
+  unlinkedHint.style.color = "#2f6a4f";
+}else if(unlinkedCount > 0){
+  unlinkedCard.style.background = "#fff4df";
+  unlinkedCard.style.boxShadow = "0 0 0 2px #e0b66055";
+  unlinkedHint.textContent = "確認が必要です";
+  unlinkedHint.style.color = "#8a641d";
+}else{
+  unlinkedCard.style.background = "white";
+  unlinkedHint.textContent = "状態を取得できませんでした";
+}
       
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
