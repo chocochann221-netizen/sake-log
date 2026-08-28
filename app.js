@@ -1215,6 +1215,8 @@ function renderRecordEditor(r){
      <div><label>アルコール</label><input id="eAlcohol" value="${escapeHtml(r.alcohol||"")}"></div>
      <div><label>容量</label><input id="eVolume" value="${escapeHtml(r.volume||"")}"></div>
      <div><label>飲んだ店</label><input id="eRestaurant" value="${escapeHtml(r.restaurant_name||"")}"></div>
+     <div><label>誰と飲んだ</label><input id="eCompanion" value="${escapeHtml(r.companion_name||"")}"></div>
+     <div><label>場所の種類</label><input id="ePlaceType" value="${escapeHtml(r.place_type||"")}"></div>
      <div><label>価格（円）</label><input id="ePrice" type="number" value="${escapeHtml(r.price_yen??"")}"></div>
      <div><label>評価（1〜5）</label><input id="eRating" type="number" min="1" max="5" step="0.5" value="${escapeHtml(r.rating??4)}"></div>
      <div class="full"><label>コメント</label><textarea id="eComment">${escapeHtml(r.comment||"")}</textarea></div>
@@ -1235,6 +1237,10 @@ function renderRecordEditor(r){
   <input id="editFoodPhoto" type="file" accept="image/*">
   <label><input id="deleteFoodPhoto" type="checkbox"> この写真を削除</label>
 
+  <label>酒器写真</label>
+  <input id="editVesselPhoto" type="file" accept="image/*">
+  <label><input id="deleteVesselPhoto" type="checkbox"> この写真を削除</label>
+
   <label>思い出写真</label>
   <input id="editMemoryPhoto" type="file" accept="image/*">
   <label><input id="deleteMemoryPhoto" type="checkbox"> この写真を削除</label>
@@ -1250,17 +1256,36 @@ function renderRecordEditor(r){
    $("saveEditBtn").disabled=true;
    msg($("editMsg"),"保存中…","info");
    try{
+     const editedValues={
+       brand:$("eBrand").value.trim(),
+       product:$("eProduct").value.trim(),
+       brewery:$("eBrewery").value.trim(),
+       prefecture:$("ePrefecture").value.trim(),
+       classification:$("eClass").value.trim(),
+       ingredients:$("eRice").value.trim(),
+       rice_variety:r.rice_variety||"",
+       polishing_ratio:$("ePolishing").value.trim(),
+       alcohol:$("eAlcohol").value.trim(),
+       volume:$("eVolume").value.trim()
+     };
+     const learned=await learnToSakeMaster(editedValues);
+     const raw=learned?.ok?learned.data:null;
+     const editedSakeId=Array.isArray(raw)?(typeof raw[0]==="object"?(raw[0]?.learn_sake_master||raw[0]?.id):raw[0]):(typeof raw==="object"?(raw?.learn_sake_master||raw?.id):raw);
+
      await updateRow("drinking_records",r.id,{
-       brand_name:$("eBrand").value.trim()||null,
-       product_name:$("eProduct").value.trim()||null,
-       brewery_name:$("eBrewery").value.trim()||null,
-       prefecture:$("ePrefecture").value.trim()||null,
-       classification:$("eClass").value.trim()||null,
-       rice:$("eRice").value.trim()||null,
-       polishing_ratio:$("ePolishing").value.trim()||null,
-       alcohol:$("eAlcohol").value.trim()||null,
-       volume:$("eVolume").value.trim()||null,
+       sake_id:editedSakeId||r.sake_id||null,
+       brand_name:editedValues.brand||null,
+       product_name:editedValues.product||null,
+       brewery_name:editedValues.brewery||null,
+       prefecture:editedValues.prefecture||null,
+       classification:editedValues.classification||null,
+       rice:editedValues.ingredients||null,
+       polishing_ratio:editedValues.polishing_ratio||null,
+       alcohol:editedValues.alcohol||null,
+       volume:editedValues.volume||null,
        restaurant_name:$("eRestaurant").value.trim()||null,
+       companion_name:$("eCompanion")?.value?.trim()||null,
+       place_type:$("ePlaceType")?.value?.trim()||null,
        price_yen:$("ePrice").value?Number($("ePrice").value):null,
        rating:$("eRating").value?Number($("eRating").value):null,
        comment:$("eComment").value.trim()||null
@@ -1270,6 +1295,7 @@ const photoInputs=[
   ["editFrontPhoto","deleteFrontPhoto","front"],
   ["editBackPhoto","deleteBackPhoto","back"],
   ["editFoodPhoto","deleteFoodPhoto","food"],
+  ["editVesselPhoto","deleteVesselPhoto","vessel"],
   ["editMemoryPhoto","deleteMemoryPhoto","memory"]
 ];
     
