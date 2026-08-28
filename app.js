@@ -129,6 +129,7 @@ async function restore(){
  show("authView");
  if(await verifyCurrentUser()){
    $("userEmail").textContent=S.user.email||"";
+   await cleanupPendingRollbacks().catch(()=>{});
    show("homeView");
  }else{
    clearSession();
@@ -887,93 +888,184 @@ async function deleteRows(table,query){
  return true;
 }
 
-$("saveRecordBtn").onclick=async()=>{
-if(S.savingRecord)return;
-S.savingRecord=true;
- const brand=$("brand").value.trim();
- if(!brand){
-  S.savingRecord=false;
-  msg($("recordMsg"),"銘柄を入力してください","err");
-  return;
-}
- $("saveRecordBtn").disabled=true;msg($("recordMsg"),"保存中…","info");
+const PENDING_ROLLBACK_KEY="sakelog_pending_rollbacks_v1";
+function readPendingRollbacks(){
  try{
-  const rec=await insert("drinking_records",{
-   user_id:S.user.id,brand_name:brand,product_name:$("product").value.trim()||null,brewery_name:$("brewery").value.trim()||null,
-   prefecture:$("prefecture").value.trim()||null,classification:$("classification").value.trim()||null,
-   rice:$("rice").value.trim()||null,polishing_ratio:$("polishing").value.trim()||null,
-   alcohol:$("alcohol").value.trim()||null,volume:$("volume").value.trim()||null,
-   drank_at:new Date().toISOString(),restaurant_name:$("restaurant").value.trim()||null,latitude:S.lat,longitude:S.lng,
-   price_yen:$("price").value?Number($("price").value):null,rating:Number($("rating").value),comment:$("comment").value.trim()||null
-  });
-  let frontPhotoRow=null;
-  if(S.photo){
-   const path=await uploadPhoto(S.photo);
-   frontPhotoRow=await insert("sake_photos",{user_id:S.user.id,drinking_record_id:rec.id,photo_type:"front",storage_path:path,mime_type:S.photo.type||"image/jpeg"});
-  }
-  if(S.backPhoto){
-   const path=await uploadPhoto(S.backPhoto);
-   await insert("sake_photos",{user_id:S.user.id,drinking_record_id:rec.id,photo_type:"back",storage_path:path,mime_type:S.backPhoto.type||"image/jpeg"});
-  }
-if(S.foodPhoto){
-  const path=await uploadPhoto(S.foodPhoto);
-  await insert("sake_photos",{
-    user_id:S.user.id,
-    drinking_record_id:rec.id,
-    photo_type:"food",
-    storage_path:path,
-    mime_type:S.foodPhoto.type||"image/jpeg"
-  });
+   const v=JSON.parse(localStorage.getItem(PENDING_ROLLBACK_KEY)||"[]");
+   return Array.isArray(v)?v:[];
+ }catch{return []}
+}
+function writePendingRollbacks(items){
+ try{
+   if(items.length)localStorage.setItem(PENDING_ROLLBACK_KEY,JSON.stringify(items));
+   else localStorage.removeItem(PENDING_ROLLBACK_KEY);
+ }catch{}
+}
+function queuePendingRollback(recordId,storagePaths=[]){
+ if(!recordId)return;
+ const items=readPendingRollbacks().filter(x=>x?.recordId!==recordId);
+ items.push({recordId,storagePaths:[...new Set(storagePaths.filter(Boolean))],queuedAt:Date.now()});
+ writePendingRollbacks(items);
+}
+async function deleteStorageObject(path){
+ if(!path)return true;
+ const r=await authFetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(path),{method:"DELETE"});
+ if(r.ok||r.status===404)return true;
+ throw new Error("写真クリーンアップ HTTP "+r.status);
+}
+async function rollbackRecord(item){
+ if(!item?.recordId)return true;
+ const id=encodeURIComponent(item.recordId);
+ try{
+   // recognition_results を消すと corrections は FK CASCADE で一緒に消える。
+   await deleteRows("recognition_results","drinking_record_id=eq."+id);
+   await deleteRows("sake_photos","drinking_record_id=eq."+id);
+   await deleteRows("drinking_records","id=eq."+id);
+   for(const path of item.storagePaths||[]) await deleteStorageObject(path);
+   return true;
+ }catch(e){
+   console.warn("record rollback pending",item.recordId,e);
+   return false;
+ }
+}
+async function cleanupPendingRollbacks(){
+ const items=readPendingRollbacks();
+ if(!items.length)return true;
+ const remaining=[];
+ for(const item of items){
+   if(!(await rollbackRecord(item)))remaining.push(item);
+ }
+ writePendingRollbacks(remaining);
+ return remaining.length===0;
 }
 
-if(S.memoryPhoto){
-  const path=await uploadPhoto(S.memoryPhoto);
-  await insert("sake_photos",{
-    user_id:S.user.id,
-    drinking_record_id:rec.id,
-    photo_type:"memory",
-    storage_path:path,
-    mime_type:S.memoryPhoto.type||"image/jpeg"
-  });
-}
-  if(S.recognition){
-   const top=(S.recognition.candidates||[])[0]||{};
-   const rr=await insert("recognition_results",{user_id:S.user.id,drinking_record_id:rec.id,photo_id:frontPhotoRow?.id||null,
-     ocr_text:S.recognition.ocr_text||null,predicted_brand:top.brand||null,predicted_product:top.product||null,predicted_brewery:top.brewery||null,
-     confidence:top.confidence??null,candidates:S.recognition.candidates||[],web_sources:S.recognition.web_sources||[],model_name:S.recognition.model_name||"openai"});
-   if(top.brand && (brand!==top.brand || ($("product").value.trim()||"")!==(top.product||""))){
-     await insert("corrections",{user_id:S.user.id,recognition_result_id:rr.id,predicted_brand:top.brand,predicted_product:top.product||null,
-       correct_brand:brand,correct_product:$("product").value.trim()||null,correct_brewery:$("brewery").value.trim()||null,reason:"user_confirmed"});
+$("saveRecordBtn").onclick=async()=>{
+ if(S.savingRecord)return;
+ S.savingRecord=true;
+ const brand=$("brand").value.trim();
+ if(!brand){
+   S.savingRecord=false;
+   msg($("recordMsg"),"銘柄を入力してください","err");
+   return;
+ }
+ $("saveRecordBtn").disabled=true;
+ msg($("recordMsg"),"保存中…","info");
+
+ let rec=null;
+ const uploadedPaths=[];
+ try{
+   // 前回、通信断などで巻き戻せなかった保存があれば先に掃除する。
+   await cleanupPendingRollbacks();
+
+   rec=await insert("drinking_records",{
+     user_id:S.user.id,
+     brand_name:brand,
+     product_name:$("product").value.trim()||null,
+     brewery_name:$("brewery").value.trim()||null,
+     prefecture:$("prefecture").value.trim()||null,
+     classification:$("classification").value.trim()||null,
+     rice:$("rice").value.trim()||null,
+     polishing_ratio:$("polishing").value.trim()||null,
+     alcohol:$("alcohol").value.trim()||null,
+     volume:$("volume").value.trim()||null,
+     drank_at:new Date().toISOString(),
+     restaurant_name:$("restaurant").value.trim()||null,
+     latitude:S.lat,
+     longitude:S.lng,
+     price_yen:$("price").value?Number($("price").value):null,
+     rating:Number($("rating").value),
+     comment:$("comment").value.trim()||null
+   });
+
+   let frontPhotoRow=null;
+   const photos=[
+     ["front",S.photo],
+     ["back",S.backPhoto],
+     ["food",S.foodPhoto],
+     ["memory",S.memoryPhoto]
+   ];
+   for(const [photoType,file] of photos){
+     if(!file)continue;
+     const path=await uploadPhoto(file);
+     uploadedPaths.push(path);
+     const row=await insert("sake_photos",{
+       user_id:S.user.id,
+       drinking_record_id:rec.id,
+       photo_type:photoType,
+       storage_path:path,
+       mime_type:file.type||"image/jpeg"
+     });
+     if(photoType==="front")frontPhotoRow=row;
    }
-  }
-  if(S.currentImageCacheKey){
-    saveConfirmedCache(S.currentImageCacheKey,{
-      brand:$("brand").value.trim(),
-      product:$("product").value.trim(),
-      brewery:$("brewery").value.trim(),
-      prefecture:$("prefecture").value.trim(),
-      classification:$("classification").value.trim(),
-      ingredients:$("rice").value.trim(),
-      rice_variety:$("riceVariety")?.value?.trim()||"",
-      polishing_ratio:$("polishing").value.trim(),
-      alcohol:$("alcohol").value.trim(),
-      volume:$("volume").value.trim(),
-      recognition:S.recognition||null
-    });
-  }
-  await saveToSharedDictionary();
-  msg($("recordMsg"),
-  "✓ Supabaseに保存しました。共有辞書へ学習しました。",
-  "ok");
-  setTimeout(()=>show("homeView"),700);
-}catch(e){
-  S.savingRecord=false;
-  $("saveRecordBtn").disabled=false;
-  msg($("recordMsg"),e.message,"err");
-}finally{
-  S.savingRecord=false;
-  $("saveRecordBtn").disabled=false;
-}
+
+   if(S.recognition){
+     const top=(S.recognition.candidates||[])[0]||{};
+     const rr=await insert("recognition_results",{
+       user_id:S.user.id,
+       drinking_record_id:rec.id,
+       photo_id:frontPhotoRow?.id||null,
+       ocr_text:S.recognition.ocr_text||null,
+       predicted_brand:top.brand||null,
+       predicted_product:top.product||null,
+       predicted_brewery:top.brewery||null,
+       confidence:top.confidence??null,
+       candidates:S.recognition.candidates||[],
+       web_sources:S.recognition.web_sources||[],
+       model_name:S.recognition.model_name||"openai"
+     });
+     if(top.brand&&(brand!==top.brand||($("product").value.trim()||"")!==(top.product||""))){
+       await insert("corrections",{
+         user_id:S.user.id,
+         recognition_result_id:rr.id,
+         predicted_brand:top.brand,
+         predicted_product:top.product||null,
+         correct_brand:brand,
+         correct_product:$("product").value.trim()||null,
+         correct_brewery:$("brewery").value.trim()||null,
+         reason:"user_confirmed"
+       });
+     }
+   }
+
+   // ここまで全て成功して初めて、端末側の確定キャッシュと共有辞書を更新する。
+   if(S.currentImageCacheKey){
+     saveConfirmedCache(S.currentImageCacheKey,{
+       brand:$("brand").value.trim(),
+       product:$("product").value.trim(),
+       brewery:$("brewery").value.trim(),
+       prefecture:$("prefecture").value.trim(),
+       classification:$("classification").value.trim(),
+       ingredients:$("rice").value.trim(),
+       rice_variety:$("riceVariety")?.value?.trim()||"",
+       polishing_ratio:$("polishing").value.trim(),
+       alcohol:$("alcohol").value.trim(),
+       volume:$("volume").value.trim(),
+       recognition:S.recognition||null
+     });
+   }
+   await saveToSharedDictionary();
+
+   msg($("recordMsg"),"✓ 保存しました。写真・認識結果もすべて正常に記録されています。","ok");
+   setTimeout(()=>show("homeView"),700);
+ }catch(e){
+   let rollbackClean=true;
+   if(rec?.id){
+     queuePendingRollback(rec.id,uploadedPaths);
+     rollbackClean=await cleanupPendingRollbacks();
+   }else{
+     // record作成前に写真を上げる経路は通常ないが、念のためStorageだけ掃除。
+     for(const path of uploadedPaths){
+       try{await deleteStorageObject(path)}catch{rollbackClean=false}
+     }
+   }
+   const suffix=rollbackClean
+     ?" 保存途中のデータは取り消しました。入力内容と写真はこの画面に残っています。"
+     :" 保存途中のデータは次回接続時に自動で整理します。入力内容と写真はこの画面に残っています。";
+   msg($("recordMsg"),"保存できませんでした: "+(e.message||e)+"。"+suffix,"err");
+ }finally{
+   S.savingRecord=false;
+   $("saveRecordBtn").disabled=false;
+ }
 };
 function formatDateJP(v){
  if(!v)return "";
