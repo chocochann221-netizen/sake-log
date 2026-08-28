@@ -223,6 +223,7 @@
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showRecheck()">🔎 過去の記録を再確認</button>
   <button class="menu-item" onclick="showLinkStatus()">🧩 マスター接続状況</button>
+  <button class="menu-item" onclick="showRepairCandidates()">🛠 未接続の修復候補</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -1128,6 +1129,29 @@ async function runAutoPromotion() {
 }
     
 async function confirmRecheck(recordId,masterId){if(!confirm("このマスター内容で過去記録を修正し、正式に接続しますか？\n\n変更がある場合は修正履歴にも残します。"))return;try{const r=await fetch(BASE+"/rest/v1/rpc/admin_confirm_legacy_record_master",{method:"POST",headers:{"apikey":cfgKey(),"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({p_record_id:recordId,p_master_id:masterId})});if(!r.ok)throw new Error(await r.text());alert("確認・修正・マスター接続が完了しました 🍶");await loadAdminDashboard();await showRecheck()}catch(e){alert("処理に失敗しました。\n\n"+e.message)}}
+
+async function showRepairCandidates(){
+ showAdminPanel("🛠 未接続の修復候補","<p>候補を照合しています...</p>");
+ try{
+  const key=cfgKey();
+  const r=await fetch(BASE+"/rest/v1/rpc/admin_unlinked_repair_candidates",{method:"POST",headers:{"apikey":key,"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:"{}"});
+  if(!r.ok)throw new Error(await r.text());
+  const items=await r.json();
+  if(!items.length){showAdminPanel("🛠 未接続の修復候補","<p>現在、安全に修復できる候補はありません ✅</p>");return}
+  const rows=items.map(x=>'<div style="padding:14px 0;border-bottom:1px solid #eee"><strong>'+(x.record_brand||"")+' '+(x.record_product||"")+'</strong><div style="font-size:12px;color:#777;margin-top:4px">現在：'+(x.record_brewery||"未設定")+'<br>候補：'+(x.master_brand||"")+' '+(x.master_product||"")+' ／ '+(x.master_brewery||"")+'<br>一致度：'+x.confidence+'%</div>'+(x.confidence>=85?'<button onclick="applyRepair(\''+x.record_id+'\',\''+x.master_id+'\')" style="margin-top:8px;padding:8px 11px;border:0;border-radius:9px;background:#234f3e;color:white">この接続を修復</button>':'<div style="font-size:11px;color:#9a6b28;margin-top:6px">確認が必要なため自動修復しません</div>')+'</div>').join("");
+  showAdminPanel("🛠 未接続の修復候補",rows);
+ }catch(e){showAdminPanel("🛠 未接続の修復候補","<p>取得エラー："+e.message+"</p>")}
+}
+async function applyRepair(recordId,masterId){
+ if(!confirm("この飲酒記録を候補マスターへ接続しますか？"))return;
+ try{
+  const r=await fetch(BASE+"/rest/v1/rpc/admin_apply_unlinked_repair",{method:"POST",headers:{"apikey":cfgKey(),"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({p_record_id:recordId,p_master_id:masterId})});
+  if(!r.ok)throw new Error(await r.text());
+  alert("マスター接続を修復しました 🍶");
+  await loadAdminDashboard();
+  await showRepairCandidates();
+ }catch(e){alert("修復できませんでした。\n\n"+e.message)}
+}
 
 async function showLinkStatus(){
  showAdminPanel("🧩 マスター接続状況","<p>接続状況を確認しています...</p>");
