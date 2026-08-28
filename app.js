@@ -146,9 +146,11 @@ $("logoutTop").onclick=logout;
 
 function resetRecord(){
  S.currentImageCacheKey=null; S.currentFrontHash=null; S.currentBackHash=null;
- S.photo=null;S.backPhoto=null;S.recognition=null;S.lat=null;S.lng=null;
- ["brand","product","brewery","prefecture","classification","rice","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>$(id).value="");
- $("preview").classList.add("hidden");$("backPreview").classList.add("hidden");$("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
+ S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;
+ ["brand","product","brewery","prefecture","classification","rice","riceVariety","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>{if($(id))$(id).value=""});
+ ["preview","backPreview","foodPreview","memoryPreview"].forEach(id=>$(id)?.classList.add("hidden"));
+ ["cameraInput","galleryInput","backCameraInput","backGalleryInput","foodCameraInput","foodGalleryInput","memoryCameraInput","memoryGalleryInput"].forEach(id=>{if($(id))$(id).value=""});
+ $("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
  show("recordView");
 }
 $("manualBtn").onclick=resetRecord;
@@ -731,7 +733,7 @@ $("analyzeBtn").onclick=async()=>{
      const swDict=await matchSakenowaFacts(dictionaryRecordToFacts(dict.row));
      renderSakenowaMatches(swDict);
      msg($("analysisMsg"),
-       `📚 酒ログ共有辞書から候補を見つけました（画像一致度 ${Math.round(dict.sim.score*100)}%）。不足項目はAIでラベルから補完します。${swDict[0]&&swDict[0].score>=.72?" さけのわ銘柄DBでも確認できました。":""} 現物ラベルを確認して保存してください。`,
+       `📚 酒ログ共有辞書から候補を見つけました（画像一致度 ${Math.round(dict.sim.score*100)}%）。候補を確認しています…`,
        "ok");
    }
 
@@ -744,8 +746,21 @@ $("analyzeBtn").onclick=async()=>{
      msg($("analysisMsg"),"✅ 同じ写真の「確定済み記録」を再利用しました。AIは使っていません。","ok");
    }
 
+   // 確定済み記録は最優先。完全一致ならAIを使わない。
+   if(confirmed){
+     return;
+   }
+
+   // 共有辞書は厳しい画像類似度を通過した候補だけ。見つかったらAIを使わない。
+   if(dict){
+     msg($("analysisMsg"),
+       `📚 酒ログ共有辞書から候補を見つけました（画像一致度 ${Math.round(dict.sim.score*100)}%）。AIは使っていません。${swDict[0]&&swDict[0].score>=.72?" さけのわ銘柄DBでも確認できました。":""} 現物ラベルを確認して保存してください。`,
+       "ok");
+     return;
+   }
+
    // 2. AI解析済みキャッシュ
-   let d=null;
+   let d=loadAiCache(cacheKey);
    if(d){
      d={...d,cache_hit:true};
    }else{
