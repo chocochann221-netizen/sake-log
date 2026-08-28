@@ -837,9 +837,9 @@ $("analyzeBtn").onclick=async()=>{
  }catch(e){
    const text=String(e.message||e);
    if(/rate limit|429|TPM/i.test(text)){
-     msg($("analysisMsg"),"APIの一時的な利用上限です。この日本酒が共有辞書にまだ無い完全新規のためAIが必要です。写真は保持しています。少し待って再試行するか、今回は手入力して保存すれば次回から共有辞書で候補化できます。","err");
+     msg($("analysisMsg"),"APIの一時的な利用上限です。写真は保持しています。銘柄が分かれば手入力できます。分からない場合も、そのまま保存すれば「確認中」として記録し、あとから編集できます。","err");
    }else{
-     msg($("analysisMsg"),"AI解析エラー: "+text+"。手入力して保存すれば、その内容を酒ログ共有辞書の候補として蓄積できます。","err");
+     msg($("analysisMsg"),"AI解析エラー: "+text+"。写真は保持しています。銘柄が分からなくても、そのまま保存すれば「確認中」として記録できます。","err");
    }
  }finally{$("analyzeBtn").disabled=false}
 };
@@ -942,11 +942,17 @@ async function cleanupPendingRollbacks(){
 $("saveRecordBtn").onclick=async()=>{
  if(S.savingRecord)return;
  S.savingRecord=true;
- const brand=$("brand").value.trim();
+ let brand=$("brand").value.trim();
  if(!brand){
-   S.savingRecord=false;
-   msg($("recordMsg"),"銘柄を入力してください","err");
-   return;
+   if(S.photo){
+     brand="確認中";
+     $("brand").value=brand;
+     msg($("recordMsg"),"銘柄を特定できなかったため「確認中」として保存します。あとから編集できます。","info");
+   }else{
+     S.savingRecord=false;
+     msg($("recordMsg"),"銘柄を入力してください","err");
+     return;
+   }
  }
  $("saveRecordBtn").disabled=true;
  msg($("recordMsg"),"保存中…","info");
