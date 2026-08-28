@@ -1286,44 +1286,45 @@ const photoInputs=[
   ["editFoodPhoto","deleteFoodPhoto","food"],
   ["editMemoryPhoto","deleteMemoryPhoto","memory"]
 ];
-    
-for(const [inputId,deleteId,photoType] of photoInputs){
-    const file=$(inputId)?.files?.[0];
-const shouldDelete=$(deleteId)?.checked;
 
-if(!file && !shouldDelete)continue;
+for(const [inputId,deleteId,photoType] of photoInputs){
+  const file=$(inputId)?.files?.[0];
+  const shouldDelete=$(deleteId)?.checked;
+  if(!file&&!shouldDelete)continue;
 
   const oldPhotos=await getRecordPhotos(r.id);
- 
-const old=oldPhotos.find(p=>p.photo_type===photoType);
+  const old=oldPhotos.find(p=>p.photo_type===photoType);
 
-let path=null;
-if(file){
-  path=await uploadPhoto(file);
-}
-  if(old){
-    await deleteRows(
-      "sake_photos",
-      "drinking_record_id=eq."+encodeURIComponent(r.id)+
-      "&photo_type=eq."+encodeURIComponent(photoType)
-    ).catch(()=>{});
+  if(file){
+    // 新しい写真を先に完全保存してから古い写真を消す。
+    // 途中で失敗しても古い写真を失わない。
+    let newPath=null;
+    let newRow=null;
+    try{
+      newPath=await uploadPhoto(file);
+      newRow=await insert("sake_photos",{
+        user_id:S.user.id,
+        drinking_record_id:r.id,
+        photo_type:photoType,
+        storage_path:newPath,
+        mime_type:file.type||"image/jpeg"
+      });
+    }catch(e){
+      if(newPath){
+        try{await deleteStorageObject(newPath)}catch{}
+      }
+      throw e;
+    }
 
-    await authFetch(
-      BASE+"/storage/v1/object/sake-photos/"+encodeURI(old.storage_path),
-      {method:"DELETE"}
-    ).catch(()=>{});
+    if(old?.id){
+      await deleteRows("sake_photos","id=eq."+encodeURIComponent(old.id));
+      try{await deleteStorageObject(old.storage_path)}catch{}
+    }
+  }else if(shouldDelete&&old?.id){
+    await deleteRows("sake_photos","id=eq."+encodeURIComponent(old.id));
+    try{await deleteStorageObject(old.storage_path)}catch{}
   }
-
-if(file){
-  await insert("sake_photos",{
-    user_id:S.user.id,
-    drinking_record_id:r.id,
-    photo_type:photoType,
-    storage_path:path,
-    mime_type:file.type||"image/jpeg"
-  });
 }
-  }
      msg($("editMsg"),"✓ 更新しました","ok");
      setTimeout(()=>openRecordDetail(r.id),500);
    }catch(e){msg($("editMsg"),e.message,"err")}
@@ -1336,14 +1337,11 @@ async function deleteCurrentRecord(){
  if(!confirm(`「${[r.brand_name,r.product_name].filter(Boolean).join(" ")}」の記録を削除しますか？`))return;
  try{
    const photos=await getRecordPhotos(r.id);
-   // DB上の関連データを先に削除。Storage実体は残る可能性があるため、後で安全に消す。
-   await deleteRows("corrections","recognition_result_id=in.(select id from recognition_results where drinking_record_id=eq."+encodeURIComponent(r.id)+")").catch(()=>{});
-   await deleteRows("recognition_results","drinking_record_id=eq."+encodeURIComponent(r.id)).catch(()=>{});
-   await deleteRows("sake_photos","drinking_record_id=eq."+encodeURIComponent(r.id)).catch(()=>{});
-   await deleteRows("drinking_records","id=eq."+encodeURIComponent(r.id));
-   // Storageファイル削除
-   for(const p of photos||[]){
-     await authFetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(p.storage_path),{method:"DELETE"}).catch(()=>{});
+   const item={recordId:r.id,storagePaths:(photos||[]).map(p=>p.storage_path).filter(Boolean)};
+   queuePendingRollback(item.recordId,item.storagePaths);
+   const clean=await cleanupPendingRollbacks();
+   if(!clean){
+     alert("記録の削除を受け付けました。残った写真データは次回接続時に自動で整理します。");
    }
    S.detailRecord=null;
    show("historyView");
