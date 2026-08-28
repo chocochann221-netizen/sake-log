@@ -222,6 +222,7 @@
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showRecheck()">🔎 過去の記録を再確認</button>
+  <button class="menu-item" onclick="showLinkStatus()">🧩 マスター接続状況</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -1127,6 +1128,47 @@ async function runAutoPromotion() {
 }
     
 async function confirmRecheck(recordId,masterId){if(!confirm("このマスター内容で過去記録を修正し、正式に接続しますか？\n\n変更がある場合は修正履歴にも残します。"))return;try{const r=await fetch(BASE+"/rest/v1/rpc/admin_confirm_legacy_record_master",{method:"POST",headers:{"apikey":cfgKey(),"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({p_record_id:recordId,p_master_id:masterId})});if(!r.ok)throw new Error(await r.text());alert("確認・修正・マスター接続が完了しました 🍶");await loadAdminDashboard();await showRecheck()}catch(e){alert("処理に失敗しました。\n\n"+e.message)}}
+
+async function showLinkStatus(){
+ showAdminPanel("🧩 マスター接続状況","<p>接続状況を確認しています...</p>");
+ try{
+  const key=cfgKey(),h={"apikey":key,"Authorization":"Bearer "+token};
+  const rr=await fetch(BASE+"/rest/v1/drinking_records?select=id,brand_name,product_name,brewery_name,sake_id,created_at&order=created_at.desc",{headers:h});
+  if(!rr.ok)throw new Error(await rr.text());
+  const records=await rr.json();
+  const mr=await fetch(BASE+"/rest/v1/sake_master?select=id,brand_name,product_name,brewery_name,verified,status",{headers:h});
+  const masters=mr.ok?await mr.json():[];
+  const mm=new Map(masters.map(m=>[m.id,m]));
+  const norm=x=>String(x||"").replace(/株式会社|有限会社|合資会社|合同会社|[\\s・　（）()]/g,"").toLowerCase();
+  const rows=records.map(r=>{
+    const linked=r.sake_id?mm.get(r.sake_id):null;
+    let state,label,detail;
+    if(linked){
+      state=linked.verified?"ok":"linked";
+      label=linked.verified?"正式マスター接続済み":"マスター接続済み";
+      detail=(linked.brand_name||"")+" "+(linked.product_name||"");
+    }else{
+      const cand=masters.find(m=>norm(m.brand_name)===norm(r.brand_name));
+      if(cand){state="warn";label="要再確認";detail="同銘柄マスター候補あり："+(cand.product_name||"商品未設定")}
+      else{state="missing";label="未接続";detail="同銘柄マスター候補なし"}
+    }
+    return {r,state,label,detail};
+  });
+  const counts={ok:0,linked:0,warn:0,missing:0};rows.forEach(x=>counts[x.state]++);
+  const badge=(txt,bg,fg)=>'<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:'+bg+';color:'+fg+';font-size:11px;font-weight:700">'+txt+'</span>';
+  const summary='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'+
+   '<div style="padding:12px;background:#edf5ef;border-radius:12px"><b style="font-size:22px">'+counts.ok+'</b><br><span style="font-size:11px">正式接続済み</span></div>'+
+   '<div style="padding:12px;background:#f1f3f2;border-radius:12px"><b style="font-size:22px">'+counts.linked+'</b><br><span style="font-size:11px">接続済み</span></div>'+
+   '<div style="padding:12px;background:#fbf2df;border-radius:12px"><b style="font-size:22px">'+counts.warn+'</b><br><span style="font-size:11px">要再確認</span></div>'+
+   '<div style="padding:12px;background:#f8e8e8;border-radius:12px"><b style="font-size:22px">'+counts.missing+'</b><br><span style="font-size:11px">未接続</span></div></div>';
+  const list=rows.map(x=>{
+    const r=x.r;
+    const b=x.state==="ok"?badge(x.label,"#e4f2e8","#245b3d"):x.state==="linked"?badge(x.label,"#edf0ef","#4b5a53"):x.state==="warn"?badge(x.label,"#faedcf","#7c5b18"):badge(x.label,"#f6dddd","#8b3333");
+    return '<div style="padding:13px 0;border-bottom:1px solid #eee"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><strong>'+(r.brand_name||"銘柄不明")+(r.product_name?" "+r.product_name:"")+'</strong>'+b+'</div><div style="font-size:12px;color:#777;margin-top:5px">蔵元：'+(r.brewery_name||"未設定")+'<br>'+x.detail+'</div></div>';
+  }).join("");
+  showAdminPanel("🧩 マスター接続状況",summary+list);
+ }catch(e){showAdminPanel("🧩 マスター接続状況","<p>取得エラー："+e.message+"</p>")}
+}
 
 async function showRecheck(){
  showAdminPanel("🔎 過去の記録を再確認","<p>マスター未接続の記録を読み込んでいます...</p>");
