@@ -715,6 +715,7 @@ $("analyzeBtn").onclick=async()=>{
    S.currentBackHash=backData?await imageDHash(backData):null;
 
    // 0. 酒ログ共有辞書。高い画像類似度のときだけAI不要で採用。
+   let swDict=[];
    const dict=await lookupSharedDictionary(S.currentFrontHash,S.currentBackHash);
    if(dict){
      applyDictionaryRow(dict.row);
@@ -730,7 +731,7 @@ $("analyzeBtn").onclick=async()=>{
        web_sources:[],dictionary_hit:true
      };
      renderCandidates(S.recognition.candidates);
-     const swDict=await matchSakenowaFacts(dictionaryRecordToFacts(dict.row));
+     swDict=await matchSakenowaFacts(dictionaryRecordToFacts(dict.row));
      renderSakenowaMatches(swDict);
      msg($("analysisMsg"),
        `📚 酒ログ共有辞書から候補を見つけました（画像一致度 ${Math.round(dict.sim.score*100)}%）。候補を確認しています…`,
