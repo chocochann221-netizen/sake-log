@@ -933,6 +933,20 @@ S.savingRecord=true;
    drank_at:new Date().toISOString(),restaurant_name:$("restaurant").value.trim()||null,latitude:S.lat,longitude:S.lng,
    price_yen:$("price").value?Number($("price").value):null,rating:Number($("rating").value),comment:$("comment").value.trim()||null
   });
+  // Self-heal the master link before continuing. A record must not silently remain unlinked.
+  if(!rec.sake_id){
+    let repairId=sakeId||null;
+    if(!repairId){
+      const retry=await learnToSakeMaster(confirmed);
+      const raw=retry?.ok?retry.data:null;
+      repairId=Array.isArray(raw)?(typeof raw[0]==="object"?(raw[0]?.learn_sake_master||raw[0]?.id):raw[0]):(typeof raw==="object"?(raw?.learn_sake_master||raw?.id):raw);
+    }
+    if(repairId){
+      const repaired=await updateRow("drinking_records",rec.id,{sake_id:repairId});
+      rec.sake_id=repaired?.sake_id||repairId;
+    }
+    if(!rec.sake_id)console.warn("MASTER_LINK_MISSING",{record_id:rec.id,brand:brand,product:confirmed.product||null});
+  }
   let frontPhotoRow=null;
   if(S.photo){
    const path=await uploadPhoto(S.photo);
@@ -990,7 +1004,7 @@ if(S.memoryPhoto){
   }
   await saveToSharedDictionary();
   msg($("recordMsg"),
-  "✓ Supabaseに保存しました。共有辞書へ学習しました。",
+  rec.sake_id?"✓ Supabaseに保存しました。共有辞書へ学習しました。":"✓ 記録を保存しました。マスター接続は裏側で再確認します。",
   "ok");
   setTimeout(()=>show("homeView"),700);
 }catch(e){
