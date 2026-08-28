@@ -231,6 +231,7 @@
   <button class="menu-item" onclick="showRecheck()">🔎 過去の記録を再確認</button>
   <button class="menu-item" onclick="showLinkStatus()">🧩 マスター接続状況</button>
   <button class="menu-item" onclick="showRepairCandidates()">🛠 未接続の修復候補</button>
+  <button class="menu-item" onclick="showDataHealth()">🩺 データ健康診断</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -1198,6 +1199,41 @@ async function runAutoPromotion() {
 }
     
 async function confirmRecheck(recordId,masterId){if(!confirm("このマスター内容で過去記録を修正し、正式に接続しますか？\n\n変更がある場合は修正履歴にも残します。"))return;try{const r=await fetch(BASE+"/rest/v1/rpc/admin_confirm_legacy_record_master",{method:"POST",headers:{"apikey":cfgKey(),"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({p_record_id:recordId,p_master_id:masterId})});if(!r.ok)throw new Error(await r.text());alert("確認・修正・マスター接続が完了しました 🍶");await loadAdminDashboard();await showRecheck()}catch(e){alert("処理に失敗しました。\n\n"+e.message)}}
+
+async function showDataHealth(){
+  showAdminPanel("🩺 データ健康診断","<p>データ整合性を確認しています...</p>");
+  try{
+    const r=await fetch(BASE+"/rest/v1/rpc/admin_data_health_diagnostics",{
+      method:"POST",
+      headers:{
+        "apikey":cfgKey(),
+        "Authorization":"Bearer "+token,
+        "Content-Type":"application/json"
+      },
+      body:"{}"
+    });
+    if(!r.ok)throw new Error(await r.text());
+    const d=await r.json();
+    const healthy=d.status==="healthy";
+    const row=(label,value,critical=false)=>'<div style="display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid #eee"><span>'+label+'</span><b style="color:'+(Number(value)>0?(critical?"#9b2f2f":"#8a641d"):"#2f6a4f")+'">'+value+'</b></div>';
+    const head='<div style="padding:14px;border-radius:12px;background:'+(healthy?"#eef6f1":"#fff0d6")+';color:'+(healthy?"#2f6a4f":"#805b18")+';font-weight:700;margin-bottom:14px">'+
+      (healthy?"✓ 基幹データは正常です":"⚠ 確認が必要な項目があります")+
+      '</div>';
+    const body=
+      row("未接続記録",d.unlinked_records,false)+
+      row("直近7日の新規未接続",d.recent_unlinked_records,true)+
+      row("壊れたマスター接続",d.broken_master_links,true)+
+      row("孤立写真",d.orphan_photos,true)+
+      row("孤立認識結果",d.orphan_recognition_results,true)+
+      row("孤立修正履歴",d.orphan_corrections,true)+
+      row("表ラベル写真なし",d.records_without_front_photo,false)+
+      row("重複マスター群",d.duplicate_master_groups,false)+
+      '<div style="font-size:11px;color:#777;margin-top:10px">最終確認: '+new Date(d.checked_at).toLocaleString("ja-JP")+'</div>';
+    showAdminPanel("🩺 データ健康診断",head+body);
+  }catch(e){
+    showAdminPanel("🩺 データ健康診断","<p>診断エラー："+e.message+"</p>");
+  }
+}
 
 async function showRepairCandidates(){
  showAdminPanel("🛠 未接続の修復候補","<p>候補を照合しています...</p>");
