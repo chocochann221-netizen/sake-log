@@ -29,7 +29,7 @@ async function recognizeSake(request, env) {
   try {
     const {front, back} = await request.json();
     if (!front) return json({error:"表ラベル画像が必要です"}, 400);
-    const model = env.OPENAI_MODEL || "gpt-5.4-mini";
+    const model = env.OPENAI_MODEL || "gpt-5.6-terra";
     const prompt = `
 あなたは日本酒の商品同定専門AIです。
 表ラベルと裏ラベルの画像を読み、日本酒を「銘柄だけ」ではなく可能な限り商品単位まで特定してください。
@@ -85,13 +85,26 @@ async function recognizeSake(request, env) {
 brand が読めているのに product が完全には読めない場合でも、
 ラベル上の商品識別語を product に必ず入れてください。
 `;
-    const content=[{type:"input_text",text:prompt},{type:"input_image",image_url:front,detail:"low"}];
+    const content=[{type:"input_text",text:prompt},{type:"input_image",image_url:front,detail:"high"}];
     if(back) content.push({type:"input_image",image_url:back,detail:"high"});
-    const resp=await fetch("https://api.openai.com/v1/responses",{
-      method:"POST",
-      headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},
-      body:JSON.stringify({model,max_output_tokens:2000,tools:[{type:"web_search"}],input:[{role:"user",content}]})
-    });
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),45000);
+    let resp;
+    try{
+      resp=await fetch("https://api.openai.com/v1/responses",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model,
+          max_output_tokens:2000,
+          tools:[{type:"web_search"}],
+          input:[{role:"user",content}]
+        }),
+        signal:controller.signal
+      });
+    }finally{
+      clearTimeout(timeout);
+    }
     const data=await resp.json();
     if(!resp.ok){
       if(resp.status===429) return json({error:data?.error?.message||"OpenAI rate limit",rate_limited:true},429);
@@ -164,7 +177,12 @@ return json({
   version:"4.9.2",
   api_calls:1
 });
-  } catch(e) { return json({error:e.message},500); }
+  } catch(e) {
+    if(e?.name==="AbortError"){
+      return json({error:"AI解析が時間内に完了しませんでした。写真はそのまま記録できます。",retryable:true},504);
+    }
+    return json({error:e.message||"AI解析に失敗しました",retryable:true},500);
+  }
 }
 
 async function sakenowaMaster() {
