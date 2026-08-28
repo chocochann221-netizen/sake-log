@@ -1272,17 +1272,23 @@ function renderRecordEditor(r){
      const raw=learned?.ok?learned.data:null;
      const editedSakeId=Array.isArray(raw)?(typeof raw[0]==="object"?(raw[0]?.learn_sake_master||raw[0]?.id):raw[0]):(typeof raw==="object"?(raw?.learn_sake_master||raw?.id):raw);
 
+     // Identity/spec correction is deliberately isolated from memory fields.
+     // Re-recognition must never overwrite date, place, companion, rating, comment or photos.
+     await rpc("correct_memory_record_identity",{
+       p_record_id:r.id,
+       p_sake_id:editedSakeId||r.sake_id||null,
+       p_brand_name:editedValues.brand||null,
+       p_product_name:editedValues.product||null,
+       p_brewery_name:editedValues.brewery||null,
+       p_prefecture:editedValues.prefecture||null,
+       p_classification:editedValues.classification||null,
+       p_rice:editedValues.ingredients||null,
+       p_polishing_ratio:editedValues.polishing_ratio||null,
+       p_alcohol:editedValues.alcohol||null,
+       p_volume:editedValues.volume||null
+     });
+     // User-owned memory fields are updated separately and only from explicit edit inputs.
      await updateRow("drinking_records",r.id,{
-       sake_id:editedSakeId||r.sake_id||null,
-       brand_name:editedValues.brand||null,
-       product_name:editedValues.product||null,
-       brewery_name:editedValues.brewery||null,
-       prefecture:editedValues.prefecture||null,
-       classification:editedValues.classification||null,
-       rice:editedValues.ingredients||null,
-       polishing_ratio:editedValues.polishing_ratio||null,
-       alcohol:editedValues.alcohol||null,
-       volume:editedValues.volume||null,
        restaurant_name:$("eRestaurant").value.trim()||null,
        companion_name:$("eCompanion")?.value?.trim()||null,
        place_type:$("ePlaceType")?.value?.trim()||null,
