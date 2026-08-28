@@ -1203,8 +1203,11 @@ async function showLinkStatus(){
   const masters=mr.ok?await mr.json():[];
   const mm=new Map(masters.map(m=>[m.id,m]));
   const norm=x=>String(x||"").replace(/株式会社|有限会社|合資会社|合同会社|[\\s・　（）()]/g,"").toLowerCase();
+  const now=Date.now();
   const rows=records.map(r=>{
     const linked=r.sake_id?mm.get(r.sake_id):null;
+    const createdAt=r.created_at?new Date(r.created_at).getTime():0;
+    const isRecent=createdAt && (now-createdAt)<=7*24*60*60*1000;
     let state,label,detail;
     if(linked){
       state=linked.verified?"ok":"linked";
@@ -1215,19 +1218,22 @@ async function showLinkStatus(){
       if(cand){state="warn";label="要再確認";detail="同銘柄マスター候補あり："+(cand.product_name||"商品未設定")}
       else{state="missing";label="未接続";detail="同銘柄マスター候補なし"}
     }
-    return {r,state,label,detail};
+    return {r,state,label,detail,isRecent};
   });
-  const counts={ok:0,linked:0,warn:0,missing:0};rows.forEach(x=>counts[x.state]++);
+  const counts={ok:0,linked:0,warn:0,missing:0,recentIssue:0};rows.forEach(x=>{counts[x.state]++;if(x.isRecent&&(x.state==="warn"||x.state==="missing"))counts.recentIssue++});
   const badge=(txt,bg,fg)=>'<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:'+bg+';color:'+fg+';font-size:11px;font-weight:700">'+txt+'</span>';
   const summary='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'+
    '<div style="padding:12px;background:#edf5ef;border-radius:12px"><b style="font-size:22px">'+counts.ok+'</b><br><span style="font-size:11px">正式接続済み</span></div>'+
    '<div style="padding:12px;background:#f1f3f2;border-radius:12px"><b style="font-size:22px">'+counts.linked+'</b><br><span style="font-size:11px">接続済み</span></div>'+
    '<div style="padding:12px;background:#fbf2df;border-radius:12px"><b style="font-size:22px">'+counts.warn+'</b><br><span style="font-size:11px">要再確認</span></div>'+
-   '<div style="padding:12px;background:#f8e8e8;border-radius:12px"><b style="font-size:22px">'+counts.missing+'</b><br><span style="font-size:11px">未接続</span></div></div>';
-  const list=rows.map(x=>{
+   '<div style="padding:12px;background:#f8e8e8;border-radius:12px"><b style="font-size:22px">'+counts.missing+'</b><br><span style="font-size:11px">未接続</span></div>'+
+   '<div style="padding:12px;background:#fff4df;border-radius:12px;grid-column:1/-1"><b style="font-size:22px">'+counts.recentIssue+'</b><br><span style="font-size:11px">7日以内に増えた要確認・未接続</span></div></div>';
+  const sortedRows=[...rows].sort((a,b)=>Number(b.isRecent&&(b.state==="warn"||b.state==="missing"))-Number(a.isRecent&&(a.state==="warn"||a.state==="missing"))||new Date(b.r.created_at||0)-new Date(a.r.created_at||0));
+  const list=sortedRows.map(x=>{
     const r=x.r;
     const b=x.state==="ok"?badge(x.label,"#e4f2e8","#245b3d"):x.state==="linked"?badge(x.label,"#edf0ef","#4b5a53"):x.state==="warn"?badge(x.label,"#faedcf","#7c5b18"):badge(x.label,"#f6dddd","#8b3333");
-    return '<div style="padding:13px 0;border-bottom:1px solid #eee"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><strong>'+(r.brand_name||"銘柄不明")+(r.product_name?" "+r.product_name:"")+'</strong>'+b+'</div><div style="font-size:12px;color:#777;margin-top:5px">蔵元：'+(r.brewery_name||"未設定")+'<br>'+x.detail+'</div></div>';
+    const recentBadge=x.isRecent&&(x.state==="warn"||x.state==="missing")?'<span style="display:inline-block;margin-left:6px;padding:3px 6px;border-radius:999px;background:#ffe7b3;color:#7c5b18;font-size:10px;font-weight:700">NEW</span>':"";
+    return '<div style="padding:13px 0;border-bottom:1px solid #eee"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><strong>'+(r.brand_name||"銘柄不明")+(r.product_name?" "+r.product_name:"")+recentBadge+'</strong>'+b+'</div><div style="font-size:12px;color:#777;margin-top:5px">蔵元：'+(r.brewery_name||"未設定")+'<br>'+x.detail+'</div></div>';
   }).join("");
   showAdminPanel("🧩 マスター接続状況",summary+list);
  }catch(e){showAdminPanel("🧩 マスター接続状況","<p>取得エラー："+e.message+"</p>")}
