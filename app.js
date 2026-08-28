@@ -1,7 +1,7 @@
 const BASE="https://mtshsijgfmottgkbgnir.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
-const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null};
+const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,vesselPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null};
 const photoObjectUrls=new Map();
 const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
@@ -146,9 +146,10 @@ $("logoutTop").onclick=logout;
 
 function resetRecord(){
  S.currentImageCacheKey=null; S.currentFrontHash=null; S.currentBackHash=null;
- S.photo=null;S.backPhoto=null;S.recognition=null;S.lat=null;S.lng=null;
- ["brand","product","brewery","prefecture","classification","rice","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>$(id).value="");
- $("preview").classList.add("hidden");$("backPreview").classList.add("hidden");$("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
+ S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.vesselPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;
+ ["brand","product","brewery","prefecture","classification","rice","polishing","alcohol","volume","restaurant","price","comment","companion","placeType"].forEach(id=>{if($(id))$(id).value=""});
+ ["preview","backPreview","foodPreview","vesselPreview","memoryPreview"].forEach(id=>{const el=$(id);if(el){el.src="";el.classList.add("hidden")}});
+ $("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
  show("recordView");
 }
 $("manualBtn").onclick=resetRecord;
@@ -954,7 +955,9 @@ S.savingRecord=true;
    rice:$("rice").value.trim()||null,polishing_ratio:$("polishing").value.trim()||null,
    alcohol:$("alcohol").value.trim()||null,volume:$("volume").value.trim()||null,
    drank_at:new Date().toISOString(),restaurant_name:$("restaurant").value.trim()||null,latitude:S.lat,longitude:S.lng,
-   price_yen:$("price").value?Number($("price").value):null,rating:Number($("rating").value),comment:$("comment").value.trim()||null
+   price_yen:$("price").value?Number($("price").value):null,rating:Number($("rating").value),comment:$("comment").value.trim()||null,
+   companion_name:$("companion")?.value?.trim()||null,
+   place_type:$("placeType")?.value?.trim()||null
   });
   // Self-heal the master link before continuing. A record must not silently remain unlinked.
   if(!rec.sake_id){
@@ -987,6 +990,17 @@ if(S.foodPhoto){
     photo_type:"food",
     storage_path:path,
     mime_type:S.foodPhoto.type||"image/jpeg"
+  });
+}
+
+if(S.vesselPhoto){
+  const path=await uploadPhoto(S.vesselPhoto);
+  await insert("sake_photos",{
+    user_id:S.user.id,
+    drinking_record_id:rec.id,
+    photo_type:"vessel",
+    storage_path:path,
+    mime_type:S.vesselPhoto.type||"image/jpeg"
   });
 }
 
