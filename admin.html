@@ -211,6 +211,12 @@
       <div class="number" id="master">—</div>
     </div>
 
+    <div class="card" onclick="showRepairCandidates()" style="cursor:pointer;">
+      <div class="icon">🛠</div>
+      <div class="label">未接続記録</div>
+      <div class="number" id="unlinked">—</div>
+    </div>
+
   </div>
 
   <h2>管理メニュー</h2>
@@ -313,6 +319,20 @@
       }
 
 const autoPromotionCount = await loadAutoPromotionCount();
+const unlinkedResponse = await fetch(
+  BASE + "/rest/v1/drinking_records?select=id&sake_id=is.null",
+  {
+    headers: {
+      "apikey": key,
+      "Authorization": "Bearer " + token,
+      "Prefer": "count=exact"
+    }
+  }
+);
+const unlinkedRange = unlinkedResponse.headers.get("content-range");
+const unlinkedCount = unlinkedResponse.ok
+  ? (unlinkedRange && unlinkedRange.includes("/") ? Number(unlinkedRange.split("/")[1]) || 0 : (await unlinkedResponse.json()).length)
+  : null;
       
       document.getElementById("users").textContent =
         data.users ?? 0;
@@ -340,6 +360,9 @@ document.getElementById("duplicates").textContent =
 
 document.getElementById("autoPromotion").textContent =
   autoPromotionCount ?? "—";
+
+document.getElementById("unlinked").textContent =
+  unlinkedCount ?? "—";
       
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
