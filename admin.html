@@ -364,6 +364,36 @@ document.getElementById("autoPromotion").textContent =
 
 document.getElementById("unlinked").textContent =
   unlinkedCount ?? "—";
+
+// Operational health rule: any newly created unlinked record means the save route needs attention.
+let recentUnlinkedCount = null;
+const recentSince = new Date(Date.now()-7*24*60*60*1000).toISOString();
+const recentUnlinkedResponse = await fetch(
+  BASE + "/rest/v1/drinking_records?select=id&sake_id=is.null&created_at=gte." + encodeURIComponent(recentSince),
+  {headers:{"apikey":key,"Authorization":"Bearer "+token,"Prefer":"count=exact"}}
+);
+if(recentUnlinkedResponse.ok){
+  const cr=recentUnlinkedResponse.headers.get("content-range");
+  recentUnlinkedCount=(cr&&cr.includes("/"))?(Number(cr.split("/")[1])||0):(await recentUnlinkedResponse.json()).length;
+}
+let health=document.getElementById("saveRouteHealth");
+if(!health){
+  health=document.createElement("div");
+  health.id="saveRouteHealth";
+  const grid=document.querySelector(".grid");
+  grid.insertAdjacentElement("afterend",health);
+}
+health.style.cssText="margin:12px 0 18px;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:700;";
+if(recentUnlinkedCount===0){
+  health.style.background="#eef6f1";health.style.color="#2f6a4f";
+  health.textContent="✓ 保存ルート正常｜直近7日間の新規未接続 0件";
+}else if(recentUnlinkedCount>0){
+  health.style.background="#fff0d6";health.style.color="#805b18";
+  health.textContent="⚠ 保存ルート要確認｜直近7日間の新規未接続 "+recentUnlinkedCount+"件";
+}else{
+  health.style.background="#f1f1ef";health.style.color="#666";
+  health.textContent="保存ルート状態を取得できませんでした";
+}
 const unlinkedCard = document.getElementById("unlinkedCard");
 const unlinkedHint = document.getElementById("unlinkedHint");
 if(unlinkedCount === 0){
