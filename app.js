@@ -1347,16 +1347,14 @@ async function deleteCurrentRecord(){
  if(!r)return;
  if(!confirm(`「${[r.brand_name,r.product_name].filter(Boolean).join(" ")}」の記録を削除しますか？`))return;
  try{
-   const photos=await getRecordPhotos(r.id);
-   // DB上の関連データを先に削除。Storage実体は残る可能性があるため、後で安全に消す。
-   await deleteRows("corrections","recognition_result_id=in.(select id from recognition_results where drinking_record_id=eq."+encodeURIComponent(r.id)+")").catch(()=>{});
-   await deleteRows("recognition_results","drinking_record_id=eq."+encodeURIComponent(r.id)).catch(()=>{});
-   await deleteRows("sake_photos","drinking_record_id=eq."+encodeURIComponent(r.id)).catch(()=>{});
-   await deleteRows("drinking_records","id=eq."+encodeURIComponent(r.id));
-   // Storageファイル削除
-   for(const p of photos||[]){
-     await authFetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(p.storage_path),{method:"DELETE"}).catch(()=>{});
+   const result=await rpc("delete_memory_record",{p_record_id:r.id});
+   const paths=Array.isArray(result?.storage_paths)?result.storage_paths:[];
+   let storageFailures=0;
+   for(const path of paths){
+     const resp=await authFetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(path),{method:"DELETE"}).catch(()=>null);
+     if(!resp||!resp.ok)storageFailures++;
    }
+   if(storageFailures)console.warn("STORAGE_DELETE_INCOMPLETE",{record_id:r.id,failures:storageFailures});
    S.detailRecord=null;
    show("historyView");
  }catch(e){
