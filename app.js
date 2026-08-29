@@ -713,7 +713,8 @@ function mergePastIntoEmptyFields(row){
   setIfEmpty("volume",row.volume);
 }
 
-$("analyzeBtn").onclick=async()=>{\n syncActiveNav("recordView");
+$("analyzeBtn").onclick=async()=>{
+ syncActiveNav("recordView");
  $("analyzeBtn").disabled=true;
  msg($("analysisMsg"),"📚 共有辞書 → 確定済み記録 → AIキャッシュ → AI解析の順で探します…","info");
  try{
@@ -1006,7 +1007,8 @@ async function cleanupPendingRollbacks(){
  return remaining.length===0;
 }
 
-$("saveRecordBtn").onclick=async()=>{\n syncActiveNav("recordView");
+$("saveRecordBtn").onclick=async()=>{
+ syncActiveNav("recordView");
  if(S.savingRecord)return;
  S.savingRecord=true;
  let brand=$("brand").value.trim();
