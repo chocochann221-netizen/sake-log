@@ -1040,6 +1040,7 @@ $("saveRecordBtn").onclick=async()=>{
      prefecture:$("prefecture").value.trim()||null,
      classification:$("classification").value.trim()||null,
      rice:$("rice").value.trim()||null,
+     rice_variety:$("riceVariety")?.value?.trim()||null,
      polishing_ratio:$("polishing").value.trim()||null,
      alcohol:$("alcohol").value.trim()||null,
      volume:$("volume").value.trim()||null,
@@ -1300,6 +1301,7 @@ function renderRecordEditor(r){
      <div><label>都道府県</label><input id="ePrefecture" value="${escapeHtml(r.prefecture||"")}"></div>
      <div><label>特定名称・酒類区分</label><input id="eClass" value="${escapeHtml(r.classification||"")}"></div>
      <div><label>原材料</label><input id="eRice" value="${escapeHtml(r.rice||"")}"></div>
+     <div><label>使用米・原料米</label><input id="eRiceVariety" value="${escapeHtml(r.rice_variety||"")}"></div>
      <div><label>精米歩合</label><input id="ePolishing" value="${escapeHtml(r.polishing_ratio||"")}"></div>
      <div><label>アルコール</label><input id="eAlcohol" value="${escapeHtml(r.alcohol||"")}"></div>
      <div><label>容量</label><input id="eVolume" value="${escapeHtml(r.volume||"")}"></div>
@@ -1346,6 +1348,7 @@ function renderRecordEditor(r){
        prefecture:$("ePrefecture").value.trim()||null,
        classification:$("eClass").value.trim()||null,
        rice:$("eRice").value.trim()||null,
+       rice_variety:$("eRiceVariety")?.value?.trim()||null,
        polishing_ratio:$("ePolishing").value.trim()||null,
        alcohol:$("eAlcohol").value.trim()||null,
        volume:$("eVolume").value.trim()||null,
