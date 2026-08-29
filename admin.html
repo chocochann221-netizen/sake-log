@@ -210,6 +210,12 @@
   <div class="label">昇格・要確認</div>
   <div class="number" id="promotionReview">—</div>
 </div>
+
+<div class="card" onclick="showDataHealth()" style="cursor:pointer;">
+  <div class="icon">🩺</div>
+  <div class="label">データ健康状態</div>
+  <div class="number" id="dataHealth">—</div>
+</div>
     
     <div class="card">
       <div class="icon">📚</div>
@@ -247,6 +253,10 @@
   const token =
     localStorage.getItem("sakelog_token") ||
     localStorage.getItem("sakelog_access_token");
+
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
 
   async function loadAdminDashboard() {
     const statusText = document.querySelector(".status-text");
@@ -317,6 +327,7 @@
 
 const autoPromotionCount = await loadAutoPromotionCount();
 const promotionReviewCount = await loadPromotionReviewCount();
+const dataHealth = await loadDataHealth();
       
       document.getElementById("users").textContent =
         data.users ?? 0;
@@ -347,6 +358,9 @@ document.getElementById("autoPromotion").textContent =
 
 document.getElementById("promotionReview").textContent =
   promotionReviewCount ?? "—";
+
+document.getElementById("dataHealth").textContent =
+  dataHealth ? (dataHealth.status === "ok" ? "OK" : "要確認") : "—";
       
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
@@ -376,7 +390,7 @@ function showAdminPanel(title, html) {
   }
 
   panel.innerHTML = `
-    <h2 style="margin-top:0">${title}</h2>
+    <h2 style="margin-top:0">${esc(title)}</h2>
     ${html}
   `;
 
@@ -424,11 +438,11 @@ async function showUsers() {
         padding:14px 0;
         border-bottom:1px solid #eee;
       ">
-        <strong>${user.display_name || "名前未設定"}</strong><br>
+        <strong>${esc(user.display_name || "名前未設定")}</strong><br>
         <span style="font-size:13px;color:#777">
-          ${user.email || ""}<br>
-          権限：${user.role || "user"}
-          ／ プラン：${user.plan || "free"}
+          ${esc(user.email || "")}<br>
+          権限：${esc(user.role || "user")}
+          ／ プラン：${esc(user.plan || "free")}
           ／ 記録：${user.record_count ?? 0}件
         </span>
       </div>
@@ -445,7 +459,7 @@ async function showUsers() {
 
     showAdminPanel(
       "👥 ユーザー管理",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
@@ -484,15 +498,15 @@ async function showUsers() {
         border-bottom:1px solid #eee;
       ">
         <strong>
-          ${item.predicted_brand || "銘柄不明"}
-          ${item.predicted_product ? " " + item.predicted_product : ""}
+          ${esc(item.predicted_brand || "銘柄不明")}
+          ${item.predicted_product ? " " + esc(item.predicted_product) : ""}
         </strong><br>
 
         <span style="font-size:13px;color:#777">
-          蔵元：${item.predicted_brewery || "未取得"}<br>
+          蔵元：${esc(item.predicted_brewery || "未取得")}<br>
           信頼度：${item.confidence ?? "—"}<br>
           処理時間：${item.processing_ms ?? "—"} ms<br>
-          モデル：${item.model_name || "—"}<br>
+          モデル：${esc(item.model_name || "—")}<br>
           日時：${item.created_at
             ? new Date(item.created_at).toLocaleString("ja-JP")
             : "—"}
@@ -511,7 +525,7 @@ async function showUsers() {
 
     showAdminPanel(
       "🔍 AI認識結果",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
@@ -556,7 +570,7 @@ async function showCorrections() {
 
         <strong>
           ${item.predicted_brand || "不明"}
-          ${item.predicted_product ? " " + item.predicted_product : ""}
+          ${item.predicted_product ? " " + esc(item.predicted_product) : ""}
         </strong>
 
         <div style="
@@ -597,7 +611,7 @@ async function showCorrections() {
 
     showAdminPanel(
       "✏️ 誤認識・修正データ",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
@@ -637,15 +651,15 @@ async function showCorrections() {
       ">
 
         <strong style="font-size:17px;">
-          ${item.brand_name || "銘柄未設定"}
-          ${item.product_name ? " " + item.product_name : ""}
+          ${esc(item.brand_name || "銘柄未設定")}
+          ${item.product_name ? " " + esc(item.product_name) : ""}
         </strong><br>
 
         <span style="font-size:13px;color:#777">
-          蔵元：${item.brewery_name || "未設定"}<br>
-          都道府県：${item.prefecture || "未設定"}<br>
-          分類：${item.sake_type || "未設定"}<br>
-          酒米：${item.rice || "未設定"}<br>
+          蔵元：${esc(item.brewery_name || "未設定")}<br>
+          都道府県：${esc(item.prefecture || "未設定")}<br>
+          分類：${esc(item.sake_type || "未設定")}<br>
+          酒米：${esc(item.rice || "未設定")}<br>
           精米歩合：${
             item.polishing_ratio !== null && item.polishing_ratio !== undefined
               ? item.polishing_ratio + "%"
@@ -676,7 +690,7 @@ async function showCorrections() {
 
     showAdminPanel(
       "🍶 日本酒マスター管理",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
@@ -717,18 +731,18 @@ async function showDictionary() {
   ">
 
     <strong style="font-size:17px;">
-      ${item.brand_name || "銘柄未設定"}
-      ${item.product_name ? " " + item.product_name : ""}
+      ${esc(item.brand_name || "銘柄未設定")}
+      ${item.product_name ? " " + esc(item.product_name) : ""}
     </strong><br>
 
     <span style="font-size:13px;color:#777">
-      蔵元：${item.brewery_name || "未設定"}<br>
-      都道府県：${item.prefecture || "未設定"}<br>
-      分類：${item.classification || "未設定"}<br>
-      酒米：${item.rice_variety || "未設定"}<br>
-      精米歩合：${item.polishing_ratio || "未設定"}<br>
-      アルコール度数：${item.alcohol || "未設定"}<br>
-      容量：${item.volume || "未設定"}<br>
+      蔵元：${esc(item.brewery_name || "未設定")}<br>
+      都道府県：${esc(item.prefecture || "未設定")}<br>
+      分類：${esc(item.classification || "未設定")}<br>
+      酒米：${esc(item.rice_variety || "未設定")}<br>
+      精米歩合：${esc(item.polishing_ratio || "未設定")}<br>
+      アルコール度数：${esc(item.alcohol || "未設定")}<br>
+      容量：${esc(item.volume || "未設定")}<br>
       確認回数：${item.confirmed_count ?? 1}回<br>
       登録日時：${
         item.created_at
@@ -784,7 +798,7 @@ async function showDictionary() {
 
     showAdminPanel(
       "🧠 学習辞書管理",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
@@ -1066,13 +1080,13 @@ async function showPromotionReviews() {
     const rows = items.map(item => `
       <div style="padding:14px 0;border-bottom:1px solid #eee;">
         <strong style="font-size:17px;">
-          ${item.brand_name || "銘柄未設定"}
-          ${item.product_name ? " " + item.product_name : ""}
+          ${esc(item.brand_name || "銘柄未設定")}
+          ${item.product_name ? " " + esc(item.product_name) : ""}
         </strong><br>
         <span style="font-size:13px;color:#777">
           ${item.brewery_name || "蔵元未設定"}<br>
           確認回数：${item.confirmed_count}回<br>
-          <b style="color:#9a5b00;">理由：${item.review_reason || "内容確認が必要です"}</b>
+          <b style="color:#9a5b00;">理由：${esc(item.review_reason || "内容確認が必要です")}</b>
         </span>
       </div>
     `).join("");
@@ -1082,7 +1096,7 @@ async function showPromotionReviews() {
   } catch (error) {
     showAdminPanel(
       "🧐 昇格・要確認",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
@@ -1133,8 +1147,8 @@ async function showDuplicateGroups() {
         border-bottom:1px solid #eee;
       ">
         <strong style="font-size:17px;">
-          ${group.brand_name || "銘柄未設定"}
-          ${group.product_name ? " " + group.product_name : ""}
+          ${esc(group.brand_name || "銘柄未設定")}
+          ${group.product_name ? " " + esc(group.product_name) : ""}
         </strong><br>
 
         <span style="font-size:13px;color:#777">
@@ -1155,12 +1169,68 @@ async function showDuplicateGroups() {
 
     showAdminPanel(
       "⚠️ 重複候補",
-      "<p>取得エラー：" + error.message + "</p>"
+      "<p>取得エラー：" + esc(error.message) + "</p>"
     );
   }
 }
 
+async function loadDataHealth() {
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_data_health_diagnostics",
+      {
+        method:"POST",
+        headers:{
+          "apikey":cfgKey(),
+          "Authorization":"Bearer " + token,
+          "Content-Type":"application/json"
+        },
+        body:"{}"
+      }
+    );
+    if(!r.ok) throw new Error(await r.text());
+    return await r.json();
+  } catch(error) {
+    console.error("データ健康状態取得エラー:", error);
+    return null;
+  }
+}
+
+async function showDataHealth() {
+  showAdminPanel("🩺 データ健康状態","<p>診断中...</p>");
+  const d = await loadDataHealth();
+  if(!d){
+    showAdminPanel("🩺 データ健康状態","<p>診断データを取得できませんでした。</p>");
+    return;
+  }
+
+  const items = [
+    ["孤立写真",d.orphan_photos],
+    ["孤立認識結果",d.orphan_recognition_results],
+    ["孤立修正データ",d.orphan_corrections],
+    ["壊れたマスター紐付け",d.broken_master_links],
+    ["マスター重複グループ",d.duplicate_master_groups],
+    ["マスター未紐付け記録",d.unlinked_records],
+    ["最近の未紐付け記録",d.recent_unlinked_records],
+    ["表ラベルなし記録",d.records_without_front_photo]
+  ];
+
+  const rows=items.map(([label,value])=>`
+    <div style="padding:8px 0;border-bottom:1px solid #eee;">
+      <b>${esc(label)}</b>：${Number(value||0)}
+    </div>
+  `).join("");
+
+  showAdminPanel(
+    "🩺 データ健康状態",
+    `<p><b>判定：${d.status==="ok"?"✅ 正常":"⚠️ 要確認"}</b></p>${rows}`
+  );
+}
+
 async function runAutoPromotion() {
+  const ok = confirm("安全条件を満たした候補を1件、日本酒マスターへ自動昇格しますか？");
+  if (!ok) return;
+
   try {
     const key = cfgKey();
 
