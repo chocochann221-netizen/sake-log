@@ -28,7 +28,7 @@ async function recognizeSake(request, env) {
   if (!env.OPENAI_API_KEY) return json({error:"Cloudflare環境変数 OPENAI_API_KEY が未設定です"}, 503);
   try {
     const {front, back} = await request.json();
-    if (!front) return json({error:"表ラベル画像が必要です"}, 400);
+    if (!front && !back) return json({error:"ラベル画像が必要です"}, 400);
     const model = env.OPENAI_MODEL || "gpt-5.6-terra";
     const prompt = `
 あなたは日本酒の商品同定専門AIです。
@@ -85,7 +85,8 @@ async function recognizeSake(request, env) {
 brand が読めているのに product が完全には読めない場合でも、
 ラベル上の商品識別語を product に必ず入れてください。
 `;
-    const content=[{type:"input_text",text:prompt},{type:"input_image",image_url:front,detail:"high"}];
+    const content=[{type:"input_text",text:prompt}];
+    if(front) content.push({type:"input_image",image_url:front,detail:"high"});
     if(back) content.push({type:"input_image",image_url:back,detail:"high"});
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),45000);
