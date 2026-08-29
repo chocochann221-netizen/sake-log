@@ -1374,6 +1374,23 @@ function renderRecordEditor(r){
  $("saveEditBtn").onclick=async()=>{
    $("saveEditBtn").disabled=true;
    msg($("editMsg"),"保存中…","info");
+   const originalRecord={
+     brand_name:r.brand_name??null,
+     product_name:r.product_name??null,
+     brewery_name:r.brewery_name??null,
+     prefecture:r.prefecture??null,
+     classification:r.classification??null,
+     rice:r.rice??null,
+     rice_variety:r.rice_variety??null,
+     polishing_ratio:r.polishing_ratio??null,
+     alcohol:r.alcohol??null,
+     volume:r.volume??null,
+     restaurant_name:r.restaurant_name??null,
+     price_yen:r.price_yen??null,
+     rating:r.rating??null,
+     comment:r.comment??null
+   };
+   let recordTextUpdated=false;
    try{
      await updateRow("drinking_records",r.id,{
        brand_name:$("eBrand").value.trim()||null,
@@ -1391,6 +1408,7 @@ function renderRecordEditor(r){
        rating:$("eRating").value?Number($("eRating").value):null,
        comment:$("eComment").value.trim()||null
      });
+     recordTextUpdated=true;
     
 const photoInputs=[
   ["editFrontPhoto","deleteFrontPhoto","front"],
@@ -1453,7 +1471,13 @@ for(const [inputId,deleteId,photoType] of photoInputs){
 }
      msg($("editMsg"),"✓ 更新しました","ok");
      setTimeout(()=>openRecordDetail(r.id),500);
-   }catch(e){msg($("editMsg"),e.message,"err")}
+   }catch(e){
+     if(recordTextUpdated){
+       try{await updateRow("drinking_records",r.id,originalRecord)}
+       catch(rollbackError){console.warn("record edit rollback failed",rollbackError)}
+     }
+     msg($("editMsg"),"更新できませんでした: "+(e.message||e)+"。変更前の内容を保持するよう復旧しました。","err");
+   }
    finally{$("saveEditBtn").disabled=false}
  };
 }
