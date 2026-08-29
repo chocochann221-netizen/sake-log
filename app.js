@@ -28,13 +28,22 @@ window.addEventListener("unhandledrejection",e=>{
   }
 });
 
+function syncActiveNav(id){
+ document.querySelectorAll(".navbtn").forEach(b=>{
+   const active=b.dataset.page===id;
+   b.classList.toggle("active",active);
+   b.classList.toggle("is-active",active);
+   if(active)b.setAttribute("aria-current","page");
+   else b.removeAttribute("aria-current");
+ });
+}
 function show(id){
  const protectedViews=new Set(["homeView","recordView","historyView","detailView","analysisView","profileView"]);
  if(protectedViews.has(id)&&!S.user){id="authView"}
  ["setupView","authView",...Array.from(document.querySelectorAll(".page")).map(x=>x.id)].forEach(x=>$(x)?.classList.add("hidden"));
  $(id).classList.remove("hidden");
  $("bottomNav").classList.toggle("hidden",!S.user);
- document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ syncActiveNav(id);
  if(id==="homeView")loadRecent();
  if(id==="historyView")loadHistory();
  if(id==="profileView")loadProfile();
@@ -704,7 +713,7 @@ function mergePastIntoEmptyFields(row){
   setIfEmpty("volume",row.volume);
 }
 
-$("analyzeBtn").onclick=async()=>{
+$("analyzeBtn").onclick=async()=>{\n syncActiveNav("recordView");
  $("analyzeBtn").disabled=true;
  msg($("analysisMsg"),"📚 共有辞書 → 確定済み記録 → AIキャッシュ → AI解析の順で探します…","info");
  try{
@@ -850,12 +859,70 @@ $("locateBtn").onclick=()=>{
  navigator.geolocation.getCurrentPosition(p=>{S.lat=p.coords.latitude;S.lng=p.coords.longitude;$("locMsg").textContent=`現在地取得済み (${S.lat.toFixed(5)}, ${S.lng.toFixed(5)})`},e=>$("locMsg").textContent=e.message,{enableHighAccuracy:true,timeout:15000})
 };
 
+async function preparePhotoForUpload(file){
+ // スマホの高解像度写真はStorage送信前に軽量化する。
+ // AI用画像とは別で、思い出として十分な画質を残す。
+ if(!file)return file;
+ try{
+   if(file.size<=2.5*1024*1024 && /^(image\/jpeg|image\/webp)$/i.test(file.type||"")){
+     return file;
+   }
+   const url=URL.createObjectURL(file);
+   try{
+     const img=await new Promise((resolve,reject)=>{
+       const el=new Image();
+       el.onload=()=>resolve(el);
+       el.onerror=()=>reject(new Error("画像を開けませんでした"));
+       el.src=url;
+     });
+     const MAX=2200;
+     const scale=Math.min(1,MAX/Math.max(img.width,img.height));
+     const w=Math.max(1,Math.round(img.width*scale));
+     const h=Math.max(1,Math.round(img.height*scale));
+     const c=document.createElement("canvas");
+     c.width=w;c.height=h;
+     const ctx=c.getContext("2d");
+     ctx.imageSmoothingEnabled=true;
+     ctx.imageSmoothingQuality="high";
+     ctx.drawImage(img,0,0,w,h);
+     const blob=await new Promise((resolve,reject)=>
+       c.toBlob(b=>b?resolve(b):reject(new Error("画像圧縮に失敗しました")),"image/jpeg",0.88)
+     );
+     return blob;
+   }finally{
+     URL.revokeObjectURL(url);
+   }
+ }catch(e){
+   console.warn("photo compression skipped",e);
+   return file;
+ }
+}
 async function uploadPhoto(file){
- const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+ const body=await preparePhotoForUpload(file);
+ const ext=(body!==file || !/^(image\/jpeg|image\/png|image\/webp)$/i.test(file.type||""))?"jpg":((file.name?.split(".").pop()||"jpg").toLowerCase());
  const path=`${S.user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
- const r=await authFetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(path),{method:"POST",headers:{"Content-Type":file.type||"image/jpeg","x-upsert":"false"},body:file});
- if(!r.ok)throw new Error("写真保存エラー HTTP "+r.status+" "+await r.text());
- return path;
+ const url=BASE+"/storage/v1/object/sake-photos/"+encodeURI(path);
+ const contentType=body.type||file.type||"image/jpeg";
+ let lastError=null;
+ for(let attempt=0;attempt<2;attempt++){
+   try{
+     const r=await authFetch(url,{
+       method:"POST",
+       headers:{"Content-Type":contentType,"x-upsert":"true"},
+       body
+     });
+     if(r.ok)return path;
+     const detail=await r.text().catch(()=>"");
+     lastError=new Error("写真保存エラー HTTP "+r.status+(detail?" "+detail:""));
+     // 4xxは同じ内容を再送しても改善しないので即終了。
+     if(r.status<500 && r.status!==408 && r.status!==429)break;
+   }catch(e){
+     lastError=e;
+   }
+   if(attempt===0)await new Promise(resolve=>setTimeout(resolve,900));
+ }
+ const sizeMb=((body.size||file.size||0)/1024/1024).toFixed(1);
+ throw new Error((lastError?.message||"写真保存に失敗しました")+"（送信画像 約"+sizeMb+"MB）");
 }
 async function insert(table,obj){
  const r=await authFetch(BASE+"/rest/v1/"+table,{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(obj)});
@@ -939,7 +1006,7 @@ async function cleanupPendingRollbacks(){
  return remaining.length===0;
 }
 
-$("saveRecordBtn").onclick=async()=>{
+$("saveRecordBtn").onclick=async()=>{\n syncActiveNav("recordView");
  if(S.savingRecord)return;
  S.savingRecord=true;
  let brand=$("brand").value.trim();
