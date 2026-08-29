@@ -1275,7 +1275,7 @@ ${foodHtml||memoryHtml?`
      <div class="small">${escapeHtml(formatDateJP(r.drank_at))}${r.restaurant_name?" ・ "+escapeHtml(r.restaurant_name):""}</div>
      <div class="detail-info">
        ${[
-         ["原材料",r.rice],["精米歩合",r.polishing_ratio],["アルコール",r.alcohol],
+         ["原材料",r.rice],["使用米・原料米",r.rice_variety],["精米歩合",r.polishing_ratio],["アルコール",r.alcohol],
          ["容量",r.volume],["価格",r.price_yen?Number(r.price_yen).toLocaleString()+"円":""],
          ["飲んだ店",r.restaurant_name]
        ].filter(x=>x[1]).map(([k,v])=>`<div><b>${escapeHtml(k)}</b>${escapeHtml(v)}</div>`).join("")}
