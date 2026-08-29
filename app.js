@@ -139,6 +139,7 @@ async function restore(){
  if(await verifyCurrentUser()){
    $("userEmail").textContent=S.user.email||"";
    await cleanupPendingRollbacks().catch(()=>{});
+   await cleanupPendingStorageDeletes().catch(()=>{});
    show("homeView");
  }else{
    clearSession();
@@ -987,6 +988,33 @@ async function deleteStorageObject(path){
  if(r.ok||r.status===404)return true;
  throw new Error("写真クリーンアップ HTTP "+r.status);
 }
+
+const PENDING_STORAGE_DELETE_KEY="sakelog_pending_storage_deletes_v1";
+function readPendingStorageDeletes(){
+ try{
+   const v=JSON.parse(localStorage.getItem(PENDING_STORAGE_DELETE_KEY)||"[]");
+   return Array.isArray(v)?v:[];
+ }catch{return []}
+}
+function writePendingStorageDeletes(items){
+ try{
+   const clean=[...new Set((items||[]).filter(Boolean))];
+   if(clean.length)localStorage.setItem(PENDING_STORAGE_DELETE_KEY,JSON.stringify(clean));
+   else localStorage.removeItem(PENDING_STORAGE_DELETE_KEY);
+ }catch{}
+}
+function queuePendingStorageDelete(path){
+ if(!path)return;
+ writePendingStorageDeletes([...readPendingStorageDeletes(),path]);
+}
+async function cleanupPendingStorageDeletes(){
+ const remaining=[];
+ for(const path of readPendingStorageDeletes()){
+   try{await deleteStorageObject(path)}catch{remaining.push(path)}
+ }
+ writePendingStorageDeletes(remaining);
+ return remaining.length===0;
+}
 async function rollbackRecord(item){
  if(!item?.recordId)return true;
  const id=encodeURIComponent(item.recordId);
@@ -1371,6 +1399,8 @@ const photoInputs=[
   ["editMemoryPhoto","deleteMemoryPhoto","memory"]
 ];
 
+await cleanupPendingStorageDeletes().catch(()=>{});
+
 for(const [inputId,deleteId,photoType] of photoInputs){
   const file=$(inputId)?.files?.[0];
   const shouldDelete=$(deleteId)?.checked;
@@ -1380,8 +1410,8 @@ for(const [inputId,deleteId,photoType] of photoInputs){
   const old=oldPhotos.find(p=>p.photo_type===photoType);
 
   if(file){
-    // 新しい写真を先に完全保存してから古い写真を消す。
-    // 途中で失敗しても古い写真を失わない。
+    // 新しい写真を先に保存し、古いDB行の削除まで成功した時だけ差し替え確定。
+    // 古いDB行の削除に失敗した場合は、新しい写真を巻き戻して重複を残さない。
     let newPath=null;
     let newRow=null;
     try{
@@ -1393,20 +1423,32 @@ for(const [inputId,deleteId,photoType] of photoInputs){
         storage_path:newPath,
         mime_type:file.type||"image/jpeg"
       });
+
+      if(old?.id){
+        try{
+          await deleteRows("sake_photos","id=eq."+encodeURIComponent(old.id));
+        }catch(e){
+          // 差し替え確定前の失敗なので、新しい方だけ取り消して古い写真を残す。
+          try{await deleteRows("sake_photos","id=eq."+encodeURIComponent(newRow.id))}catch{}
+          try{await deleteStorageObject(newPath)}catch{queuePendingStorageDelete(newPath)}
+          throw e;
+        }
+
+        // 古いStorage実体の削除失敗は表示には影響しないため、後で再試行する。
+        try{await deleteStorageObject(old.storage_path)}
+        catch{queuePendingStorageDelete(old.storage_path)}
+      }
     }catch(e){
-      if(newPath){
-        try{await deleteStorageObject(newPath)}catch{}
+      // upload成功・DB insert失敗など、未確定の新規Storageだけ掃除。
+      if(newPath && !newRow){
+        try{await deleteStorageObject(newPath)}catch{queuePendingStorageDelete(newPath)}
       }
       throw e;
     }
-
-    if(old?.id){
-      await deleteRows("sake_photos","id=eq."+encodeURIComponent(old.id));
-      try{await deleteStorageObject(old.storage_path)}catch{}
-    }
   }else if(shouldDelete&&old?.id){
     await deleteRows("sake_photos","id=eq."+encodeURIComponent(old.id));
-    try{await deleteStorageObject(old.storage_path)}catch{}
+    try{await deleteStorageObject(old.storage_path)}
+    catch{queuePendingStorageDelete(old.storage_path)}
   }
 }
      msg($("editMsg"),"✓ 更新しました","ok");
