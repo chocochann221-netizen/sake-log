@@ -167,7 +167,7 @@ $("manualBtn").onclick=resetRecord;
 $("rating").oninput=()=> $("ratingVal").textContent=Number($("rating").value).toFixed(1);
 
 function updateAnalyzeButton(){
- $("analyzeBtn").classList.toggle("hidden",!S.photo);
+ $("analyzeBtn").classList.toggle("hidden",!(S.photo||S.backPhoto));
 }
 function attachPhoto(file){
  const keepBack=S.backPhoto;
@@ -180,7 +180,12 @@ function attachPhoto(file){
 function attachBackPhoto(file){
  if(!S.photo) resetRecord();
  S.backPhoto=file;$("backPreview").src=URL.createObjectURL(file);$("backPreview").classList.remove("hidden");
- updateAnalyzeButton();msg($("recordMsg"),"裏ラベルを追加しました。表＋裏を同じ1本として保存します。","info");
+ updateAnalyzeButton();
+ msg($("recordMsg"),
+   S.photo
+     ?"裏ラベルを追加しました。表＋裏を同じ1本として保存します。"
+     :"裏ラベルを選択しました。裏ラベルだけでも解析・保存できます。",
+   "info");
 }
 function attachFoodPhoto(file){
   S.foodPhoto=file;
@@ -718,8 +723,9 @@ $("analyzeBtn").onclick=async()=>{
  $("analyzeBtn").disabled=true;
  msg($("analysisMsg"),"📚 共有辞書 → 確定済み記録 → AIキャッシュ → AI解析の順で探します…","info");
  try{
-   const frontData=await fileToDataURL(S.photo,"front");
+   const frontData=S.photo?await fileToDataURL(S.photo,"front"):null;
    const backData=S.backPhoto?await fileToDataURL(S.backPhoto,"back"):null;
+   if(!frontData&&!backData) throw new Error("ラベル写真を選択してください");
    const cacheKey=await buildImageCacheKey(frontData,backData);
    S.currentImageCacheKey=cacheKey;
    S.currentFrontHash=await imageDHash(frontData);
@@ -1013,7 +1019,7 @@ $("saveRecordBtn").onclick=async()=>{
  S.savingRecord=true;
  let brand=$("brand").value.trim();
  if(!brand){
-   if(S.photo){
+   if(S.photo||S.backPhoto){
      brand="確認中";
      $("brand").value=brand;
      msg($("recordMsg"),"銘柄を特定できなかったため「確認中」として保存します。あとから編集できます。","info");
