@@ -1017,13 +1017,26 @@ async function cleanupPendingStorageDeletes(){
 }
 async function rollbackRecord(item){
  if(!item?.recordId)return true;
- const id=encodeURIComponent(item.recordId);
  try{
-   // recognition_results を消すと corrections は FK CASCADE で一緒に消える。
-   await deleteRows("recognition_results","drinking_record_id=eq."+id);
-   await deleteRows("sake_photos","drinking_record_id=eq."+id);
-   await deleteRows("drinking_records","id=eq."+id);
-   for(const path of item.storagePaths||[]) await deleteStorageObject(path);
+   const r=await authFetch(BASE+"/rest/v1/rpc/delete_my_drinking_record",{
+     method:"POST",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({p_record_id:item.recordId})
+   });
+   const d=await r.json().catch(()=>null);
+   if(!r.ok)throw new Error((d&&d.message)||"HTTP "+r.status);
+
+   const paths=[
+     ...new Set([
+       ...((d&&Array.isArray(d.storage_paths))?d.storage_paths:[]),
+       ...(item.storagePaths||[])
+     ].filter(Boolean))
+   ];
+
+   for(const path of paths){
+     try{await deleteStorageObject(path)}
+     catch{queuePendingStorageDelete(path)}
+   }
    return true;
  }catch(e){
    console.warn("record rollback pending",item.recordId,e);
