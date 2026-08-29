@@ -204,6 +204,12 @@
   <div class="label">自動昇格候補</div>
   <div class="number" id="autoPromotion">—</div>
 </div>
+
+<div class="card" onclick="showPromotionReviews()" style="cursor:pointer;">
+  <div class="icon">🧐</div>
+  <div class="label">昇格・要確認</div>
+  <div class="number" id="promotionReview">—</div>
+</div>
     
     <div class="card">
       <div class="icon">📚</div>
@@ -310,6 +316,7 @@
       }
 
 const autoPromotionCount = await loadAutoPromotionCount();
+const promotionReviewCount = await loadPromotionReviewCount();
       
       document.getElementById("users").textContent =
         data.users ?? 0;
@@ -337,6 +344,9 @@ document.getElementById("duplicates").textContent =
 
 document.getElementById("autoPromotion").textContent =
   autoPromotionCount ?? "—";
+
+document.getElementById("promotionReview").textContent =
+  promotionReviewCount ?? "—";
       
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
@@ -1000,6 +1010,83 @@ async function loadAutoPromotionCount() {
   }
 }
     
+async function loadPromotionReviewCount() {
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_promotion_review_candidates",
+      {
+        method: "POST",
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+    return (await r.json()).length;
+  } catch (error) {
+    console.error("昇格要確認取得エラー:", error);
+    return null;
+  }
+}
+
+async function showPromotionReviews() {
+  showAdminPanel(
+    "🧐 昇格・要確認",
+    "<p>要確認候補を読み込んでいます...</p>"
+  );
+
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/admin_promotion_review_candidates",
+      {
+        method: "POST",
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: "{}"
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+
+    const items = await r.json();
+
+    if (!items.length) {
+      showAdminPanel(
+        "🧐 昇格・要確認",
+        "<p>現在、確認が必要な昇格候補はありません ✅</p>"
+      );
+      return;
+    }
+
+    const rows = items.map(item => `
+      <div style="padding:14px 0;border-bottom:1px solid #eee;">
+        <strong style="font-size:17px;">
+          ${item.brand_name || "銘柄未設定"}
+          ${item.product_name ? " " + item.product_name : ""}
+        </strong><br>
+        <span style="font-size:13px;color:#777">
+          ${item.brewery_name || "蔵元未設定"}<br>
+          確認回数：${item.confirmed_count}回<br>
+          <b style="color:#9a5b00;">理由：${item.review_reason || "内容確認が必要です"}</b>
+        </span>
+      </div>
+    `).join("");
+
+    showAdminPanel("🧐 昇格・要確認", rows);
+
+  } catch (error) {
+    showAdminPanel(
+      "🧐 昇格・要確認",
+      "<p>取得エラー：" + error.message + "</p>"
+    );
+  }
+}
+
 async function showDuplicateGroups() {
 
   showAdminPanel(
