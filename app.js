@@ -121,7 +121,9 @@ $("toggleAuth").onclick=()=>{S.signup=!S.signup;$("authTitle").textContent=S.sig
 $("authBtn").onclick=async()=>{
  if(S.authBusy)return;
  const email=$("email").value.trim(),password=$("password").value;
- if(!email||password.length<6){msg($("authMsg"),"メールアドレスと6文字以上のパスワードを入力してください。","err");return}
+ if(!email){msg($("authMsg"),"メールアドレスを入力してください。","err");return}
+ if(S.signup&&password.length<8){msg($("authMsg"),"新規登録のパスワードは8文字以上にしてください。","err");return}
+ if(!S.signup&&password.length<6){msg($("authMsg"),"パスワードを入力してください。","err");return}
  S.authBusy=true;
  $("authBtn").disabled=true;
  const path=S.signup?"/auth/v1/signup":"/auth/v1/token?grant_type=password";
