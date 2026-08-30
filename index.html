@@ -89,6 +89,14 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <section id="authView" class="hidden">
 <div class="card">
 <h2 id="authTitle">ログイン</h2>
+
+<div id="socialLoginBox" class="hidden" style="margin-bottom:18px">
+  <button id="googleLoginBtn" class="btn outline hidden">Googleで続ける</button>
+  <button id="appleLoginBtn" class="btn outline hidden">Appleで続ける</button>
+  <button id="lineLoginBtn" class="btn outline hidden">LINEで続ける</button>
+  <div class="small" style="text-align:center;margin:10px 0">または</div>
+</div>
+
 <label>メールアドレス</label><input id="email" type="email">
 <label>パスワード</label><input id="password" type="password" autocomplete="current-password">
 <button id="authBtn" class="btn primary">ログイン</button>
@@ -216,6 +224,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
 </div>
 </nav>
-<script src="app.js?v=508"></script>
+<script src="app.js?v=509"></script>
 <script src="detail-knowledge.js?v=1"></script>
 </body></html>
