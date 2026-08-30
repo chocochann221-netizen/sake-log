@@ -86,11 +86,11 @@ async function loadSocialProviders(){
    const map=[
      ["googleLoginBtn","google"],
      ["appleLoginBtn","apple"],
-     ["lineLoginBtn","line"]
+     ["lineLoginBtn","custom:line"]
    ];
    for(const [id,key] of map){
      const el=$(id);
-     if(el)el.classList.toggle("hidden",ext[key]!==true);
+     if(el)el.classList.toggle("hidden",key==="custom:line" ? false : ext[key]!==true);
    }
 
    const box=$("socialLoginBox");
@@ -1826,7 +1826,7 @@ async function deleteMyAccount(){
 
 if($("googleLoginBtn")) $("googleLoginBtn").onclick=()=>startOAuth("google");
 if($("appleLoginBtn")) $("appleLoginBtn").onclick=()=>startOAuth("apple");
-if($("lineLoginBtn")) $("lineLoginBtn").onclick=()=>startOAuth("line");
+if($("lineLoginBtn")) $("lineLoginBtn").onclick=()=>startOAuth("custom:line");
 
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="recordView"?resetRecord():show(b.dataset.page));
 restore();
