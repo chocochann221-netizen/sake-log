@@ -64,21 +64,8 @@ async function recognizeSake(request, env) {
 
   const user=await requireUser(request);
   if(!user)return json({error:"ログインが必要です"},401);
-
-  const quotaCheck=await consumeRecognitionQuota(request);
-  if(!quotaCheck.ok){
-    const headers={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"};
-    if(quotaCheck.quota?.retry_after_seconds){
-      headers["Retry-After"]=String(quotaCheck.quota.retry_after_seconds);
-    }
-    return new Response(JSON.stringify({
-      error:quotaCheck.error,
-      rate_limited:quotaCheck.status===429,
-      quota:quotaCheck.quota||null
-    }),{status:quotaCheck.status,headers});
-  }
-
   if (!env.OPENAI_API_KEY) return json({error:"Cloudflare環境変数 OPENAI_API_KEY が未設定です"}, 503);
+
   try {
     const {front, back} = await request.json();
     if (!front && !back) return json({error:"ラベル画像が必要です"}, 400);
@@ -87,6 +74,21 @@ async function recognizeSake(request, env) {
     if(totalImageChars>13*1024*1024){
       return json({error:"画像データが大きすぎます"},413);
     }
+
+    // 正常な画像リクエストだけ利用回数を消費する。
+    const quotaCheck=await consumeRecognitionQuota(request);
+    if(!quotaCheck.ok){
+      const headers={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"};
+      if(quotaCheck.quota?.retry_after_seconds){
+        headers["Retry-After"]=String(quotaCheck.quota.retry_after_seconds);
+      }
+      return new Response(JSON.stringify({
+        error:quotaCheck.error,
+        rate_limited:quotaCheck.status===429,
+        quota:quotaCheck.quota||null
+      }),{status:quotaCheck.status,headers});
+    }
+
     const model = env.OPENAI_MODEL || "gpt-5.6-terra";
     const prompt = `
 あなたは日本酒の商品同定専門AIです。
