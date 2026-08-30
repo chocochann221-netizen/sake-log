@@ -63,6 +63,70 @@ function saveSession(d){
  if(S.refreshToken)localStorage.setItem("sakelog_refresh_token",S.refreshToken);
  if(S.user)localStorage.setItem("sakelog_user",JSON.stringify(S.user));
 }
+
+function currentAppRedirectUrl(){
+ return location.origin + location.pathname;
+}
+
+function startOAuth(provider){
+ const redirectTo=currentAppRedirectUrl();
+ const url=new URL(BASE+"/auth/v1/authorize");
+ url.searchParams.set("provider",provider);
+ url.searchParams.set("redirect_to",redirectTo);
+ location.assign(url.toString());
+}
+
+async function loadSocialProviders(){
+ try{
+   const r=await fetch(BASE+"/auth/v1/settings",{headers:{apikey:cfgKey()}});
+   if(!r.ok)return;
+   const d=await r.json().catch(()=>null);
+   const ext=d?.external||{};
+
+   const map=[
+     ["googleLoginBtn","google"],
+     ["appleLoginBtn","apple"],
+     ["lineLoginBtn","line"]
+   ];
+   for(const [id,key] of map){
+     const el=$(id);
+     if(el)el.classList.toggle("hidden",ext[key]!==true);
+   }
+
+   const box=$("socialLoginBox");
+   if(box){
+     const any=map.some(([id])=>!$(id)?.classList.contains("hidden"));
+     box.classList.toggle("hidden",!any);
+   }
+ }catch{}
+}
+
+async function consumeOAuthCallback(){
+ const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+ const access=hash.get("access_token");
+ const refresh=hash.get("refresh_token");
+ if(!access)return false;
+
+ S.token=access;
+ S.refreshToken=refresh||null;
+ localStorage.setItem("sakelog_token",access);
+ if(refresh)localStorage.setItem("sakelog_refresh_token",refresh);
+
+ try{
+   const r=await fetch(BASE+"/auth/v1/user",{
+     headers:{apikey:cfgKey(),Authorization:"Bearer "+access}
+   });
+   const user=await r.json().catch(()=>null);
+   if(!r.ok||!user?.id)throw new Error("OAuth user load failed");
+   S.user=user;
+   localStorage.setItem("sakelog_user",JSON.stringify(user));
+   history.replaceState(null,"",location.pathname+location.search);
+   return true;
+ }catch{
+   clearSession();
+   return false;
+ }
+}
 async function refreshSession(){
  if(!S.refreshToken)throw new Error("ログインの有効期限が切れました。もう一度ログインしてください。");
  const r=await fetch(BASE+"/auth/v1/token?grant_type=refresh_token",{
@@ -186,6 +250,16 @@ async function verifyCurrentUser(){
  return true;
 }
 async function restore(){
+ await loadSocialProviders();
+
+ if(await consumeOAuthCallback()){
+   $("userEmail").textContent=S.user?.email||"";
+   await cleanupPendingRollbacks().catch(()=>{});
+   await cleanupPendingStorageDeletes().catch(()=>{});
+   show("homeView");
+   return;
+ }
+
  S.token=localStorage.getItem("sakelog_token");
  S.refreshToken=localStorage.getItem("sakelog_refresh_token");
  show("authView");
@@ -1749,6 +1823,10 @@ async function deleteMyAccount(){
    if(btn)btn.disabled=false;
  }
 }
+
+if($("googleLoginBtn")) $("googleLoginBtn").onclick=()=>startOAuth("google");
+if($("appleLoginBtn")) $("appleLoginBtn").onclick=()=>startOAuth("apple");
+if($("lineLoginBtn")) $("lineLoginBtn").onclick=()=>startOAuth("line");
 
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="recordView"?resetRecord():show(b.dataset.page));
 restore();
