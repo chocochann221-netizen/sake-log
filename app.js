@@ -76,6 +76,13 @@ function startOAuth(provider){
  location.assign(url.toString());
 }
 
+function startLineLogin(){
+ const redirectTo=currentAppRedirectUrl();
+ const url=new URL(BASE+"/functions/v1/line-login");
+ url.searchParams.set("redirect_to",redirectTo);
+ location.assign(url.toString());
+}
+
 async function loadSocialProviders(){
  try{
    const r=await fetch(BASE+"/auth/v1/settings",{headers:{apikey:cfgKey()}});
@@ -103,6 +110,35 @@ async function loadSocialProviders(){
 
 async function consumeOAuthCallback(){
  const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+
+ const lineError=hash.get("line_error");
+ if(lineError){
+   history.replaceState(null,"",location.pathname+location.search);
+   msg($("authMsg"),lineError,"err");
+   return false;
+ }
+
+ const lineTokenHash=hash.get("line_token_hash");
+ if(lineTokenHash){
+   try{
+     const r=await fetch(BASE+"/auth/v1/verify",{
+       method:"POST",
+       headers:{"apikey":cfgKey(),"Content-Type":"application/json"},
+       body:JSON.stringify({token_hash:lineTokenHash,type:"email"})
+     });
+     const d=await r.json().catch(()=>null);
+     if(!r.ok||!d?.access_token||!d?.user)throw new Error(d?.msg||d?.message||"LINEログインの完了に失敗しました");
+     saveSession(d);
+     history.replaceState(null,"",location.pathname+location.search);
+     return true;
+   }catch(e){
+     clearSession();
+     history.replaceState(null,"",location.pathname+location.search);
+     msg($("authMsg"),e?.message||"LINEログインの完了に失敗しました","err");
+     return false;
+   }
+ }
+
  let access=hash.get("access_token");
  let refresh=hash.get("refresh_token");
 
@@ -1848,7 +1884,7 @@ async function deleteMyAccount(){
 
 if($("googleLoginBtn")) $("googleLoginBtn").onclick=()=>startOAuth("google");
 if($("appleLoginBtn")) $("appleLoginBtn").onclick=()=>startOAuth("apple");
-if($("lineLoginBtn")) $("lineLoginBtn").onclick=()=>startOAuth("custom:line");
+if($("lineLoginBtn")) $("lineLoginBtn").onclick=startLineLogin;
 
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="recordView"?resetRecord():show(b.dataset.page));
 restore();
