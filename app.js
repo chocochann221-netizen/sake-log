@@ -1039,11 +1039,14 @@ function queuePendingRollback(recordId,storagePaths=[]){
  items.push({recordId,storagePaths:[...new Set(storagePaths.filter(Boolean))],queuedAt:Date.now()});
  writePendingRollbacks(items);
 }
-async function deleteStorageObject(path){
+async function deleteStorageObjectFromBucket(bucket,path){
  if(!path)return true;
- const r=await authFetch(BASE+"/storage/v1/object/sake-photos/"+encodeURI(path),{method:"DELETE"});
+ const r=await authFetch(BASE+"/storage/v1/object/"+encodeURIComponent(bucket)+"/"+encodeURI(path),{method:"DELETE"});
  if(r.ok||r.status===404)return true;
  throw new Error("写真クリーンアップ HTTP "+r.status);
+}
+async function deleteStorageObject(path){
+ return deleteStorageObjectFromBucket("sake-photos",path);
 }
 
 const PENDING_STORAGE_DELETE_KEY="sakelog_pending_storage_deletes_v1";
@@ -1674,8 +1677,97 @@ async function loadAnalysis(){
 }
 
 async function loadProfile(){
- $("profileBody").innerHTML=`<p><b>${escapeHtml(S.user?.email||"")}</b></p><div class="small">和酒ログにログイン中です。</div><button class="btn outline" onclick="logout()">ログアウト</button>`;
+ $("profileBody").innerHTML=`
+   <p><b>${escapeHtml(S.user?.email||"")}</b></p>
+   <div class="small">和酒ログにログイン中です。</div>
+   <button class="btn outline" onclick="logout()">ログアウト</button>
+   <div style="margin-top:28px;padding-top:18px;border-top:1px solid #e3ded4">
+     <div style="font-weight:700;margin-bottom:6px">アカウント</div>
+     <div class="small" style="margin-bottom:10px">アカウントを削除すると、飲酒記録・写真・参加情報など本人に紐づくデータは削除され、元に戻せません。</div>
+     <button id="deleteAccountBtn" class="btn outline" style="border-color:#b64b4b;color:#a33131">アカウントを削除</button>
+     <div id="deleteAccountMsg"></div>
+   </div>`;
+ const btn=$("deleteAccountBtn");
+ if(btn)btn.onclick=deleteMyAccount;
 }
+function clearAllLocalUserData(){
+ try{
+   const keepPubKey=localStorage.getItem("sakelog_pubkey");
+   const keys=[];
+   for(let i=0;i<localStorage.length;i++){
+     const k=localStorage.key(i);
+     if(k&&k.startsWith("sakelog_"))keys.push(k);
+   }
+   keys.forEach(k=>localStorage.removeItem(k));
+   if(keepPubKey)localStorage.setItem("sakelog_pubkey",keepPubKey);
+ }catch{}
+ clearSession();
+}
+
+async function deleteMyAccount(){
+ if(!S.user?.email)return;
+
+ const first=confirm(
+   "和酒ログのアカウントを削除します。\n\n飲酒記録、写真、参加情報など本人に紐づくデータは削除され、元に戻せません。\n\n続けますか？"
+ );
+ if(!first)return;
+
+ const entered=prompt("確認のため、登録メールアドレスを入力してください。");
+ if(entered===null)return;
+
+ if(entered.trim().toLowerCase()!==String(S.user.email).trim().toLowerCase()){
+   msg($("deleteAccountMsg"),"メールアドレスが一致しません。アカウントは削除されていません。","err");
+   return;
+ }
+
+ const finalCheck=confirm("最終確認です。アカウントと本人データを完全に削除しますか？");
+ if(!finalCheck)return;
+
+ const btn=$("deleteAccountBtn");
+ if(btn)btn.disabled=true;
+ msg($("deleteAccountMsg"),"アカウントを削除しています…","info");
+
+ try{
+   const manifestRes=await authFetch(BASE+"/rest/v1/rpc/account_deletion_manifest",{
+     method:"POST",
+     headers:{"Content-Type":"application/json"},
+     body:"{}"
+   });
+   const manifest=await manifestRes.json().catch(()=>null);
+   if(!manifestRes.ok)throw new Error(manifest?.message||"削除準備に失敗しました");
+
+   const sakePaths=Array.isArray(manifest?.sake_photo_paths)?manifest.sake_photo_paths:[];
+   const eventPaths=Array.isArray(manifest?.event_photo_paths)?manifest.event_photo_paths:[];
+
+   for(const path of sakePaths){
+     await deleteStorageObjectFromBucket("sake-photos",path);
+   }
+   for(const path of eventPaths){
+     await deleteStorageObjectFromBucket("event-photos",path);
+   }
+
+   const deleteRes=await authFetch(BASE+"/rest/v1/rpc/delete_my_account",{
+     method:"POST",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({p_confirm_email:entered.trim()})
+   });
+   const result=await deleteRes.json().catch(()=>null);
+   if(!deleteRes.ok)throw new Error(result?.message||"アカウント削除に失敗しました");
+
+   clearAllLocalUserData();
+   show("authView");
+   msg($("authMsg"),"アカウントを削除しました。ご利用ありがとうございました。","ok");
+ }catch(e){
+   msg(
+     $("deleteAccountMsg"),
+     (e?.message||"アカウントを削除できませんでした。")+" 通信状況を確認して、もう一度お試しください。",
+     "err"
+   );
+ }finally{
+   if(btn)btn.disabled=false;
+ }
+}
+
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="recordView"?resetRecord():show(b.dataset.page));
 restore();
 
