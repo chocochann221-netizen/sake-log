@@ -103,8 +103,30 @@ async function loadSocialProviders(){
 
 async function consumeOAuthCallback(){
  const hash=new URLSearchParams(location.hash.replace(/^#/,""));
- const access=hash.get("access_token");
- const refresh=hash.get("refresh_token");
+ let access=hash.get("access_token");
+ let refresh=hash.get("refresh_token");
+
+ // Custom OIDC providers such as LINE can return an authorization code
+ // instead of tokens in the URL hash. Exchange it with Supabase first.
+ const code=new URLSearchParams(location.search).get("code");
+ if(!access&&code){
+   try{
+     const verifierKey=Object.keys(localStorage).find(k=>k.includes("code-verifier"));
+     const verifier=verifierKey?localStorage.getItem(verifierKey):null;
+     if(verifier){
+       const r=await fetch(BASE+"/auth/v1/token?grant_type=pkce",{
+         method:"POST",
+         headers:{"apikey":cfgKey(),"Content-Type":"application/json"},
+         body:JSON.stringify({auth_code:code,code_verifier:verifier})
+       });
+       const d=await r.json().catch(()=>null);
+       if(r.ok&&d?.access_token){
+         access=d.access_token;
+         refresh=d.refresh_token||null;
+       }
+     }
+   }catch{}
+ }
  if(!access)return false;
 
  S.token=access;
