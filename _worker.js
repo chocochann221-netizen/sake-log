@@ -15,6 +15,39 @@ async function requireUser(request) {
   return user?.id?user:null;
 }
 
+async function consumeRecognitionQuota(request){
+  const authorization=request.headers.get("Authorization")||"";
+  if(!authorization.startsWith("Bearer ")) return {ok:false,status:401,error:"ログインが必要です"};
+
+  const response=await fetch(SUPABASE_URL+"/rest/v1/rpc/consume_ai_recognition_quota",{
+    method:"POST",
+    headers:{
+      apikey:SUPABASE_PUBLISHABLE_KEY,
+      Authorization:authorization,
+      "Content-Type":"application/json"
+    },
+    body:"{}"
+  });
+
+  const data=await response.json().catch(()=>null);
+  if(!response.ok){
+    return {ok:false,status:503,error:"AI利用回数の確認に失敗しました"};
+  }
+
+  if(!data?.allowed){
+    return {
+      ok:false,
+      status:429,
+      error:data?.reason==="daily_limit"
+        ?"本日のAI認識上限に達しました。時間をおいてもう一度お試しください。"
+        :"短時間のAI認識回数が上限に達しました。少し時間をおいてお試しください。",
+      quota:data||null
+    };
+  }
+
+  return {ok:true,quota:data};
+}
+
 const json = (body, status = 200, cacheControl = "no-store") =>
   new Response(JSON.stringify(body), {
     status,
@@ -31,6 +64,20 @@ async function recognizeSake(request, env) {
 
   const user=await requireUser(request);
   if(!user)return json({error:"ログインが必要です"},401);
+
+  const quotaCheck=await consumeRecognitionQuota(request);
+  if(!quotaCheck.ok){
+    const headers={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"};
+    if(quotaCheck.quota?.retry_after_seconds){
+      headers["Retry-After"]=String(quotaCheck.quota.retry_after_seconds);
+    }
+    return new Response(JSON.stringify({
+      error:quotaCheck.error,
+      rate_limited:quotaCheck.status===429,
+      quota:quotaCheck.quota||null
+    }),{status:quotaCheck.status,headers});
+  }
+
   if (!env.OPENAI_API_KEY) return json({error:"Cloudflare環境変数 OPENAI_API_KEY が未設定です"}, 503);
   try {
     const {front, back} = await request.json();
@@ -165,6 +212,7 @@ const candidates=Array.isArray(parsed.candidates)
 
 return json({
   ocr_text:nf.ocr||"",
+  quota:quotaCheck.quota||null,
   label_facts:{
     brand:nf.brand||"",
     product:nf.product||"",
