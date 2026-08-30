@@ -1,7 +1,7 @@
 const BASE="https://mtshsijgfmottgkbgnir.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
-const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null};
+const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false};
 const photoObjectUrls=new Map();
 const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
@@ -43,6 +43,7 @@ function show(id){
  ["setupView","authView",...Array.from(document.querySelectorAll(".page")).map(x=>x.id)].forEach(x=>$(x)?.classList.add("hidden"));
  $(id).classList.remove("hidden");
  $("bottomNav").classList.toggle("hidden",!S.user);
+ if($("logoutTop")) $("logoutTop").classList.toggle("hidden",!S.user);
  syncActiveNav(id);
  if(id==="homeView")loadRecent();
  if(id==="historyView")loadHistory();
@@ -100,8 +101,11 @@ $("saveSetup").onclick=async()=>{if(await testConnection()){localStorage.setItem
 $("toggleAuth").onclick=()=>{S.signup=!S.signup;$("authTitle").textContent=S.signup?"新規登録":"ログイン";$("authBtn").textContent=S.signup?"新規登録":"ログイン";$("toggleAuth").textContent=S.signup?"登録済み → ログイン":"初めて使う → 新規登録";msg($("authMsg"),"")};
 
 $("authBtn").onclick=async()=>{
+ if(S.authBusy)return;
  const email=$("email").value.trim(),password=$("password").value;
  if(!email||password.length<6){msg($("authMsg"),"メールアドレスと6文字以上のパスワードを入力してください。","err");return}
+ S.authBusy=true;
+ $("authBtn").disabled=true;
  const path=S.signup?"/auth/v1/signup":"/auth/v1/token?grant_type=password";
  try{
   const r=await fetch(BASE+path,{method:"POST",headers:headers(),body:JSON.stringify({email,password})});
@@ -109,14 +113,43 @@ $("authBtn").onclick=async()=>{
   if(!r.ok)throw new Error(d.msg||d.message||"HTTP "+r.status);
   if(S.signup&&!d.access_token){msg($("authMsg"),"✓ 登録を受け付けました。確認メールが届く場合はメール認証後にログインしてください。","ok");return}
   saveSession(d);
+  $("password").value="";
   $("userEmail").textContent=S.user?.email||"";
   show("homeView");
  }catch(e){msg($("authMsg"),e.message,"err")}
+ finally{
+  S.authBusy=false;
+  $("authBtn").disabled=false;
+ }
 };
 
 function clearSession(){
  ["sakelog_token","sakelog_refresh_token","sakelog_user","sakelog_access_token"].forEach(k=>localStorage.removeItem(k));
- S.user=null;S.token=null;S.refreshToken=null;
+
+ // 共用端末でも前ユーザーの画面・写真Blobをメモリに残さない。
+ for(const url of photoObjectUrls.values()){
+   try{URL.revokeObjectURL(url)}catch{}
+ }
+ photoObjectUrls.clear();
+
+ S.user=null;
+ S.token=null;
+ S.refreshToken=null;
+ S.detailRecord=null;
+ S.photo=null;
+ S.backPhoto=null;
+ S.foodPhoto=null;
+ S.memoryPhoto=null;
+ S.recognition=null;
+ S.currentImageCacheKey=null;
+ S.currentFrontHash=null;
+ S.currentBackHash=null;
+ S.lat=null;
+ S.lng=null;
+ S.authBusy=false;
+
+ if($("password")) $("password").value="";
+ if($("userEmail")) $("userEmail").textContent="";
 }
 async function verifyCurrentUser(){
  if(!S.token)return false;
