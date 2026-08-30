@@ -74,12 +74,30 @@ async function refreshSession(){
  saveSession(d);return true;
 }
 async function authFetch(url,options={}){
- const make=()=>fetch(url,{...options,headers:{...(options.headers||{}),apikey:cfgKey(),Authorization:"Bearer "+S.token}});
+ const make=async()=>{
+   try{
+     return await fetch(url,{
+       ...options,
+       headers:{...(options.headers||{}),apikey:cfgKey(),Authorization:"Bearer "+S.token}
+     });
+   }catch(e){
+     if(e instanceof TypeError || /fetch|network|offline/i.test(String(e?.message||e))){
+       throw new Error("通信できません。電波状況を確認してもう一度お試しください。");
+     }
+     throw e;
+   }
+ };
  let r=await make();
  if(r.status===401){
   const t=await r.clone().text().catch(()=>"");
   if(/jwt expired|expired|invalid jwt/i.test(t)){
-   await refreshSession();
+   try{
+     await refreshSession();
+   }catch{
+     clearSession();
+     show("authView");
+     throw new Error("ログインの有効期限が切れました。もう一度ログインしてください。");
+   }
    r=await make();
   }
  }
@@ -886,10 +904,14 @@ $("analyzeBtn").onclick=async()=>{
    }
  }catch(e){
    const text=String(e.message||e);
-   if(/rate limit|429|TPM/i.test(text)){
-     msg($("analysisMsg"),"APIの一時的な利用上限です。写真は保持しています。銘柄が分かれば手入力できます。分からない場合も、そのまま保存すれば「確認中」として記録し、あとから編集できます。","err");
+   if(/本日のAI認識上限|短時間のAI認識回数|rate limit|429|TPM/i.test(text)){
+     msg($("analysisMsg"),"AI認識の利用上限に達しました。写真はそのまま残っています。時間をおいて再度試すか、このまま手入力・「確認中」で記録できます。","err");
+   }else if(/通信できません|failed to fetch|network|offline/i.test(text)){
+     msg($("analysisMsg"),"通信できませんでした。写真と入力内容は残っています。通信が戻ってからもう一度「AIで銘柄候補を探す」を押してください。","err");
+   }else if(/時間内に完了|timeout|timed out/i.test(text)){
+     msg($("analysisMsg"),"解析に時間がかかっています。写真は残っているので、少し時間をおいてもう一度試せます。このまま記録することもできます。","err");
    }else{
-     msg($("analysisMsg"),"AI解析エラー: "+text+"。写真は保持しています。銘柄が分からなくても、そのまま保存すれば「確認中」として記録できます。","err");
+     msg($("analysisMsg"),"銘柄候補を取得できませんでした。写真と入力内容は残っています。このまま手入力、または「確認中」で記録できます。","err");
    }
  }finally{$("analyzeBtn").disabled=false}
 };
@@ -1650,7 +1672,7 @@ async function loadAnalysis(){
 }
 
 async function loadProfile(){
- $("profileBody").innerHTML=`<p><b>${escapeHtml(S.user?.email||"")}</b></p><div class="small">Supabase Auth接続済み<br>写真: sake-photos<br>記録: drinking_records</div><button class="btn outline" onclick="logout()">ログアウト</button>`;
+ $("profileBody").innerHTML=`<p><b>${escapeHtml(S.user?.email||"")}</b></p><div class="small">和酒ログにログイン中です。</div><button class="btn outline" onclick="logout()">ログアウト</button>`;
 }
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="recordView"?resetRecord():show(b.dataset.page));
 restore();
