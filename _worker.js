@@ -23,12 +23,23 @@ const json = (body, status = 200, cacheControl = "no-store") =>
 
 async function recognizeSake(request, env) {
   if (request.method !== "POST") return json({error:"Method not allowed"}, 405);
+
+  const contentLength=Number(request.headers.get("Content-Length")||0);
+  if(contentLength && contentLength>14*1024*1024){
+    return json({error:"画像データが大きすぎます"},413);
+  }
+
   const user=await requireUser(request);
   if(!user)return json({error:"ログインが必要です"},401);
   if (!env.OPENAI_API_KEY) return json({error:"Cloudflare環境変数 OPENAI_API_KEY が未設定です"}, 503);
   try {
     const {front, back} = await request.json();
     if (!front && !back) return json({error:"ラベル画像が必要です"}, 400);
+
+    const totalImageChars=String(front||"").length+String(back||"").length;
+    if(totalImageChars>13*1024*1024){
+      return json({error:"画像データが大きすぎます"},413);
+    }
     const model = env.OPENAI_MODEL || "gpt-5.6-terra";
     const prompt = `
 あなたは日本酒の商品同定専門AIです。
