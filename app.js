@@ -83,6 +83,29 @@ function startLineLogin(){
  location.assign(url.toString());
 }
 
+async function startLineLink(){
+ if(!S.token||!S.user){
+   alert("先に連携したい和酒ログアカウントへログインしてください。");
+   return;
+ }
+ try{
+   const r=await fetch(BASE+"/functions/v1/line-login",{
+     method:"POST",
+     headers:{
+       "apikey":cfgKey(),
+       "Authorization":"Bearer "+S.token,
+       "Content-Type":"application/json"
+     },
+     body:JSON.stringify({redirect_to:currentAppRedirectUrl()})
+   });
+   const d=await r.json().catch(()=>null);
+   if(!r.ok||!d?.authorize_url)throw new Error(d?.error||"LINE連携を開始できませんでした");
+   location.assign(d.authorize_url);
+ }catch(e){
+   alert(e?.message||"LINE連携を開始できませんでした");
+ }
+}
+
 async function loadSocialProviders(){
  try{
    const r=await fetch(BASE+"/auth/v1/settings",{headers:{apikey:cfgKey()}});
@@ -110,6 +133,13 @@ async function loadSocialProviders(){
 
 async function consumeOAuthCallback(){
  const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+
+ const lineLinked=hash.get("line_linked");
+ if(lineLinked==="1"){
+   localStorage.setItem("sakelog_line_linked_notice","1");
+   history.replaceState(null,"",location.pathname+location.search);
+   return false;
+ }
 
  const lineError=hash.get("line_error");
  if(lineError){
@@ -326,6 +356,10 @@ async function restore(){
    await cleanupPendingRollbacks().catch(()=>{});
    await cleanupPendingStorageDeletes().catch(()=>{});
    show("homeView");
+   if(localStorage.getItem("sakelog_line_linked_notice")==="1"){
+     localStorage.removeItem("sakelog_line_linked_notice");
+     alert("LINEをこの和酒ログアカウントに連携しました。次回からLINEでも同じ記録に入れます。");
+   }
  }else{
    clearSession();
    show("authView");
@@ -1809,10 +1843,23 @@ async function loadAnalysis(){
 }
 
 async function loadProfile(){
+ const isLineOnly=String(S.user?.email||"").endsWith("@line.washulog.invalid");
+ const lineArea=isLineOnly
+   ? `<div style="margin-top:18px;padding:14px;background:#f7f9f7;border-radius:12px">
+        <b>LINEでログイン中</b>
+        <div class="small" style="margin-top:5px">このLINEアカウントは単独の和酒ログアカウントとして利用中です。</div>
+      </div>`
+   : `<div style="margin-top:18px;padding:14px;background:#f7f9f7;border-radius:12px">
+        <b>LINE連携</b>
+        <div class="small" style="margin-top:5px">このアカウントにLINEを連携すると、次回からLINEでも同じ記録を開けます。別ユーザーのデータと自動統合することはありません。</div>
+        <button id="linkLineBtn" class="btn outline" style="margin-top:10px">LINEをこのアカウントに連携</button>
+      </div>`;
+
  $("profileBody").innerHTML=`
    <p><b>${escapeHtml(S.user?.email||"")}</b></p>
    <div class="small">和酒ログにログイン中です。</div>
    <button class="btn outline" onclick="logout()">ログアウト</button>
+   ${lineArea}
    <div style="margin-top:28px;padding-top:18px;border-top:1px solid #e3ded4">
      <div style="font-weight:700;margin-bottom:6px">アカウント</div>
      <div class="small" style="margin-bottom:10px">アカウントを削除すると、飲酒記録・写真・参加情報など本人に紐づくデータは削除され、元に戻せません。</div>
@@ -1821,6 +1868,8 @@ async function loadProfile(){
    </div>`;
  const btn=$("deleteAccountBtn");
  if(btn)btn.onclick=deleteMyAccount;
+ const lineBtn=$("linkLineBtn");
+ if(lineBtn)lineBtn.onclick=startLineLink;
 }
 function clearAllLocalUserData(){
  try{
