@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#238464">
-<title>酒ログ Demo v4.9.2.1</title>
+<title>酒ログ v4.9.2.1</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f6f8f6;color:#17211c}
@@ -73,7 +73,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button id="logoutTop" class="outline" style="padding:8px 11px;border-radius:10px">ログアウト</button>
 </header>
 <main>
-<section id="setupView">
+<section id="setupView" class="hidden">
 <div class="card">
 <h2>接続設定</h2>
 <div class="small">Project URLは設定済み。Publishable key（sb_publishable_...）だけ入力してください。</div>
@@ -172,7 +172,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 </div>
 <button id="locateBtn" class="btn outline">📍 現在地を記録</button>
 <div id="locMsg" class="small"></div>
-<button id="saveRecordBtn" class="btn primary">Supabaseに保存</button>
+<button id="saveRecordBtn" class="btn primary">記録を保存</button>
 <div id="recordMsg"></div>
 </div>
 </section>
@@ -212,6 +212,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
 </div>
 </nav>
-<script src="app.js?v=505"></script>
+<script src="app.js?v=506"></script>
 <script src="detail-knowledge.js?v=1"></script>
 </body></html>
