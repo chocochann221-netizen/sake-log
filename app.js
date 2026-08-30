@@ -1728,31 +1728,13 @@ async function deleteMyAccount(){
  msg($("deleteAccountMsg"),"アカウントを削除しています…","info");
 
  try{
-   const manifestRes=await authFetch(BASE+"/rest/v1/rpc/account_deletion_manifest",{
+   const r=await authFetch(BASE+"/functions/v1/delete-account",{
      method:"POST",
      headers:{"Content-Type":"application/json"},
-     body:"{}"
+     body:JSON.stringify({confirm_email:entered.trim()})
    });
-   const manifest=await manifestRes.json().catch(()=>null);
-   if(!manifestRes.ok)throw new Error(manifest?.message||"削除準備に失敗しました");
-
-   const sakePaths=Array.isArray(manifest?.sake_photo_paths)?manifest.sake_photo_paths:[];
-   const eventPaths=Array.isArray(manifest?.event_photo_paths)?manifest.event_photo_paths:[];
-
-   for(const path of sakePaths){
-     await deleteStorageObjectFromBucket("sake-photos",path);
-   }
-   for(const path of eventPaths){
-     await deleteStorageObjectFromBucket("event-photos",path);
-   }
-
-   const deleteRes=await authFetch(BASE+"/rest/v1/rpc/delete_my_account",{
-     method:"POST",
-     headers:{"Content-Type":"application/json"},
-     body:JSON.stringify({p_confirm_email:entered.trim()})
-   });
-   const result=await deleteRes.json().catch(()=>null);
-   if(!deleteRes.ok)throw new Error(result?.message||"アカウント削除に失敗しました");
+   const d=await r.json().catch(()=>null);
+   if(!r.ok)throw new Error(d?.error||"アカウント削除に失敗しました");
 
    clearAllLocalUserData();
    show("authView");
