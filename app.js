@@ -691,6 +691,67 @@ async function loadSakenowaMaster(){
  if(SAKENOWA_MASTER)return SAKENOWA_MASTER;
  try{const r=await fetch("/.netlify/functions/sakenowa-master"),d=await r.json();if(!r.ok)throw 0;return SAKENOWA_MASTER=d}catch{return null}
 }
+
+async function matchWashuMasterFacts(f){
+  try{
+    const rows=await select(
+      MASTER_TABLE,
+      "select=id,brand_name,product_name,brewery_name,prefecture,classification,rice_variety,polishing_ratio_text,alcohol_text,verified,status&status=eq.confirmed&verified=eq.true&limit=500"
+    );
+    const qb=f?.brand||"", qp=f?.product||"", qbr=f?.brewery||"", qpref=f?.prefecture||"";
+    const out=[];
+    for(const m of rows||[]){
+      const brandScore=qb?simText(qb,m.brand_name):0;
+      const productScore=qp?simText(qp,m.product_name):0;
+      const breweryScore=qbr?simText(qbr,m.brewery_name):0;
+      const prefScore=qpref?simText(qpref,m.prefecture):0;
+
+      let score=brandScore*.48 + productScore*.32 + breweryScore*.16 + prefScore*.04;
+      if(brandScore>=.99) score+=.08;
+      if(productScore>=.99) score+=.08;
+      if(breweryScore>=.9) score+=.04;
+
+      if(
+        brandScore>=.72 &&
+        (productScore>=.48 || breweryScore>=.72 || (!qp && breweryScore>=.8))
+      ){
+        out.push({
+          sake_id:m.id,
+          brand:m.brand_name||"",
+          product:m.product_name||"",
+          brewery:m.brewery_name||"",
+          prefecture:m.prefecture||"",
+          classification:m.classification||"",
+          rice_variety:m.rice_variety||"",
+          polishing_ratio:m.polishing_ratio_text||"",
+          alcohol:m.alcohol_text||"",
+          confidence:Math.min(1,score),
+          web_verified:true,
+          master_verified:true,
+          reason:"和酒ログの確認済み商品masterと照合",
+          evidence:{web_match:"和酒ログ確認済みmaster"}
+        });
+      }
+    }
+    return out.sort((a,b)=>b.confidence-a.confidence).slice(0,5);
+  }catch(e){
+    console.warn("Washu master lookup skipped",e);
+    return [];
+  }
+}
+
+function mergeRecognitionCandidates(aiCandidates,masterCandidates){
+  const all=[...(masterCandidates||[]),...(aiCandidates||[])];
+  const seen=new Set();
+  return all.filter(c=>{
+    const key=[normJP(c.brand),normJP(c.product),normJP(c.brewery)].join("|");
+    if(!key.replace(/\|/g,"")) return false;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((a,b)=>Number(b.confidence||0)-Number(a.confidence||0)).slice(0,5);
+}
+
 async function matchSakenowaFacts(f){
  const m=await loadSakenowaMaster();if(!m)return [];
  const breweries=new Map(m.breweries.map(x=>[x.id,x])),areas=new Map(m.areas.map(x=>[x.id,x]));
@@ -1011,6 +1072,8 @@ $("analyzeBtn").onclick=async()=>{
      saveAiCache(cacheKey,d);
    }
 
+   const masterMatches=await matchWashuMasterFacts(d.label_facts||{});
+   d={...d,candidates:mergeRecognitionCandidates(d.candidates||[],masterMatches)};
    S.recognition=d;
    renderCandidates(d.candidates||[]);
    const top=(d.candidates||[])[0];
