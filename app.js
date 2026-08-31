@@ -1081,7 +1081,7 @@ async function addEventPhoto(file){
         event_id:eventId,
         user_id:S.user.id,
         storage_path:path,
-        caption:null,
+        caption:($("eventPhotoCaption")?.value||"").trim()||null,
         moderation_status:"pending",
         face_review_status:"not_checked",
         is_public:false,
@@ -1098,6 +1098,7 @@ async function addEventPhoto(file){
       "📷 写真を追加しました。まずイベント参加者内だけで共有され、一般公開は確認後に行われます。",
       "ok"
     );
+    if($("eventPhotoCaption")) $("eventPhotoCaption").value="";
     setTimeout(()=>openEventDetail(eventId),700);
   }catch(e){
     msg($("eventPhotoMsg"),"写真を追加できませんでした："+(e.message||e),"err");
@@ -1131,6 +1132,18 @@ async function loadPublishedEvents(){
   }catch(e){
     console.warn("event load failed",e);
     return [];
+  }
+}
+
+
+async function editMyEventPhotoCaption(photoId,currentCaption){
+  const next=prompt("写真のひとことを編集",currentCaption||"");
+  if(next===null)return;
+  try{
+    await updateRow("event_photos",photoId,{caption:next.trim()||null});
+    await openEventDetail(S.currentEventId);
+  }catch(e){
+    alert("コメントを更新できませんでした。\n\n"+(e.message||e));
   }
 }
 
@@ -1218,6 +1231,7 @@ function renderCurrentEventPhotos(items){
               style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;background:#eee"
             >
             ${p.caption?`<figcaption class="small" style="margin-top:3px;line-height:1.35">${escapeHtml(p.caption)}</figcaption>`:""}
+            ${p.user_id===S.user?.id?`<button type="button" class="btn outline" style="padding:6px 8px;font-size:11px;margin-top:4px" onclick='editMyEventPhotoCaption(${JSON.stringify(p.id)}, ${JSON.stringify(p.caption||"")})'>ひとこと編集</button>`:""}
           </figure>
         `).join("")}
       </div>
@@ -1341,6 +1355,8 @@ async function openEventDetail(eventId){
       <div style="margin-top:20px;padding:14px;border:1px solid #e1e7e3;border-radius:16px">
         <h3 style="margin-bottom:6px">📷 このイベントの思い出を残す</h3>
         <div class="small" style="line-height:1.65">参加者の写真はまずイベント内だけで共有します。一般公開されるのは、管理側で確認された写真だけです。</div>
+        <label style="margin-top:10px">ひとこと（任意）</label>
+        <input id="eventPhotoCaption" maxlength="120" placeholder="例：今年もこのメンバーで乾杯！">
         <div class="grid" style="margin-top:8px">
           <button class="btn outline" type="button" onclick="document.getElementById('eventPhotoCameraInput').click()">📷 撮影する</button>
           <button class="btn outline" type="button" onclick="document.getElementById('eventPhotoGalleryInput').click()">🖼 写真を選ぶ</button>
