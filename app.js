@@ -1125,6 +1125,33 @@ function wireEventPhotoInputs(){
 
 
 
+
+async function loadProfileEventStats(){
+  const box=$("profileEventStats");
+  if(!box||!S.user)return;
+  box.innerHTML="読み込み中…";
+  try{
+    const rows=await rpc("my_event_activity_stats",{});
+    const s=Array.isArray(rows)?rows[0]:rows;
+    if(!s){
+      box.innerHTML='<div class="small">まだイベント記録はありません。</div>';
+      return;
+    }
+    box.innerHTML=`
+      <div class="stats-grid" style="margin-top:10px">
+        <div class="stat-card"><b>これから行く</b><strong>${Number(s.planned_events||0)}</strong><span class="small"> 件</span></div>
+        <div class="stat-card"><b>行ったイベント</b><strong>${Number(s.attended_events||0)}</strong><span class="small"> 件</span></div>
+        <div class="stat-card"><b>イベントで飲んだ酒</b><strong>${Number(s.event_drink_logs||0)}</strong><span class="small"> 本</span></div>
+        <div class="stat-card"><b>残した思い出写真</b><strong>${Number(s.event_photos||0)}</strong><span class="small"> 枚</span></div>
+      </div>
+      <div class="small" style="margin-top:8px">イベントに行くほど、ここに自分だけの日本酒の旅が積み重なります。</div>
+    `;
+  }catch(e){
+    console.warn("profile event stats failed",e);
+    box.innerHTML='<div class="small">イベント記録を読み込めませんでした。</div>';
+  }
+}
+
 async function loadProfileEventHistory(){
   const box=$("profileEventHistory");
   if(!box||!S.user)return;
@@ -2717,4 +2744,8 @@ if($("detailBackBtn")) $("detailBackBtn").onclick=()=>show("historyView");
 
 document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
   btn.addEventListener("click",()=>loadProfileEventHistory().catch(()=>{}));
+});
+
+document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
+  btn.addEventListener("click",()=>loadProfileEventStats().catch(()=>{}));
 });
