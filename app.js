@@ -1048,6 +1048,80 @@ function mergePastIntoEmptyFields(row){
 }
 
 
+
+async function uploadEventPhoto(file,eventId){
+  if(!file||!eventId)throw new Error("写真またはイベントが選択されていません");
+  const body=await preparePhotoForUpload(file);
+  const ext=(body!==file || !/^(image\/jpeg|image\/png|image\/webp)$/i.test(file.type||""))
+    ?"jpg"
+    :((file.name?.split(".").pop()||"jpg").toLowerCase());
+  const path=`${S.user.id}/${eventId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const url=BASE+"/storage/v1/object/event-photos/"+encodeURI(path);
+  const contentType=body.type||file.type||"image/jpeg";
+  const r=await authFetch(url,{
+    method:"POST",
+    headers:{"Content-Type":contentType,"x-upsert":"false"},
+    body
+  });
+  if(!r.ok){
+    const detail=await r.text().catch(()=>"");
+    throw new Error("イベント写真保存エラー HTTP "+r.status+(detail?" "+detail:""));
+  }
+  return path;
+}
+
+async function addEventPhoto(file){
+  const eventId=S.currentEventId;
+  if(!eventId||!file)return;
+  try{
+    msg($("eventPhotoMsg"),"写真を送信しています…","info");
+    const path=await uploadEventPhoto(file,eventId);
+    try{
+      await insert("event_photos",{
+        event_id:eventId,
+        user_id:S.user.id,
+        storage_path:path,
+        caption:null,
+        moderation_status:"pending",
+        face_review_status:"not_checked",
+        is_public:false,
+        audience:"event_members",
+        face_policy:"review_for_public",
+        uploaded_by_participant:true
+      });
+    }catch(e){
+      try{await deleteStorageObjectFromBucket("event-photos",path)}catch{}
+      throw e;
+    }
+    msg(
+      $("eventPhotoMsg"),
+      "📷 写真を追加しました。まずイベント参加者内だけで共有され、一般公開は確認後に行われます。",
+      "ok"
+    );
+    setTimeout(()=>openEventDetail(eventId),700);
+  }catch(e){
+    msg($("eventPhotoMsg"),"写真を追加できませんでした："+(e.message||e),"err");
+  }finally{
+    if($("eventPhotoCameraInput"))$("eventPhotoCameraInput").value="";
+    if($("eventPhotoGalleryInput"))$("eventPhotoGalleryInput").value="";
+  }
+}
+
+function wireEventPhotoInputs(){
+  if($("eventPhotoCameraInput")){
+    $("eventPhotoCameraInput").onchange=e=>{
+      const f=e.target.files?.[0];
+      if(f)addEventPhoto(f);
+    };
+  }
+  if($("eventPhotoGalleryInput")){
+    $("eventPhotoGalleryInput").onchange=e=>{
+      const f=e.target.files?.[0];
+      if(f)addEventPhoto(f);
+    };
+  }
+}
+
 async function loadPublishedEvents(){
   try{
     return await select(
@@ -1183,6 +1257,7 @@ function renderPreviousEventMemory(memory){
 }
 
 async function openEventDetail(eventId){
+  S.currentEventId=eventId;
   show("eventView");
   $("eventBody").innerHTML="<p>イベント詳細を読み込んでいます...</p>";
   try{
@@ -1216,6 +1291,15 @@ async function openEventDetail(eventId){
       </div>
       ${renderPreviousEventMemory(memory)}
       ${renderPreviousEventPhotos(previousPhotos)}
+      <div style="margin-top:20px;padding:14px;border:1px solid #e1e7e3;border-radius:16px">
+        <h3 style="margin-bottom:6px">📷 このイベントの思い出を残す</h3>
+        <div class="small" style="line-height:1.65">参加者の写真はまずイベント内だけで共有します。一般公開されるのは、管理側で確認された写真だけです。</div>
+        <div class="grid" style="margin-top:8px">
+          <button class="btn outline" type="button" onclick="document.getElementById('eventPhotoCameraInput').click()">📷 撮影する</button>
+          <button class="btn outline" type="button" onclick="document.getElementById('eventPhotoGalleryInput').click()">🖼 写真を選ぶ</button>
+        </div>
+        <div id="eventPhotoMsg"></div>
+      </div>
       <h3 style="margin-top:20px">このイベントで飲めるお酒</h3>
       ${sakes.length?sakes.map(s=>`
         <div style="padding:12px 0;border-bottom:1px solid #eee">
@@ -1258,6 +1342,7 @@ async function logEventSake(eventId,eventSakeId,sakeId){
 
 if($("eventsBtn")) $("eventsBtn").onclick=showEvents;
 if($("eventBackBtn")) $("eventBackBtn").onclick=()=>show("homeView");
+wireEventPhotoInputs();
 
 $("analyzeBtn").onclick=async()=>{
  syncActiveNav("recordView");
