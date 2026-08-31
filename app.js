@@ -1450,6 +1450,34 @@ async function loadMyEventParticipation(eventId){
   }
 }
 
+
+async function checkInCurrentEvent(eventId){
+  try{
+    const rows=await rpc("check_in_event",{p_event_id:eventId});
+    const result=Array.isArray(rows)?rows[0]:rows;
+    alert("和酒ログに参加記録を残しました。\n※主催者側の受付・入場チェックインとは連動していません。");
+    await openEventDetail(eventId);
+    await loadMyUpcomingEventList().catch(()=>{});
+    await loadProfileEventHistory().catch(()=>{});
+  }catch(e){
+    const t=String(e.message||e);
+    if(/only available around the event date/i.test(t)){
+      alert("参加記録は、イベント開催日前後に残せます。");
+    }else{
+      alert("参加記録を残せませんでした。\n\n"+t);
+    }
+  }
+}
+
+function canShowEventCheckIn(e){
+  try{
+    const now=Date.now();
+    const start=new Date(e.starts_at).getTime()-6*60*60*1000;
+    const end=new Date(e.ends_at||e.starts_at).getTime()+12*60*60*1000;
+    return now>=start && now<=end;
+  }catch{return false}
+}
+
 async function joinCurrentEvent(eventId){
   try{
     const rows=await rpc("join_event",{p_event_id:eventId});
@@ -1485,12 +1513,17 @@ function renderEventParticipation(e,myParticipation){
     return '<div class="small" style="margin-top:10px">このイベントは招待制です。</div>';
   }
   if(myParticipation){
+    const checked=["checked_in","attended"].includes(myParticipation.status);
     return `
       <div style="margin-top:12px;padding:12px;border-radius:14px;background:#edf5f1">
-        <b>✓ 和酒ログの参加予定に入っています</b>
-        <div class="small" style="margin-top:4px">これは和酒ログ内の予定登録です。公式サイト・主催者への申込や予約とは連動していません。</div>
+        <b>${checked?"✓ 和酒ログに参加記録があります":"✓ 和酒ログの参加予定に入っています"}</b>
+        <div class="small" style="margin-top:4px">これは和酒ログ内の記録です。公式サイト・主催者への申込、受付、入場チェックインとは連動していません。</div>
         <div class="small" style="margin-top:4px">当日はここからお酒をLOGしたり、写真を残せます。</div>
-        <button class="btn outline" style="margin-top:8px" onclick="leaveCurrentEvent('${escapeHtml(e.id)}')">参加予定から外す</button>
+        ${!checked&&canShowEventCheckIn(e)?`
+          <button class="btn secondary" style="margin-top:8px" onclick="checkInCurrentEvent('${escapeHtml(e.id)}')">📍 和酒ログに参加記録を残す</button>
+          <div class="small" style="margin-top:4px">※主催者側の受付・入場処理ではありません。</div>
+        `:""}
+        ${!checked?`<button class="btn outline" style="margin-top:8px" onclick="leaveCurrentEvent('${escapeHtml(e.id)}')">参加予定から外す</button>`:""}
       </div>
     `;
   }
