@@ -38,7 +38,7 @@ function syncActiveNav(id){
  });
 }
 function show(id){
- const protectedViews=new Set(["homeView","recordView","historyView","detailView","analysisView","profileView"]);
+ const protectedViews=new Set(["homeView","recordView","completeView","historyView","detailView","analysisView","profileView"]);
  if(protectedViews.has(id)&&!S.user){id="authView"}
  ["setupView","authView",...Array.from(document.querySelectorAll(".page")).map(x=>x.id)].forEach(x=>$(x)?.classList.add("hidden"));
  $(id).classList.remove("hidden");
@@ -1394,8 +1394,8 @@ $("saveRecordBtn").onclick=async()=>{
    }
    await saveToSharedDictionary();
 
-   msg($("recordMsg"),"✓ 保存しました。写真・認識結果もすべて正常に記録されています。","ok");
-   setTimeout(()=>show("homeView"),700);
+   msg($("recordMsg"),"✓ 保存しました。","ok");
+   setTimeout(()=>showRecordComplete(rec),350);
  }catch(e){
    let rollbackClean=true;
    if(rec?.id){
@@ -1416,6 +1416,29 @@ $("saveRecordBtn").onclick=async()=>{
    $("saveRecordBtn").disabled=false;
  }
 };
+function showRecordComplete(rec){
+ if(!rec?.id)return show("homeView");
+ const title=[rec.brand_name,rec.product_name].filter(Boolean).join(" ")||"今日の一杯";
+ const brewery=rec.brewery_name||"";
+ const rating=Number(rec.rating||0);
+ $("completeBody").innerHTML=`
+   <div class="complete-kicker">WASHU LOG</div>
+   <div class="complete-mark">✓</div>
+   <h2>今日の一杯を、残しました。</h2>
+   <div class="complete-sake">
+     <strong>${escapeHtml(title)}</strong>
+     ${brewery?`<span>${escapeHtml(brewery)}</span>`:""}
+     ${rating?`<div class="complete-rating">${escapeHtml(stars(rating))} <small>${rating.toFixed(1)}</small></div>`:""}
+   </div>
+   <p class="complete-copy">写真も、その日の記憶も。あとでこの一杯から振り返れます。</p>
+   <button id="completeDetailBtn" class="btn primary">この一杯を見る</button>
+   <button id="completeHomeBtn" class="btn outline">ホームへ戻る</button>
+ `;
+ show("completeView");
+ $("completeDetailBtn").onclick=()=>openRecordDetail(rec.id);
+ $("completeHomeBtn").onclick=()=>show("homeView");
+}
+
 function formatDateJP(v){
  if(!v)return "";
  try{return new Intl.DateTimeFormat("ja-JP",{year:"numeric",month:"short",day:"numeric"}).format(new Date(v))}catch{return ""}
