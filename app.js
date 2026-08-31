@@ -1082,6 +1082,72 @@ async function showEvents(){
 }
 
 
+
+async function createSignedStorageUrl(bucket,path,expiresIn=1800){
+  if(!path)return null;
+  try{
+    const r=await authFetch(
+      BASE+"/storage/v1/object/sign/"+encodeURIComponent(bucket)+"/"+encodeURI(path),
+      {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({expiresIn})
+      }
+    );
+    const d=await r.json().catch(()=>null);
+    if(!r.ok)throw new Error((d&&d.message)||"HTTP "+r.status);
+    const signed=d?.signedURL||d?.signedUrl||d?.signed_url;
+    if(!signed)return null;
+    return /^https?:\/\//i.test(signed)?signed:BASE+"/storage/v1"+signed;
+  }catch(e){
+    console.warn("signed storage url skipped",e);
+    return null;
+  }
+}
+
+async function loadPreviousEventPublicPhotos(previousEventId,limit=6){
+  if(!previousEventId)return [];
+  try{
+    const rows=await select(
+      "event_photos",
+      "select=id,storage_path,caption,created_at&event_id=eq."+encodeURIComponent(previousEventId)+
+      "&audience=eq.public&is_public=eq.true&moderation_status=eq.approved"+
+      "&face_review_status=in.(no_face,processed)&order=created_at.desc&limit="+Math.max(1,Math.min(limit,12))
+    );
+    const out=[];
+    for(const row of rows||[]){
+      const url=await createSignedStorageUrl("event-photos",row.storage_path,1800);
+      if(url)out.push({...row,url});
+    }
+    return out;
+  }catch(e){
+    console.warn("previous event photo load skipped",e);
+    return [];
+  }
+}
+
+function renderPreviousEventPhotos(items){
+  if(!items?.length)return "";
+  return `
+    <div style="margin-top:12px">
+      <div class="small" style="font-weight:800;margin-bottom:8px">📷 去年の写真</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
+        ${items.slice(0,6).map(p=>`
+          <figure style="margin:0">
+            <img
+              src="${escapeHtml(p.url)}"
+              alt="${escapeHtml(p.caption||"去年のイベント写真")}"
+              loading="lazy"
+              style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;background:#eee"
+            >
+            ${p.caption?`<figcaption class="small" style="margin-top:3px;line-height:1.35">${escapeHtml(p.caption)}</figcaption>`:""}
+          </figure>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 async function loadPreviousEventMemory(eventId){
   try{
     const rows=await rpc("previous_event_memory_summary",{p_event_id:eventId});
@@ -1125,6 +1191,9 @@ async function openEventDetail(eventId){
     if(!e) throw new Error("イベントが見つかりません");
 
     const memory=await loadPreviousEventMemory(eventId);
+    const previousPhotos=memory?.previous_event_id
+      ? await loadPreviousEventPublicPhotos(memory.previous_event_id,6)
+      : [];
 
     const sakes=await select(
       "event_sakes",
@@ -1146,6 +1215,7 @@ async function openEventDetail(eventId){
         ${official?"<br>"+official:""}
       </div>
       ${renderPreviousEventMemory(memory)}
+      ${renderPreviousEventPhotos(previousPhotos)}
       <h3 style="margin-top:20px">このイベントで飲めるお酒</h3>
       ${sakes.length?sakes.map(s=>`
         <div style="padding:12px 0;border-bottom:1px solid #eee">
