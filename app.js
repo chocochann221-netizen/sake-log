@@ -1336,8 +1336,8 @@ async function joinCurrentEvent(eventId){
     const rows=await rpc("join_event",{p_event_id:eventId});
     const result=Array.isArray(rows)?rows[0]:rows;
     alert(result?.capacity
-      ? "参加予定に追加しました。\n現在 "+Number(result.going_count||0)+" / "+Number(result.capacity)+"人"
-      : "参加予定に追加しました。");
+      ? "和酒ログの参加予定に追加しました。\n※公式サイト・主催者への申込は別途必要です。\n現在 "+Number(result.going_count||0)+" / "+Number(result.capacity)+"人"
+      : "和酒ログの参加予定に追加しました。\n※これは公式申込ではありません。");
     await openEventDetail(eventId);
   }catch(e){
     const t=String(e.message||e);
@@ -1368,7 +1368,8 @@ function renderEventParticipation(e,myParticipation){
   if(myParticipation){
     return `
       <div style="margin-top:12px;padding:12px;border-radius:14px;background:#edf5f1">
-        <b>✓ 参加予定に入っています</b>
+        <b>✓ 和酒ログの参加予定に入っています</b>
+        <div class="small" style="margin-top:4px">これは和酒ログ内の予定登録です。公式サイト・主催者への申込や予約とは連動していません。</div>
         <div class="small" style="margin-top:4px">当日はここからお酒をLOGしたり、写真を残せます。</div>
         <button class="btn outline" style="margin-top:8px" onclick="leaveCurrentEvent('${escapeHtml(e.id)}')">参加予定から外す</button>
       </div>
@@ -1376,9 +1377,11 @@ function renderEventParticipation(e,myParticipation){
   }
   return `
     <button class="btn primary" style="margin-top:12px" onclick="joinCurrentEvent('${escapeHtml(e.id)}')">
-      ${e.participation_type==="capacity_limited"?"参加を申し込む":"参加する"}
+      和酒ログの参加予定に追加
     </button>
-    ${e.capacity?'<div class="small" style="margin-top:5px">定員 '+Number(e.capacity)+'人</div>':""}
+    <div class="small" style="margin-top:5px">※公式の申込・予約ではありません。</div>
+    ${e.reservation_required?'<div class="small" style="margin-top:4px"><b>このイベントは公式側で予約・申込が必要です。</b></div>':""}
+    ${e.capacity?'<div class="small" style="margin-top:4px">和酒ログ内の予定登録目安：'+Number(e.capacity)+'人</div>':""}
   `;
 }
 
