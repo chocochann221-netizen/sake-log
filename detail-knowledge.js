@@ -186,11 +186,6 @@
     const rv=riceVarietyOf(r);if(rv)q.set("riceVariety",rv);if(r?.polishing_ratio)q.set("polishing",r.polishing_ratio);if(r?.classification)q.set("classification",r.classification);
     return "knowledge-entry.html?"+q.toString();
   }
-  function injectRiceVariety(r){
-    const body=document.getElementById("detailBody"),rv=riceVarietyOf(r);if(!body||!rv||body.querySelector("[data-rice-variety]"))return;
-    const info=body.querySelector(".detail-info");if(!info)return;const item=document.createElement("div");item.setAttribute("data-rice-variety","");item.innerHTML=`<b>使用米・原料米</b><span></span>`;item.querySelector("span").textContent=rv;
-    const polishing=[...info.children].find(el=>/精米歩合/.test(el.textContent||""));if(polishing)info.insertBefore(item,polishing);else info.appendChild(item);
-  }
   function injectMemoryStrip(r){
     const body=document.getElementById("detailBody");if(!body||!r||body.querySelector("[data-memory-strip]"))return;
     if(!r.companion_name&&!r.restaurant_name)return;
@@ -224,7 +219,6 @@
     await originalOpenRecordDetail(recordId);
     try{
       const r=S?.detailRecord;
-      injectRiceVariety(r);
       injectMemoryStrip(r);
       injectKnowledgeLink(r);
       injectOfficialLink(await getOfficialMaster(r));
