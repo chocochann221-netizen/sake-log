@@ -223,6 +223,12 @@
       <div class="number" id="master">—</div>
     </div>
 
+    <div class="card" onclick="showSakeMasterCandidates()" style="cursor:pointer;">
+      <div class="icon">🌱</div>
+      <div class="label">商品マスター候補</div>
+      <div class="number" id="masterCandidates">—</div>
+    </div>
+
   </div>
 
   <h2>管理メニュー</h2>
@@ -233,6 +239,7 @@
   <button class="menu-item" onclick="showCorrections()">✏️ 誤認識・修正データ</button>
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
+  <button class="menu-item" onclick="showSakeMasterCandidates()">🌱 商品マスター候補</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -328,6 +335,7 @@
 const autoPromotionCount = await loadAutoPromotionCount();
 const promotionReviewCount = await loadPromotionReviewCount();
 const dataHealth = await loadDataHealth();
+const masterCandidateCount = await loadSakeMasterCandidateCount();
       
       document.getElementById("users").textContent =
         data.users ?? 0;
@@ -361,6 +369,9 @@ document.getElementById("promotionReview").textContent =
 
 document.getElementById("dataHealth").textContent =
   dataHealth ? (dataHealth.status === "ok" ? "OK" : "要確認") : "—";
+
+const masterCandidatesEl = document.getElementById("masterCandidates");
+if (masterCandidatesEl) masterCandidatesEl.textContent = masterCandidateCount ?? "—";
       
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
@@ -1225,6 +1236,171 @@ async function showDataHealth() {
     "🩺 データ健康状態",
     `<p><b>判定：${d.status==="ok"?"✅ 正常":"⚠️ 要確認"}</b></p>${rows}`
   );
+}
+
+
+async function loadSakeMasterCandidateCount() {
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/sake_master_candidates?select=id&candidate_status=eq.pending",
+      {
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token,
+          "Prefer": "count=exact"
+        }
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+    const range = r.headers.get("content-range") || "";
+    const total = range.includes("/") ? Number(range.split("/").pop()) : (await r.json()).length;
+    return Number.isFinite(total) ? total : null;
+  } catch (error) {
+    console.error("商品マスター候補件数取得エラー:", error);
+    return null;
+  }
+}
+
+async function showSakeMasterCandidates() {
+  showAdminPanel(
+    "🌱 商品マスター候補",
+    "<p>候補を読み込んでいます...</p>"
+  );
+
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/sake_master_candidates?select=id,brand_name,product_name,brewery_name,source_url,source_name,source_type,candidate_status,review_note,created_at&candidate_status=in.(pending,needs_research)&order=created_at.asc&limit=200",
+      {
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+
+    const items = await r.json();
+
+    if (!items.length) {
+      showAdminPanel(
+        "🌱 商品マスター候補",
+        "<p>現在、確認待ちの候補はありません ✅</p>"
+      );
+      return;
+    }
+
+    const rows = items.map(item => {
+      const sourceLink = /^https?:\/\//i.test(item.source_url || "")
+        ? `<a href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer" style="font-size:13px;">公式情報を確認 ↗</a>`
+        : "<span style=\"font-size:13px;color:#999\">公式URL未登録</span>";
+
+      return `
+        <div style="padding:16px 0;border-bottom:1px solid #eee;">
+          <strong style="font-size:17px;">
+            ${esc(item.brand_name || "銘柄未設定")}
+            ${item.product_name ? " " + esc(item.product_name) : ""}
+          </strong><br>
+          <span style="font-size:13px;color:#777;line-height:1.7">
+            蔵元：${esc(item.brewery_name || "未設定")}<br>
+            情報源：${esc(item.source_name || item.source_type || "未設定")}<br>
+            状態：${esc(item.candidate_status || "pending")}
+          </span>
+          <div style="margin-top:8px;">${sourceLink}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <button
+              onclick="promoteMasterCandidate('${item.id}')"
+              style="padding:10px 14px;border:0;border-radius:10px;background:#292722;color:white;font-size:14px;cursor:pointer;"
+            >✅ 公式確認済み・masterへ昇格</button>
+            <button
+              onclick="markMasterCandidateResearch('${item.id}')"
+              style="padding:10px 14px;border:1px solid #aaa;border-radius:10px;background:white;color:#292722;font-size:14px;cursor:pointer;"
+            >🔎 要調査にする</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    showAdminPanel(
+      "🌱 商品マスター候補",
+      `<p style="font-size:13px;color:#777">公式情報を確認してから昇格してください。曖昧一致では自動登録しません。</p>${rows}`
+    );
+  } catch (error) {
+    console.error(error);
+    showAdminPanel(
+      "🌱 商品マスター候補",
+      "<p>取得エラー：" + esc(error.message) + "</p>"
+    );
+  }
+}
+
+async function promoteMasterCandidate(candidateId) {
+  const ok = confirm(
+    "公式情報で、銘柄・商品名・蔵元を確認しましたか？\n\n確認済みなら正式masterへ昇格します。"
+  );
+  if (!ok) return;
+
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/promote_sake_master_candidate",
+      {
+        method: "POST",
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          p_candidate_id: candidateId,
+          p_review_note: "管理画面で公式情報を確認して昇格"
+        })
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+
+    const payload = await r.json();
+    const result = Array.isArray(payload) ? payload[0] : payload;
+
+    if (result?.action === "matched_existing") {
+      alert("🔗 既存の日本酒masterへ紐付けました。");
+    } else if (result?.action === "created_master") {
+      alert("🍶 正式な日本酒masterへ昇格しました！");
+    } else {
+      alert("処理完了：" + (result?.action || "OK"));
+    }
+
+    await loadAdminDashboard();
+    await showSakeMasterCandidates();
+  } catch (error) {
+    console.error(error);
+    alert("昇格に失敗しました。\n\n" + error.message);
+  }
+}
+
+async function markMasterCandidateResearch(candidateId) {
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/sake_master_candidates?id=eq." + encodeURIComponent(candidateId),
+      {
+        method: "PATCH",
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          candidate_status: "needs_research",
+          review_note: "公式情報の追加確認が必要"
+        })
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+    await loadAdminDashboard();
+    await showSakeMasterCandidates();
+  } catch (error) {
+    console.error(error);
+    alert("状態更新に失敗しました。\n\n" + error.message);
+  }
 }
 
 async function runAutoPromotion() {
