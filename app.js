@@ -1081,6 +1081,41 @@ async function showEvents(){
     }).join("");
 }
 
+
+async function loadPreviousEventMemory(eventId){
+  try{
+    const rows=await rpc("previous_event_memory_summary",{p_event_id:eventId});
+    return Array.isArray(rows)&&rows.length?rows[0]:null;
+  }catch(e){
+    console.warn("previous event memory lookup skipped",e);
+    return null;
+  }
+}
+
+function renderPreviousEventMemory(memory){
+  if(!memory)return "";
+  const place=[memory.previous_prefecture,memory.previous_city,memory.previous_venue_name].filter(Boolean).join(" ");
+  return `
+    <div style="margin-top:20px;padding:14px;border:1px solid #e1e7e3;border-radius:16px;background:#fffaf4">
+      <div class="small" style="font-weight:800;color:#8a5f3c">去年の様子</div>
+      <h3 style="margin:5px 0 8px">${escapeHtml(memory.previous_title||"前回開催")}</h3>
+      <div class="small" style="line-height:1.75">
+        ${escapeHtml(formatDateJP(memory.previous_starts_at))}
+        ${place?"<br>"+escapeHtml(place):""}
+        <br>参加蔵：${Number(memory.brewery_count||0)}蔵
+        ／ 出品酒：${Number(memory.sake_count||0)}本
+        ${Number(memory.public_photo_count||0)>0?"<br>公開写真："+Number(memory.public_photo_count)+"枚":""}
+        ${Number(memory.my_log_count||0)>0
+          ?"<br><b>あなたは去年このイベントで "+Number(memory.my_log_count)+"本 LOGしています 🍶</b>"
+          :""}
+      </div>
+      <button class="btn outline" style="margin-top:10px" onclick="openEventDetail('${escapeHtml(memory.previous_event_id)}')">
+        去年のイベントを見る
+      </button>
+    </div>
+  `;
+}
+
 async function openEventDetail(eventId){
   show("eventView");
   $("eventBody").innerHTML="<p>イベント詳細を読み込んでいます...</p>";
@@ -1088,6 +1123,8 @@ async function openEventDetail(eventId){
     const events=await select("events","select=*&id=eq."+encodeURIComponent(eventId)+"&limit=1");
     const e=events?.[0];
     if(!e) throw new Error("イベントが見つかりません");
+
+    const memory=await loadPreviousEventMemory(eventId);
 
     const sakes=await select(
       "event_sakes",
@@ -1108,6 +1145,7 @@ async function openEventDetail(eventId){
         ${e.reservation_required?"<br>予約・事前手続きあり":""}
         ${official?"<br>"+official:""}
       </div>
+      ${renderPreviousEventMemory(memory)}
       <h3 style="margin-top:20px">このイベントで飲めるお酒</h3>
       ${sakes.length?sakes.map(s=>`
         <div style="padding:12px 0;border-bottom:1px solid #eee">
