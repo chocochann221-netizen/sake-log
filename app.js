@@ -1316,6 +1316,72 @@ function renderPreviousEventMemory(memory){
   `;
 }
 
+
+async function loadMyEventParticipation(eventId){
+  try{
+    const rows=await select(
+      "event_participations",
+      "select=id,status,created_at,updated_at&event_id=eq."+encodeURIComponent(eventId)+
+      "&user_id=eq."+encodeURIComponent(S.user.id)+"&limit=1"
+    );
+    return rows?.[0]||null;
+  }catch(e){
+    console.warn("participation lookup failed",e);
+    return null;
+  }
+}
+
+async function joinCurrentEvent(eventId){
+  try{
+    const rows=await rpc("join_event",{p_event_id:eventId});
+    const result=Array.isArray(rows)?rows[0]:rows;
+    alert(result?.capacity
+      ? "参加予定に追加しました。\n現在 "+Number(result.going_count||0)+" / "+Number(result.capacity)+"人"
+      : "参加予定に追加しました。");
+    await openEventDetail(eventId);
+  }catch(e){
+    const t=String(e.message||e);
+    if(/full/i.test(t)) alert("このイベントは定員に達しています。");
+    else if(/does not accept|no_application|invite/i.test(t)) alert("このイベントはアプリ内から参加申込できません。公式案内をご確認ください。");
+    else alert("参加予定に追加できませんでした。\n\n"+t);
+  }
+}
+
+async function leaveCurrentEvent(eventId){
+  const ok=confirm("参加予定から外しますか？");
+  if(!ok)return;
+  try{
+    await rpc("leave_event",{p_event_id:eventId});
+    await openEventDetail(eventId);
+  }catch(e){
+    alert("参加予定を変更できませんでした。\n\n"+(e.message||e));
+  }
+}
+
+function renderEventParticipation(e,myParticipation){
+  if(e.participation_type==="no_application"){
+    return '<div class="small" style="margin-top:10px">このイベントはアプリ内申込の対象外です。公式情報をご確認ください。</div>';
+  }
+  if(e.participation_type==="invite_only"){
+    return '<div class="small" style="margin-top:10px">このイベントは招待制です。</div>';
+  }
+  if(myParticipation){
+    return `
+      <div style="margin-top:12px;padding:12px;border-radius:14px;background:#edf5f1">
+        <b>✓ 参加予定に入っています</b>
+        <div class="small" style="margin-top:4px">当日はここからお酒をLOGしたり、写真を残せます。</div>
+        <button class="btn outline" style="margin-top:8px" onclick="leaveCurrentEvent('${escapeHtml(e.id)}')">参加予定から外す</button>
+      </div>
+    `;
+  }
+  return `
+    <button class="btn primary" style="margin-top:12px" onclick="joinCurrentEvent('${escapeHtml(e.id)}')">
+      ${e.participation_type==="capacity_limited"?"参加を申し込む":"参加する"}
+    </button>
+    ${e.capacity?'<div class="small" style="margin-top:5px">定員 '+Number(e.capacity)+'人</div>':""}
+  `;
+}
+
 async function openEventDetail(eventId){
   S.currentEventId=eventId;
   show("eventView");
@@ -1325,6 +1391,7 @@ async function openEventDetail(eventId){
     const e=events?.[0];
     if(!e) throw new Error("イベントが見つかりません");
 
+    const myParticipation=await loadMyEventParticipation(eventId);
     const memory=await loadPreviousEventMemory(eventId);
     const previousPhotos=memory?.previous_event_id
       ? await loadPreviousEventPublicPhotos(memory.previous_event_id,6)
@@ -1350,6 +1417,7 @@ async function openEventDetail(eventId){
         ${e.reservation_required?"<br>予約・事前手続きあり":""}
         ${official?"<br>"+official:""}
       </div>
+      ${renderEventParticipation(e,myParticipation)}
       ${renderPreviousEventMemory(memory)}
       ${renderPreviousEventPhotos(previousPhotos)}
       <div style="margin-top:20px;padding:14px;border:1px solid #e1e7e3;border-radius:16px">
