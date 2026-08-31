@@ -65,6 +65,17 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 .knowledge-entry-card{display:block;margin-top:16px;padding:17px;border:1px solid #cfe2d9;border-radius:18px;background:linear-gradient(135deg,#f4faf7,#fff);text-decoration:none;color:#17211c}
 .knowledge-entry-kicker{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;color:#238464;margin-bottom:5px}
 .knowledge-entry-card strong{display:block;font-size:18px;margin-bottom:5px}.knowledge-entry-copy{display:block;font-size:12px;line-height:1.65;color:#68716d}.knowledge-entry-arrow{display:block;margin-top:10px;font-size:12px;font-weight:800;color:#238464}
+
+.complete-card{text-align:center;padding:30px 22px}
+.complete-kicker{font-size:11px;font-weight:900;letter-spacing:.14em;color:#8a5f3c;margin-bottom:12px}
+.complete-mark{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#edf5f1;color:#238464;font-size:28px;font-weight:900}
+.complete-card h2{font-size:28px;line-height:1.35;margin-bottom:18px}
+.complete-sake{padding:18px;border:1px solid #e2ddd4;border-radius:18px;background:#fffaf4;margin-bottom:14px}
+.complete-sake strong{display:block;font-size:21px;line-height:1.45}
+.complete-sake span{display:block;color:#6f655d;margin-top:4px}
+.complete-rating{margin-top:10px;font-weight:900}
+.complete-rating small{font-size:12px;color:#6f655d}
+.complete-copy{color:#6f655d;line-height:1.8;margin:14px 0 18px}
 </style>
 </head>
 <body>
@@ -188,6 +199,11 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <div id="recordMsg"></div>
 </div>
 </section>
+<section id="completeView" class="page hidden">
+<div class="card complete-card">
+<div id="completeBody"></div>
+</div>
+</section>
 <section id="historyView" class="page hidden">
 <div class="card">
 <h2>🍶 飲んだ記録</h2><div class="small" style="margin-bottom:12px">これまで飲んだ一本を、写真・評価・場所と一緒に残します。</div>
@@ -224,6 +240,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
 </div>
 </nav>
-<script src="app.js?v=512"></script>
+<script src="app.js?v=513"></script>
 <script src="detail-knowledge.js?v=1"></script>
 </body></html>
