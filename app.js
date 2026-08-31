@@ -287,7 +287,7 @@ $("authBtn").onclick=async()=>{
   saveSession(d);
   $("password").value="";
   $("userEmail").textContent=S.user?.email||"";
-  show("homeView");
+  show("homeView"); loadMyUpcomingEventList().catch(()=>{});
  }catch(e){msg($("authMsg"),e.message,"err")}
  finally{
   S.authBusy=false;
@@ -344,7 +344,7 @@ async function restore(){
    $("userEmail").textContent=S.user?.email||"";
    await cleanupPendingRollbacks().catch(()=>{});
    await cleanupPendingStorageDeletes().catch(()=>{});
-   show("homeView");
+   show("homeView"); loadMyUpcomingEventList().catch(()=>{});
    return;
  }
 
@@ -355,7 +355,7 @@ async function restore(){
    $("userEmail").textContent=S.user.email||"";
    await cleanupPendingRollbacks().catch(()=>{});
    await cleanupPendingStorageDeletes().catch(()=>{});
-   show("homeView");
+   show("homeView"); loadMyUpcomingEventList().catch(()=>{});
    if(localStorage.getItem("sakelog_line_linked_notice")==="1"){
      localStorage.removeItem("sakelog_line_linked_notice");
      alert("LINEをこの和酒ログアカウントに連携しました。次回からLINEでも同じ記録に入れます。");
@@ -1123,6 +1123,59 @@ function wireEventPhotoInputs(){
   }
 }
 
+
+async function loadMyUpcomingEventList(){
+  const box=$("upcomingEventList");
+  if(!box||!S.user)return;
+  box.innerHTML="読み込み中…";
+  try{
+    const parts=await select(
+      "event_participations",
+      "select=event_id,status&user_id=eq."+encodeURIComponent(S.user.id)+
+      "&status=in.(going,checked_in,attended)&order=created_at.desc&limit=20"
+    );
+    if(!parts.length){
+      box.innerHTML='<div class="small">参加予定はまだありません。</div>';
+      return;
+    }
+
+    const rows=[];
+    for(const p of parts){
+      const events=await select(
+        "events",
+        "select=id,title,starts_at,ends_at,venue_name,prefecture,city,official_url,reservation_required"+
+        "&id=eq."+encodeURIComponent(p.event_id)+"&limit=1"
+      );
+      const e=events?.[0];
+      if(!e)continue;
+      const end=e.ends_at?new Date(e.ends_at):new Date(e.starts_at);
+      if(end<new Date() && p.status==="going")continue;
+      rows.push({...e,participation_status:p.status});
+    }
+
+    rows.sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+    if(!rows.length){
+      box.innerHTML='<div class="small">これから参加予定のイベントはありません。</div>';
+      return;
+    }
+
+    box.innerHTML=rows.map(e=>{
+      const place=[e.prefecture,e.city,e.venue_name].filter(Boolean).join(" ");
+      const status=e.participation_status==="going"?"参加予定":e.participation_status==="checked_in"?"参加中":"参加済み";
+      return `
+        <button class="btn outline" style="text-align:left;margin-top:8px" onclick="openEventDetail('${escapeHtml(e.id)}')">
+          <b>${escapeHtml(e.title||"イベント")}</b><br>
+          <span class="small">${escapeHtml(formatDateJP(e.starts_at))}${place?" ／ "+escapeHtml(place):""}</span><br>
+          <span class="small">和酒ログ：${escapeHtml(status)}${e.reservation_required?" ／ 公式申込・予約を確認":" "}</span>
+        </button>
+      `;
+    }).join("");
+  }catch(e){
+    console.warn("upcoming event list failed",e);
+    box.innerHTML='<div class="small">参加予定を読み込めませんでした。</div>';
+  }
+}
+
 async function loadPublishedEvents(){
   try{
     return await select(
@@ -1476,7 +1529,7 @@ async function logEventSake(eventId,eventSakeId,sakeId){
 }
 
 if($("eventsBtn")) $("eventsBtn").onclick=showEvents;
-if($("eventBackBtn")) $("eventBackBtn").onclick=()=>show("homeView");
+if($("eventBackBtn")) $("eventBackBtn").onclick=()=>show("homeView"); loadMyUpcomingEventList().catch(()=>{});
 wireEventPhotoInputs();
 
 $("analyzeBtn").onclick=async()=>{
@@ -1968,7 +2021,7 @@ $("saveRecordBtn").onclick=async()=>{
  }
 };
 function showRecordComplete(rec){
- if(!rec?.id)return show("homeView");
+ if(!rec?.id)return show("homeView"); loadMyUpcomingEventList().catch(()=>{});
  const title=[rec.brand_name,rec.product_name].filter(Boolean).join(" ")||"今日の一杯";
  const brewery=rec.brewery_name||"";
  const rating=Number(rec.rating||0);
@@ -1987,7 +2040,7 @@ function showRecordComplete(rec){
  `;
  show("completeView");
  $("completeDetailBtn").onclick=()=>openRecordDetail(rec.id);
- $("completeHomeBtn").onclick=()=>show("homeView");
+ $("completeHomeBtn").onclick=()=>show("homeView"); loadMyUpcomingEventList().catch(()=>{});
 }
 
 function formatDateJP(v){
