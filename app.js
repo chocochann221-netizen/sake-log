@@ -763,6 +763,54 @@ async function matchSakenowaFacts(f){
  }
  return out.sort((a,b)=>b.score-a.score).slice(0,5)
 }
+
+async function loadUpcomingEventsForSake(sakeId){
+  if(!sakeId)return [];
+  try{
+    const rows=await rpc("upcoming_events_for_sake",{p_sake_id:sakeId,p_limit:5});
+    return Array.isArray(rows)?rows:[];
+  }catch(e){
+    console.warn("upcoming event lookup skipped",e);
+    return [];
+  }
+}
+
+function renderUpcomingEventsForSake(items){
+  const old=document.getElementById("upcomingSakeEvents");
+  if(old) old.remove();
+  if(!items?.length)return;
+
+  const box=document.createElement("div");
+  box.id="upcomingSakeEvents";
+  box.className="sakenowa-box";
+
+  const formatDate=v=>{
+    try{
+      const d=new Date(v);
+      return d.toLocaleDateString("ja-JP",{month:"numeric",day:"numeric",weekday:"short"});
+    }catch{return ""}
+  };
+
+  box.innerHTML=
+    "<b>📅 このお酒に会えるイベント</b>"+
+    items.map(e=>{
+      const place=[e.prefecture,e.city,e.venue_name].filter(Boolean).join(" ");
+      const link=/^https?:\/\//i.test(e.official_url||"")
+        ? `<a href="${escapeHtml(e.official_url)}" target="_blank" rel="noopener noreferrer">公式情報 ↗</a>`
+        : "";
+      return `
+        <div style="padding:9px 0;border-bottom:1px solid #eee;">
+          <b>${escapeHtml(e.title||"イベント")}</b><br>
+          <span class="small">${escapeHtml(formatDate(e.starts_at))}${place?" ／ "+escapeHtml(place):""}</span>
+          ${e.reservation_required?'<br><span class="small">予約・事前手続きあり</span>':""}
+          ${link?'<br><span class="small">'+link+'</span>':""}
+        </div>
+      `;
+    }).join("");
+
+  $("analysisMsg").insertAdjacentElement("afterend",box);
+}
+
 function renderSakenowaMatches(items){
  const old=document.getElementById("sakenowaMatches");if(old)old.remove();if(!items?.length)return;
  const box=document.createElement("div");box.id="sakenowaMatches";box.className="sakenowa-box";
@@ -1077,6 +1125,12 @@ $("analyzeBtn").onclick=async()=>{
    S.recognition=d;
    renderCandidates(d.candidates||[]);
    const top=(d.candidates||[])[0];
+   if(top?.sake_id){
+     const upcomingEvents=await loadUpcomingEventsForSake(top.sake_id);
+     renderUpcomingEventsForSake(upcomingEvents);
+   }else{
+     renderUpcomingEventsForSake([]);
+   }
    if(top){
      if(!confirmed){
   applyCandidate(top);
