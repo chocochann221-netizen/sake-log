@@ -1401,6 +1401,53 @@ function renderPreviousEventPhotos(items){
   `;
 }
 
+
+async function loadMyEventDrinkSummary(eventId){
+  try{
+    const rows=await rpc("my_event_drink_summary",{p_event_id:eventId});
+    const out=[];
+    for(const row of Array.isArray(rows)?rows:[]){
+      let photoUrl=null;
+      if(row.front_photo_path){
+        photoUrl=await createSignedStorageUrl("sake-photos",row.front_photo_path,1800);
+      }
+      out.push({...row,photoUrl});
+    }
+    return out;
+  }catch(e){
+    console.warn("event drink summary lookup skipped",e);
+    return [];
+  }
+}
+
+function renderMyEventDrinkSummary(items){
+  if(!items?.length)return "";
+  const avg=items.reduce((s,x)=>s+Number(x.rating||0),0)/items.length;
+  const top=[...items].sort((a,b)=>Number(b.rating||0)-Number(a.rating||0))[0];
+  return `
+    <div style="margin-top:20px;padding:14px;border:1px solid #e1e7e3;border-radius:16px;background:#f7f9f7">
+      <div class="small" style="font-weight:800;color:#238464">あなたのこの日のLOG</div>
+      <h3 style="margin:5px 0 8px">${items.length}本を飲みました 🍶</h3>
+      <div class="small" style="margin-bottom:10px">
+        平均評価 ${avg.toFixed(1)}
+        ${top? " ／ 一番高かった一杯："+escapeHtml([top.brand_name,top.product_name].filter(Boolean).join(" ")) : ""}
+      </div>
+      <div style="display:grid;gap:10px">
+        ${items.map(x=>`
+          <button class="btn outline" style="text-align:left;display:grid;grid-template-columns:${x.photoUrl?"64px ":""}1fr;gap:10px;align-items:center;margin:0" onclick="openRecordDetail('${escapeHtml(x.record_id)}')">
+            ${x.photoUrl?`<img src="${escapeHtml(x.photoUrl)}" alt="" style="width:64px;height:78px;object-fit:cover;border-radius:9px;background:#eee">`:""}
+            <span>
+              <b>${escapeHtml([x.brand_name,x.product_name].filter(Boolean).join(" ")||"名称未登録")}</b><br>
+              <span class="small">${escapeHtml(x.brewery_name||"")}${x.rating?" ／ "+escapeHtml(stars(x.rating))+" "+Number(x.rating).toFixed(1):""}</span>
+              ${x.comment?`<br><span class="small">${escapeHtml(x.comment)}</span>`:""}
+            </span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 async function loadPreviousEventMemory(eventId){
   try{
     const rows=await rpc("previous_event_memory_summary",{p_event_id:eventId});
@@ -1552,6 +1599,7 @@ async function openEventDetail(eventId){
       ? await loadPreviousEventPublicPhotos(memory.previous_event_id,6)
       : [];
     const currentPhotos=await loadCurrentEventPhotos(eventId,18);
+    const myDrinkSummary=await loadMyEventDrinkSummary(eventId);
 
     const sakes=await select(
       "event_sakes",
@@ -1575,6 +1623,7 @@ async function openEventDetail(eventId){
       ${renderEventParticipation(e,myParticipation)}
       ${renderPreviousEventMemory(memory)}
       ${renderPreviousEventPhotos(previousPhotos)}
+      ${renderMyEventDrinkSummary(myDrinkSummary)}
       <div style="margin-top:20px;padding:14px;border:1px solid #e1e7e3;border-radius:16px">
         <h3 style="margin-bottom:6px">📷 このイベントの思い出を残す</h3>
         <div class="small" style="line-height:1.65">参加者の写真はまずイベント内だけで共有します。一般公開されるのは、管理側で確認された写真だけです。</div>
