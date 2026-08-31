@@ -47,7 +47,13 @@ function show(id){
  syncActiveNav(id);
  if(id==="homeView")loadRecent();
  if(id==="historyView")loadHistory();
- if(id==="profileView")loadProfile();
+ if(id==="profileView"){
+   loadProfile();
+   loadProfileEventHistory().catch(()=>{});
+   loadProfileEventStats().catch(()=>{});
+   loadProfileEventYearReview().catch(()=>{});
+   loadProfileEventDiscoveries().catch(()=>{});
+ }
  if(id==="analysisView")loadAnalysis();
 }
 function headers(auth=false){
@@ -1772,7 +1778,10 @@ async function logEventSake(eventId,eventSakeId,sakeId){
 }
 
 if($("eventsBtn")) $("eventsBtn").onclick=showEvents;
-if($("eventBackBtn")) $("eventBackBtn").onclick=()=>show("homeView"); loadMyUpcomingEventList().catch(()=>{});
+if($("eventBackBtn")) $("eventBackBtn").onclick=()=>{
+  show("homeView");
+  loadMyUpcomingEventList().catch(()=>{});
+};
 wireEventPhotoInputs();
 
 $("analyzeBtn").onclick=async()=>{
@@ -2264,7 +2273,11 @@ $("saveRecordBtn").onclick=async()=>{
  }
 };
 function showRecordComplete(rec){
- if(!rec?.id)return show("homeView"); loadMyUpcomingEventList().catch(()=>{});
+ if(!rec?.id){
+   show("homeView");
+   loadMyUpcomingEventList().catch(()=>{});
+   return;
+ }
  const title=[rec.brand_name,rec.product_name].filter(Boolean).join(" ")||"今日の一杯";
  const brewery=rec.brewery_name||"";
  const rating=Number(rec.rating||0);
@@ -2283,7 +2296,10 @@ function showRecordComplete(rec){
  `;
  show("completeView");
  $("completeDetailBtn").onclick=()=>openRecordDetail(rec.id);
- $("completeHomeBtn").onclick=()=>show("homeView"); loadMyUpcomingEventList().catch(()=>{});
+ $("completeHomeBtn").onclick=()=>{
+   show("homeView");
+   loadMyUpcomingEventList().catch(()=>{});
+ };
 }
 
 function formatDateJP(v){
@@ -2810,18 +2826,3 @@ restore();
 
 if($("detailBackBtn")) $("detailBackBtn").onclick=()=>show("historyView");
 
-document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
-  btn.addEventListener("click",()=>loadProfileEventHistory().catch(()=>{}));
-});
-
-document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
-  btn.addEventListener("click",()=>loadProfileEventStats().catch(()=>{}));
-});
-
-document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
-  btn.addEventListener("click",()=>loadProfileEventYearReview().catch(()=>{}));
-});
-
-document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
-  btn.addEventListener("click",()=>loadProfileEventDiscoveries().catch(()=>{}));
-});
