@@ -1,7 +1,7 @@
 const BASE="https://mtshsijgfmottgkbgnir.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
-const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false};
+const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false,currentEventId:null,currentEventSakeId:null,currentSakeId:null};
 const photoObjectUrls=new Map();
 const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
@@ -38,7 +38,7 @@ function syncActiveNav(id){
  });
 }
 function show(id){
- const protectedViews=new Set(["homeView","recordView","completeView","historyView","detailView","analysisView","profileView"]);
+ const protectedViews=new Set(["homeView","eventView","recordView","completeView","historyView","detailView","analysisView","profileView"]);
  if(protectedViews.has(id)&&!S.user){id="authView"}
  ["setupView","authView",...Array.from(document.querySelectorAll(".page")).map(x=>x.id)].forEach(x=>$(x)?.classList.add("hidden"));
  $(id).classList.remove("hidden");
@@ -376,7 +376,7 @@ $("logoutTop").onclick=logout;
 
 function resetRecord(){
  S.currentImageCacheKey=null; S.currentFrontHash=null; S.currentBackHash=null;
- S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;
+ S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;S.currentEventId=null;S.currentEventSakeId=null;S.currentSakeId=null;
  ["brand","product","brewery","prefecture","classification","rice","riceVariety","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>{if($(id))$(id).value=""});
  ["preview","backPreview","foodPreview","memoryPreview"].forEach(id=>$(id)?.classList.add("hidden"));
  ["cameraInput","galleryInput","backCameraInput","backGalleryInput","foodCameraInput","foodGalleryInput","memoryCameraInput","memoryGalleryInput"].forEach(id=>{if($(id))$(id).value=""});
@@ -1047,6 +1047,110 @@ function mergePastIntoEmptyFields(row){
   setIfEmpty("volume",row.volume);
 }
 
+
+async function loadPublishedEvents(){
+  try{
+    return await select(
+      "events",
+      "select=id,title,starts_at,ends_at,venue_name,prefecture,city,organizer_display_name,official_url,fee_note,reservation_required&status=eq.published&approval_status=eq.approved&visibility=eq.public&order=starts_at.asc&limit=50"
+    );
+  }catch(e){
+    console.warn("event load failed",e);
+    return [];
+  }
+}
+
+async function showEvents(){
+  syncActiveNav("homeView");
+  show("eventView");
+  $("eventBody").innerHTML="<p>イベントを読み込んでいます...</p>";
+  const rows=(await loadPublishedEvents()).filter(e=>!e.ends_at || new Date(e.ends_at)>=new Date());
+  if(!rows.length){
+    $("eventBody").innerHTML="<h2>📅 日本酒イベント</h2><p class='small'>現在、公開中のイベント情報はありません。</p>";
+    return;
+  }
+  $("eventBody").innerHTML="<h2>📅 日本酒イベント</h2>"+
+    rows.map(e=>{
+      const place=[e.prefecture,e.city,e.venue_name].filter(Boolean).join(" ");
+      return `
+        <button class="btn outline" style="text-align:left;margin-top:10px" onclick="openEventDetail('${escapeHtml(e.id)}')">
+          <b>${escapeHtml(e.title||"イベント")}</b><br>
+          <span class="small">${escapeHtml(formatDateJP(e.starts_at))}${place?" ／ "+escapeHtml(place):""}</span>
+        </button>
+      `;
+    }).join("");
+}
+
+async function openEventDetail(eventId){
+  show("eventView");
+  $("eventBody").innerHTML="<p>イベント詳細を読み込んでいます...</p>";
+  try{
+    const events=await select("events","select=*&id=eq."+encodeURIComponent(eventId)+"&limit=1");
+    const e=events?.[0];
+    if(!e) throw new Error("イベントが見つかりません");
+
+    const sakes=await select(
+      "event_sakes",
+      "select=id,sake_id,brand_name,product_name,brewery_name,classification,serving_note,beverage_category,master_eligible,display_order&event_id=eq."+encodeURIComponent(eventId)+"&order=display_order.asc"
+    );
+
+    const official=/^https?:\/\//i.test(e.official_url||"")
+      ? `<a href="${escapeHtml(e.official_url)}" target="_blank" rel="noopener noreferrer">公式情報 ↗</a>`
+      : "";
+
+    $("eventBody").innerHTML=`
+      <h2>${escapeHtml(e.title||"イベント")}</h2>
+      <div class="small" style="line-height:1.8">
+        ${escapeHtml(formatDateJP(e.starts_at))}
+        ${e.venue_name?"<br>"+escapeHtml([e.prefecture,e.city,e.venue_name].filter(Boolean).join(" ")):""}
+        ${e.organizer_display_name?"<br>主催："+escapeHtml(e.organizer_display_name):""}
+        ${e.fee_note?"<br>料金："+escapeHtml(e.fee_note):""}
+        ${e.reservation_required?"<br>予約・事前手続きあり":""}
+        ${official?"<br>"+official:""}
+      </div>
+      <h3 style="margin-top:20px">このイベントで飲めるお酒</h3>
+      ${sakes.length?sakes.map(s=>`
+        <div style="padding:12px 0;border-bottom:1px solid #eee">
+          <b>${escapeHtml([s.brand_name,s.product_name].filter(Boolean).join(" "))}</b><br>
+          <span class="small">${escapeHtml(s.brewery_name||"")}${s.classification?" ／ "+escapeHtml(s.classification):""}${s.serving_note?" ／ "+escapeHtml(s.serving_note):""}</span>
+          ${s.master_eligible? `
+            <button class="btn secondary" style="margin-top:8px" onclick="logEventSake('${escapeHtml(eventId)}','${escapeHtml(s.id)}','${escapeHtml(s.sake_id||"")}')">🍶 この一杯をLOG</button>
+          `:"<div class='small' style='margin-top:6px'>イベント出品情報として掲載</div>"}
+        </div>
+      `).join(""):"<p class='small'>出品酒情報は準備中です。</p>"}
+    `;
+  }catch(e){
+    $("eventBody").innerHTML="<p>取得エラー："+escapeHtml(e.message)+"</p>";
+  }
+}
+
+async function logEventSake(eventId,eventSakeId,sakeId){
+  try{
+    const rows=await select(
+      "event_sakes",
+      "select=brand_name,product_name,brewery_name,classification,sake_id&event_id=eq."+encodeURIComponent(eventId)+"&id=eq."+encodeURIComponent(eventSakeId)+"&limit=1"
+    );
+    const s=rows?.[0];
+    if(!s) throw new Error("出品酒が見つかりません");
+
+    resetRecord();
+    S.currentEventId=eventId;
+    S.currentEventSakeId=eventSakeId;
+    S.currentSakeId=s.sake_id||sakeId||null;
+
+    $("brand").value=s.brand_name||"";
+    $("product").value=s.product_name||"";
+    $("brewery").value=s.brewery_name||"";
+    $("classification").value=s.classification||"";
+    msg($("recordMsg"),"📅 イベントの出品酒から記録を開始しました。写真を追加しても、そのままLOGしてもOKです。","info");
+  }catch(e){
+    alert("イベントから記録を開始できませんでした。\n\n"+e.message);
+  }
+}
+
+if($("eventsBtn")) $("eventsBtn").onclick=showEvents;
+if($("eventBackBtn")) $("eventBackBtn").onclick=()=>show("homeView");
+
 $("analyzeBtn").onclick=async()=>{
  syncActiveNav("recordView");
  $("analyzeBtn").disabled=true;
@@ -1424,6 +1528,8 @@ $("saveRecordBtn").onclick=async()=>{
 
    rec=await insert("drinking_records",{
      user_id:S.user.id,
+     sake_id:S.currentSakeId||null,
+     event_id:S.currentEventId||null,
      brand_name:brand,
      product_name:$("product").value.trim()||null,
      brewery_name:$("brewery").value.trim()||null,
