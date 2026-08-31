@@ -1124,6 +1124,72 @@ function wireEventPhotoInputs(){
 }
 
 
+
+async function loadProfileEventHistory(){
+  const box=$("profileEventHistory");
+  if(!box||!S.user)return;
+  box.innerHTML="読み込み中…";
+  try{
+    const parts=await select(
+      "event_participations",
+      "select=event_id,status,created_at,updated_at&user_id=eq."+encodeURIComponent(S.user.id)+
+      "&order=created_at.desc&limit=100"
+    );
+
+    if(!parts.length){
+      box.innerHTML='<div class="small">イベントの予定・参加履歴はまだありません。</div>';
+      return;
+    }
+
+    const rows=[];
+    for(const p of parts){
+      const events=await select(
+        "events",
+        "select=id,title,starts_at,ends_at,venue_name,prefecture,city,official_url,reservation_required"+
+        "&id=eq."+encodeURIComponent(p.event_id)+"&limit=1"
+      );
+      const e=events?.[0];
+      if(e)rows.push({...e,participation_status:p.status,joined_at:p.created_at});
+    }
+
+    const now=new Date();
+    const upcoming=[];
+    const past=[];
+
+    for(const e of rows){
+      const end=e.ends_at?new Date(e.ends_at):new Date(e.starts_at);
+      const isPast=end<now || ["checked_in","attended"].includes(e.participation_status);
+      (isPast?past:upcoming).push(e);
+    }
+
+    upcoming.sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+    past.sort((a,b)=>new Date(b.starts_at)-new Date(a.starts_at));
+
+    const renderEventRow=(e,isPast)=>{
+      const place=[e.prefecture,e.city,e.venue_name].filter(Boolean).join(" ");
+      const status=isPast
+        ? (e.participation_status==="attended"?"参加済み":e.participation_status==="checked_in"?"参加記録あり":"過去の予定")
+        : "参加予定";
+      return `
+        <button class="btn outline" style="text-align:left;margin-top:8px" onclick="openEventDetail('${escapeHtml(e.id)}')">
+          <b>${escapeHtml(e.title||"イベント")}</b><br>
+          <span class="small">${escapeHtml(formatDateJP(e.starts_at))}${place?" ／ "+escapeHtml(place):""}</span><br>
+          <span class="small">${escapeHtml(status)}${e.reservation_required&&!isPast?" ／ 公式申込・予約を確認":""}</span>
+        </button>
+      `;
+    };
+
+    box.innerHTML=
+      '<div style="margin-top:8px"><b>これから行く</b></div>'+
+      (upcoming.length?upcoming.map(e=>renderEventRow(e,false)).join(""):'<div class="small" style="margin-top:6px">予定はありません。</div>')+
+      '<div style="margin-top:18px"><b>行ったイベント</b></div>'+
+      (past.length?past.map(e=>renderEventRow(e,true)).join(""):'<div class="small" style="margin-top:6px">参加履歴はまだありません。</div>');
+  }catch(e){
+    console.warn("profile event history failed",e);
+    box.innerHTML='<div class="small">イベント履歴を読み込めませんでした。</div>';
+  }
+}
+
 async function loadMyUpcomingEventList(){
   const box=$("upcomingEventList");
   if(!box||!S.user)return;
@@ -2566,3 +2632,7 @@ document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="
 restore();
 
 if($("detailBackBtn")) $("detailBackBtn").onclick=()=>show("historyView");
+
+document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
+  btn.addEventListener("click",()=>loadProfileEventHistory().catch(()=>{}));
+});
