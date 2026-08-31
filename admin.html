@@ -1269,7 +1269,7 @@ async function showSakeMasterCandidates() {
 
   try {
     const r = await fetch(
-      BASE + "/rest/v1/sake_master_candidates?select=id,brand_name,product_name,brewery_name,source_url,source_name,source_type,candidate_status,review_note,created_at&candidate_status=in.(pending,needs_research)&order=created_at.asc&limit=200",
+      BASE + "/rest/v1/sake_master_candidates?select=id,event_id,brand_name,product_name,brewery_name,source_url,source_name,source_type,candidate_status,review_note,created_at&candidate_status=in.(pending,needs_research)&order=brewery_name.asc,created_at.asc&limit=200",
       {
         headers: {
           "apikey": cfgKey(),
@@ -1288,6 +1288,29 @@ async function showSakeMasterCandidates() {
       );
       return;
     }
+
+    const breweryGroups = {};
+    items.forEach(item => {
+      const key = item.brewery_name || "蔵元未設定";
+      if (!breweryGroups[key]) breweryGroups[key] = {
+        brewery_name: key,
+        event_id: item.event_id,
+        source_url: item.source_url,
+        count: 0
+      };
+      breweryGroups[key].count += 1;
+    });
+
+    const groupButtons = Object.values(breweryGroups).map(group => `
+      <div style="padding:12px 0;border-bottom:1px solid #eee;">
+        <strong>${esc(group.brewery_name)}</strong>
+        <span style="font-size:13px;color:#777;"> ／ ${group.count}件</span><br>
+        <button
+          onclick='promoteCandidateBrewery(${JSON.stringify(group.event_id)}, ${JSON.stringify(group.brewery_name)}, ${JSON.stringify(group.source_url || "")}, ${group.count})'
+          style="margin-top:8px;padding:9px 12px;border:0;border-radius:10px;background:#5b4737;color:white;font-size:13px;cursor:pointer;"
+        >🏭 この蔵を公式確認して一括昇格</button>
+      </div>
+    `).join("");
 
     const rows = items.map(item => {
       const sourceLink = /^https?:\/\//i.test(item.source_url || "")
@@ -1322,7 +1345,12 @@ async function showSakeMasterCandidates() {
 
     showAdminPanel(
       "🌱 商品マスター候補",
-      `<p style="font-size:13px;color:#777">公式情報を確認してから昇格してください。曖昧一致では自動登録しません。</p>${rows}`
+      `<p style="font-size:13px;color:#777">公式情報を確認してから昇格してください。曖昧一致では自動登録しません。</p>
+      <div style="margin:12px 0 20px;padding:14px;background:#f7f3ec;border-radius:12px;">
+        <b>蔵単位でまとめて確認</b>
+        <div style="font-size:12px;color:#777;margin:4px 0 8px;">公式イベントページで1蔵分をまとめて確認できた場合だけ使います。</div>
+        ${groupButtons}
+      </div>${rows}`
     );
   } catch (error) {
     console.error(error);
@@ -1330,6 +1358,54 @@ async function showSakeMasterCandidates() {
       "🌱 商品マスター候補",
       "<p>取得エラー：" + esc(error.message) + "</p>"
     );
+  }
+}
+
+
+async function promoteCandidateBrewery(eventId, breweryName, sourceUrl, count) {
+  const openSource = /^https?:\/\//i.test(sourceUrl || "");
+  if (openSource) window.open(sourceUrl, "_blank", "noopener,noreferrer");
+
+  const ok = confirm(
+    breweryName + " の候補 " + count + "件を一括で昇格します。\n\n" +
+    "公式イベント情報で、この蔵の掲載商品をまとめて確認済みの場合だけ続けてください。"
+  );
+  if (!ok) return;
+
+  try {
+    const r = await fetch(
+      BASE + "/rest/v1/rpc/promote_sake_candidates_by_brewery",
+      {
+        method: "POST",
+        headers: {
+          "apikey": cfgKey(),
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          p_event_id: eventId,
+          p_brewery_name: breweryName,
+          p_review_note: "管理画面で公式イベント情報を蔵単位確認して一括昇格"
+        })
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
+    const payload = await r.json();
+    const result = Array.isArray(payload) ? payload[0] : payload;
+
+    alert(
+      "一括昇格が完了しました。\n\n" +
+      "処理：" + (result?.processed ?? 0) + "件\n" +
+      "新規master：" + (result?.created_master ?? 0) + "件\n" +
+      "既存masterへ接続：" + (result?.matched_existing ?? 0) + "件\n" +
+      "保留：" + (result?.skipped ?? 0) + "件"
+    );
+
+    await loadAdminDashboard();
+    await showSakeMasterCandidates();
+  } catch (error) {
+    console.error(error);
+    alert("一括昇格に失敗しました。\n\n" + error.message);
   }
 }
 
