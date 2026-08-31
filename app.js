@@ -1152,6 +1152,38 @@ async function loadProfileEventStats(){
   }
 }
 
+
+async function loadProfileEventYearReview(){
+  const box=$("profileEventYearReview");
+  if(!box||!S.user)return;
+  box.innerHTML="読み込み中…";
+  try{
+    const year=new Date().getFullYear();
+    const data=await rpc("my_event_year_review",{p_year:year});
+    const s=Array.isArray(data)?data[0]:data;
+    const topSakes=Array.isArray(s?.top_sakes)?s.top_sakes:[];
+    box.innerHTML=`
+      <div class="small">${year}年の和酒ログ</div>
+      <div style="margin-top:10px;padding:12px;border-radius:14px;background:#fffaf4">
+        <b>行ったイベント</b>
+        <div style="font-size:26px;font-weight:900;margin-top:2px">${Number(s?.attended_event_count||0)} <span class="small">件</span></div>
+        ${s?.top_prefecture?`<div class="small" style="margin-top:6px">いちばん足を運んだ地域：<b>${escapeHtml(s.top_prefecture)}</b>（${Number(s.top_prefecture_event_count||0)}件）</div>`:""}
+      </div>
+      <div style="margin-top:14px"><b>イベントで出会った酒 ベスト3</b></div>
+      ${topSakes.length?topSakes.map((x,i)=>`
+        <button class="btn outline" style="text-align:left;margin-top:8px" onclick="openRecordDetail('${escapeHtml(x.record_id)}')">
+          <b>${i+1}. ${escapeHtml([x.brand_name,x.product_name].filter(Boolean).join(" ")||"名称未登録")}</b><br>
+          <span class="small">${escapeHtml(x.brewery_name||"")}${x.rating!=null?" ／ ★ "+Number(x.rating).toFixed(1):""}</span>
+          ${x.event_title?`<br><span class="small">${escapeHtml(x.event_title)}</span>`:""}
+        </button>
+      `).join(""):'<div class="small" style="margin-top:7px">イベントで飲んだ酒をLOGすると、ここにベスト3が育っていきます。</div>'}
+    `;
+  }catch(e){
+    console.warn("profile event year review failed",e);
+    box.innerHTML='<div class="small">今年の振り返りを読み込めませんでした。</div>';
+  }
+}
+
 async function loadProfileEventHistory(){
   const box=$("profileEventHistory");
   if(!box||!S.user)return;
@@ -2748,4 +2780,8 @@ document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
 
 document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
   btn.addEventListener("click",()=>loadProfileEventStats().catch(()=>{}));
+});
+
+document.querySelectorAll('.navbtn[data-page="profileView"]').forEach(btn=>{
+  btn.addEventListener("click",()=>loadProfileEventYearReview().catch(()=>{}));
 });
