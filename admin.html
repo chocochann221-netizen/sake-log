@@ -217,6 +217,12 @@
   <div class="number" id="dataHealth">—</div>
 </div>
     
+    <div class="card" onclick="showRecognitionImprovementQueue()" style="cursor:pointer;">
+      <div class="icon">📥</div>
+      <div class="label">改善キュー</div>
+      <div class="number" id="improvementQueue">—</div>
+    </div>
+
     <div class="card">
       <div class="icon">📚</div>
       <div class="label">日本酒マスター</div>
@@ -340,6 +346,7 @@ const autoPromotionCount = await loadAutoPromotionCount();
 const promotionReviewCount = await loadPromotionReviewCount();
 const dataHealth = await loadDataHealth();
 const masterCandidateCount = await loadSakeMasterCandidateCount();
+const improvementQueueCount = await loadRecognitionImprovementQueueCount();
       
       document.getElementById("users").textContent =
         data.users ?? 0;
@@ -376,6 +383,11 @@ document.getElementById("dataHealth").textContent =
 
 const masterCandidatesEl = document.getElementById("masterCandidates");
 if (masterCandidatesEl) masterCandidatesEl.textContent = masterCandidateCount ?? "—";
+const improvementQueueEl = document.getElementById("improvementQueue");
+if (improvementQueueEl) {
+  improvementQueueEl.textContent = improvementQueueCount ?? "—";
+  improvementQueueEl.style.color = Number(improvementQueueCount)>0 ? "#a34a32" : "";
+}
       
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
@@ -630,6 +642,12 @@ async function processRecognitionImprovement(queueId,action){
       alert("候補を却下しました。");
     }
     await showRecognitionImprovementQueue();
+    const count=await loadRecognitionImprovementQueueCount();
+    const el=document.getElementById("improvementQueue");
+    if(el){
+      el.textContent=count ?? "—";
+      el.style.color=Number(count)>0 ? "#a34a32" : "";
+    }
   }catch(error){
     console.error(error);
     const msgText=String(error.message||error);
@@ -639,6 +657,28 @@ async function processRecognitionImprovement(queueId,action){
       alert("改善候補の処理に失敗しました。\n\n"+msgText);
     }
   }
+}
+
+
+async function loadRecognitionImprovementQueueCount(){
+  try{
+    const key=cfgKey();
+    const r=await fetch(
+      BASE+"/rest/v1/recognition_improvement_queue?select=id&status=in.(pending,reviewing)",
+      {
+        method:"HEAD",
+        headers:{
+          "apikey":key,
+          "Authorization":"Bearer "+token,
+          "Prefer":"count=exact"
+        }
+      }
+    );
+    if(!r.ok)return null;
+    const range=r.headers.get("content-range")||"";
+    const m=range.match(/\/(\d+)$/);
+    return m?Number(m[1]):0;
+  }catch{return null}
 }
 
 async function showRecognitionImprovementQueue(){
