@@ -1,7 +1,7 @@
 const BASE="https://mtshsijgfmottgkbgnir.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
-const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false,currentEventId:null,currentEventSakeId:null,currentSakeId:null};
+const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false,currentEventId:null,currentEventSakeId:null,currentSakeId:null,currentSaveRequestId:null,currentEventPhotoRequestId:null};
 const photoObjectUrls=new Map();
 const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
@@ -383,7 +383,7 @@ $("logoutTop").onclick=logout;
 
 function resetRecord(){
  S.currentImageCacheKey=null; S.currentFrontHash=null; S.currentBackHash=null;
- S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;S.currentEventId=null;S.currentEventSakeId=null;S.currentSakeId=null;
+ S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;S.currentEventId=null;S.currentEventSakeId=null;S.currentSakeId=null;S.currentSaveRequestId=null;
  ["brand","product","brewery","prefecture","classification","rice","riceVariety","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>{if($(id))$(id).value=""});
  ["preview","backPreview","foodPreview","memoryPreview"].forEach(id=>$(id)?.classList.add("hidden"));
  ["cameraInput","galleryInput","backCameraInput","backGalleryInput","foodCameraInput","foodGalleryInput","memoryCameraInput","memoryGalleryInput"].forEach(id=>{if($(id))$(id).value=""});
@@ -1056,18 +1056,18 @@ function mergePastIntoEmptyFields(row){
 
 
 
-async function uploadEventPhoto(file,eventId){
-  if(!file||!eventId)throw new Error("写真またはイベントが選択されていません");
+async function uploadEventPhoto(file,eventId,requestId){
+  if(!file||!eventId||!requestId)throw new Error("写真またはイベントが選択されていません");
   const body=await preparePhotoForUpload(file);
   const ext=(body!==file || !/^(image\/jpeg|image\/png|image\/webp)$/i.test(file.type||""))
     ?"jpg"
     :((file.name?.split(".").pop()||"jpg").toLowerCase());
-  const path=`${S.user.id}/${eventId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const path=`${S.user.id}/${eventId}/${requestId}.${ext}`;
   const url=BASE+"/storage/v1/object/event-photos/"+encodeURI(path);
   const contentType=body.type||file.type||"image/jpeg";
   const r=await authFetch(url,{
     method:"POST",
-    headers:{"Content-Type":contentType,"x-upsert":"false"},
+    headers:{"Content-Type":contentType,"x-upsert":"true"},
     body
   });
   if(!r.ok){
@@ -1094,13 +1094,16 @@ async function addEventPhoto(file){
   if(!eventId||!file||eventPhotoUploadBusy)return;
   eventPhotoUploadBusy=true;
   setEventPhotoUploadDisabled(true);
+  const requestId=S.currentEventPhotoRequestId||makeClientRequestId();
+  S.currentEventPhotoRequestId=requestId;
   try{
     msg($("eventPhotoMsg"),"写真を送信しています…","info");
-    const path=await uploadEventPhoto(file,eventId);
+    const path=await uploadEventPhoto(file,eventId,requestId);
     try{
-      await insert("event_photos",{
+      await idempotentInsert("event_photos",{
         event_id:eventId,
         user_id:S.user.id,
+        client_request_id:requestId,
         storage_path:path,
         caption:($("eventPhotoCaption")?.value||"").trim()||null,
         moderation_status:"pending",
@@ -1109,7 +1112,7 @@ async function addEventPhoto(file){
         audience:"event_members",
         face_policy:"review_for_public",
         uploaded_by_participant:true
-      });
+      },"user_id,client_request_id");
     }catch(e){
       try{await deleteStorageObjectFromBucket("event-photos",path)}catch{}
       throw e;
@@ -1120,6 +1123,7 @@ async function addEventPhoto(file){
       "ok"
     );
     if($("eventPhotoCaption")) $("eventPhotoCaption").value="";
+    S.currentEventPhotoRequestId=null;
     setTimeout(()=>openEventDetail(eventId),700);
   }catch(e){
     msg($("eventPhotoMsg"),"写真を追加できませんでした："+(e.message||e),"err");
@@ -2136,6 +2140,30 @@ async function uploadPhoto(file){
  const sizeMb=((body.size||file.size||0)/1024/1024).toFixed(1);
  throw new Error((lastError?.message||"写真保存に失敗しました")+"（送信画像 約"+sizeMb+"MB）");
 }
+
+function makeClientRequestId(){
+  try{return crypto.randomUUID()}catch{
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,ch=>{
+      const r=Math.random()*16|0,v=ch==="x"?r:(r&3|8);
+      return v.toString(16);
+    });
+  }
+}
+async function idempotentInsert(table,obj,conflictCols){
+  const q="?on_conflict="+encodeURIComponent(conflictCols);
+  const r=await authFetch(BASE+"/rest/v1/"+table+q,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Prefer":"resolution=merge-duplicates,return=representation"
+    },
+    body:JSON.stringify(obj)
+  });
+  const d=await r.json().catch(()=>null);
+  if(!r.ok)throw new Error((d&&d.message)||"HTTP "+r.status);
+  return Array.isArray(d)?d[0]:d;
+}
+
 async function insert(table,obj){
  const r=await authFetch(BASE+"/rest/v1/"+table,{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:JSON.stringify(obj)});
  const d=await r.json().catch(()=>null);
@@ -2286,8 +2314,10 @@ $("saveRecordBtn").onclick=async()=>{
    // 前回、通信断などで巻き戻せなかった保存があれば先に掃除する。
    await cleanupPendingRollbacks();
 
-   rec=await insert("drinking_records",{
+   if(!S.currentSaveRequestId)S.currentSaveRequestId=makeClientRequestId();
+   rec=await idempotentInsert("drinking_records",{
      user_id:S.user.id,
+     client_request_id:S.currentSaveRequestId,
      sake_id:S.currentSakeId||null,
      event_id:S.currentEventId||null,
      brand_name:brand,
@@ -2307,7 +2337,7 @@ $("saveRecordBtn").onclick=async()=>{
      price_yen:$("price").value?Number($("price").value):null,
      rating:Number($("rating").value),
      comment:$("comment").value.trim()||null
-   });
+   },"user_id,client_request_id");
 
    let frontPhotoRow=null;
    const photos=[
@@ -2378,6 +2408,7 @@ $("saveRecordBtn").onclick=async()=>{
    await saveToSharedDictionary();
 
    msg($("recordMsg"),"✓ 保存しました。","ok");
+   S.currentSaveRequestId=null;
    setTimeout(()=>showRecordComplete(rec),350);
  }catch(e){
    let rollbackClean=true;
