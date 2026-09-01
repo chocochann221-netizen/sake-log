@@ -1077,9 +1077,23 @@ async function uploadEventPhoto(file,eventId){
   return path;
 }
 
+
+let eventPhotoUploadBusy=false;
+function setEventPhotoUploadDisabled(disabled){
+  ["eventPhotoCameraInput","eventPhotoGalleryInput"].forEach(id=>{
+    const el=$(id); if(el)el.disabled=disabled;
+  });
+  document.querySelectorAll('[data-event-photo-pick]').forEach(btn=>{
+    btn.disabled=disabled;
+    btn.style.opacity=disabled?".55":"";
+  });
+}
+
 async function addEventPhoto(file){
   const eventId=S.currentEventId;
-  if(!eventId||!file)return;
+  if(!eventId||!file||eventPhotoUploadBusy)return;
+  eventPhotoUploadBusy=true;
+  setEventPhotoUploadDisabled(true);
   try{
     msg($("eventPhotoMsg"),"写真を送信しています…","info");
     const path=await uploadEventPhoto(file,eventId);
@@ -1110,6 +1124,8 @@ async function addEventPhoto(file){
   }catch(e){
     msg($("eventPhotoMsg"),"写真を追加できませんでした："+(e.message||e),"err");
   }finally{
+    eventPhotoUploadBusy=false;
+    setEventPhotoUploadDisabled(false);
     if($("eventPhotoCameraInput"))$("eventPhotoCameraInput").value="";
     if($("eventPhotoGalleryInput"))$("eventPhotoGalleryInput").value="";
   }
@@ -1674,7 +1690,28 @@ async function loadMyEventParticipation(eventId){
 }
 
 
+
+const eventActionLocks=new Set();
+
+function lockEventAction(key){
+  if(eventActionLocks.has(key))return false;
+  eventActionLocks.add(key);
+  return true;
+}
+function unlockEventAction(key){ eventActionLocks.delete(key); }
+
+function setEventActionButtonsDisabled(eventId,disabled){
+  document.querySelectorAll('[data-event-action="'+CSS.escape(String(eventId))+'"]').forEach(btn=>{
+    btn.disabled=disabled;
+    btn.style.opacity=disabled?".55":"";
+    btn.style.pointerEvents=disabled?"none":"";
+  });
+}
+
 async function checkInCurrentEvent(eventId){
+  const key="checkin:"+eventId;
+  if(!lockEventAction(key))return;
+  setEventActionButtonsDisabled(eventId,true);
   try{
     const rows=await rpc("check_in_event",{p_event_id:eventId});
     const result=Array.isArray(rows)?rows[0]:rows;
@@ -1689,6 +1726,9 @@ async function checkInCurrentEvent(eventId){
     }else{
       alert("参加記録を残せませんでした。\n\n"+t);
     }
+  }finally{
+    unlockEventAction(key);
+    setEventActionButtonsDisabled(eventId,false);
   }
 }
 
@@ -1702,6 +1742,9 @@ function canShowEventCheckIn(e){
 }
 
 async function joinCurrentEvent(eventId){
+  const key="join:"+eventId;
+  if(!lockEventAction(key))return;
+  setEventActionButtonsDisabled(eventId,true);
   try{
     const rows=await rpc("join_event",{p_event_id:eventId});
     const result=Array.isArray(rows)?rows[0]:rows;
@@ -1714,17 +1757,26 @@ async function joinCurrentEvent(eventId){
     if(/full/i.test(t)) alert("このイベントは定員に達しています。");
     else if(/does not accept|no_application|invite/i.test(t)) alert("このイベントはアプリ内から参加申込できません。公式案内をご確認ください。");
     else alert("参加予定に追加できませんでした。\n\n"+t);
+  }finally{
+    unlockEventAction(key);
+    setEventActionButtonsDisabled(eventId,false);
   }
 }
 
 async function leaveCurrentEvent(eventId){
   const ok=confirm("参加予定から外しますか？");
   if(!ok)return;
+  const key="leave:"+eventId;
+  if(!lockEventAction(key))return;
+  setEventActionButtonsDisabled(eventId,true);
   try{
     await rpc("leave_event",{p_event_id:eventId});
     await openEventDetail(eventId);
   }catch(e){
     alert("参加予定を変更できませんでした。\n\n"+(e.message||e));
+  }finally{
+    unlockEventAction(key);
+    setEventActionButtonsDisabled(eventId,false);
   }
 }
 
@@ -1743,15 +1795,15 @@ function renderEventParticipation(e,myParticipation){
         <div class="small" style="margin-top:4px">これは和酒ログ内の記録です。公式サイト・主催者への申込、受付、入場チェックインとは連動していません。</div>
         <div class="small" style="margin-top:4px">当日はここからお酒をLOGしたり、写真を残せます。</div>
         ${!checked&&canShowEventCheckIn(e)?`
-          <button class="btn secondary" style="margin-top:8px" onclick="checkInCurrentEvent('${escapeHtml(e.id)}')">📍 和酒ログに参加記録を残す</button>
+          <button class="btn secondary" style="margin-top:8px" data-event-action="${escapeHtml(e.id)}" onclick="checkInCurrentEvent('${escapeHtml(e.id)}')">📍 和酒ログに参加記録を残す</button>
           <div class="small" style="margin-top:4px">※主催者側の受付・入場処理ではありません。</div>
         `:""}
-        ${!checked?`<button class="btn outline" style="margin-top:8px" onclick="leaveCurrentEvent('${escapeHtml(e.id)}')">参加予定から外す</button>`:""}
+        ${!checked?`<button class="btn outline" style="margin-top:8px" data-event-action="${escapeHtml(e.id)}" onclick="leaveCurrentEvent('${escapeHtml(e.id)}')">参加予定から外す</button>`:""}
       </div>
     `;
   }
   return `
-    <button class="btn primary" style="margin-top:12px" onclick="joinCurrentEvent('${escapeHtml(e.id)}')">
+    <button class="btn primary" style="margin-top:12px" data-event-action="${escapeHtml(e.id)}" onclick="joinCurrentEvent('${escapeHtml(e.id)}')">
       和酒ログの参加予定に追加
     </button>
     <div class="small" style="margin-top:5px">※公式の申込・予約ではありません。</div>
@@ -1806,8 +1858,8 @@ async function openEventDetail(eventId){
         <label style="margin-top:10px">ひとこと（任意）</label>
         <input id="eventPhotoCaption" maxlength="120" placeholder="例：今年もこのメンバーで乾杯！">
         <div class="grid" style="margin-top:8px">
-          <button class="btn outline" type="button" onclick="document.getElementById('eventPhotoCameraInput').click()">📷 撮影する</button>
-          <button class="btn outline" type="button" onclick="document.getElementById('eventPhotoGalleryInput').click()">🖼 写真を選ぶ</button>
+          <button class="btn outline" data-event-photo-pick type="button" onclick="document.getElementById('eventPhotoCameraInput').click()">📷 撮影する</button>
+          <button class="btn outline" data-event-photo-pick type="button" onclick="document.getElementById('eventPhotoGalleryInput').click()">🖼 写真を選ぶ</button>
         </div>
         <div id="eventPhotoMsg"></div>
         ${renderCurrentEventPhotos(currentPhotos)}
