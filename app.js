@@ -1,7 +1,7 @@
 const BASE="https://mtshsijgfmottgkbgnir.supabase.co";
 const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
-const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false,currentEventId:null,currentEventSakeId:null,currentSakeId:null,currentSaveRequestId:null,currentEventPhotoRequestId:null};
+const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false,currentEventId:null,currentEventSakeId:null,currentSakeId:null,currentSaveRequestId:null,currentEventPhotoRequestId:null,selectedRecognitionCandidate:null};
 const photoObjectUrls=new Map();
 let freshPhotoPickerConfirmed=false;
 const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
@@ -346,6 +346,7 @@ function clearSession(){
  S.foodPhoto=null;
  S.memoryPhoto=null;
  S.recognition=null;
+ S.selectedRecognitionCandidate=null;
  S.currentImageCacheKey=null;
  S.currentFrontHash=null;
  S.currentBackHash=null;
@@ -354,6 +355,7 @@ function clearSession(){
  S.authBusy=false;
  S.currentSaveRequestId=null;
  S.currentEventPhotoRequestId=null;
+ S.selectedRecognitionCandidate=null;
  clearLocalOperation(PENDING_SAVE_STATE_KEY);
  clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
 
@@ -441,6 +443,7 @@ function replaceFrontPhotoWithoutReset(file){
   $("preview").src=URL.createObjectURL(file);
   $("preview").classList.remove("hidden");
   S.recognition=null;
+  S.selectedRecognitionCandidate=null;
   S.currentImageCacheKey=null;
   S.currentFrontHash=null;
   updateAnalyzeButton();
@@ -453,6 +456,7 @@ function replaceBackPhotoWithoutReset(file){
   $("backPreview").src=URL.createObjectURL(file);
   $("backPreview").classList.remove("hidden");
   S.recognition=null;
+  S.selectedRecognitionCandidate=null;
   S.currentImageCacheKey=null;
   S.currentBackHash=null;
   updateAnalyzeButton();
@@ -462,7 +466,7 @@ function replaceBackPhotoWithoutReset(file){
 
 function resetRecord(){
  S.currentImageCacheKey=null; S.currentFrontHash=null; S.currentBackHash=null;
- S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;S.currentEventId=null;S.currentEventSakeId=null;S.currentSakeId=null;S.currentSaveRequestId=null;
+ S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.selectedRecognitionCandidate=null;S.lat=null;S.lng=null;S.currentEventId=null;S.currentEventSakeId=null;S.currentSakeId=null;S.currentSaveRequestId=null;
  ["brand","product","brewery","prefecture","classification","rice","riceVariety","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>{if($(id))$(id).value=""});
  ["preview","backPreview","foodPreview","memoryPreview"].forEach(id=>$(id)?.classList.add("hidden"));
  ["cameraInput","galleryInput","backCameraInput","backGalleryInput","foodCameraInput","foodGalleryInput","memoryCameraInput","memoryGalleryInput"].forEach(id=>{if($(id))$(id).value=""});
@@ -610,6 +614,7 @@ function renderSources(sources){
 }
 function applyCandidate(c){
  if(!c)return;
+ S.selectedRecognitionCandidate=c;
  const f=S.recognition?.label_facts||{};
  $("brand").value=f.brand||c.brand||"";
  $("product").value=f.product||c.product||"";
@@ -2663,6 +2668,73 @@ function volumeMl(v){
   if(/(?:^|[^m])l\b|リットル/.test(s) && !/ml|ｍｌ/.test(s))return n*1000;
   return n;
 }
+
+function normalizedCompareText(v){
+  return String(v||"").normalize("NFKC").toLowerCase()
+    .replace(/株式会社|有限会社|合資会社|合同会社/g,"")
+    .replace(/[\s　・･\-ー_（）()「」『』【】]/g,"");
+}
+function valuesClearlyDifferent(a,b,threshold=.45){
+  const aa=normalizedCompareText(a),bb=normalizedCompareText(b);
+  if(!aa||!bb)return false;
+  if(aa===bb||aa.includes(bb)||bb.includes(aa))return false;
+  try{return simText(a,b)<threshold}catch{return aa!==bb}
+}
+function recognitionReference(){
+  if(!S.recognition)return null;
+  const f=S.recognition.label_facts||{};
+  const c=S.selectedRecognitionCandidate||(S.recognition.candidates||[])[0]||{};
+  return {
+    brand:f.brand||c.brand||"",
+    product:f.product||c.product||"",
+    brewery:f.brewery||c.brewery||"",
+    prefecture:f.prefecture||c.prefecture||"",
+    classification:f.classification||c.classification||"",
+    polishing_ratio:f.polishing_ratio||c.polishing_ratio||"",
+    alcohol:f.alcohol||c.alcohol||"",
+    volume:f.volume||c.volume||""
+  };
+}
+function recognitionDiscrepancies(){
+  const ref=recognitionReference();
+  if(!ref)return [];
+  const out=[];
+  const current={
+    brand:$("brand")?.value||"",
+    product:$("product")?.value||"",
+    brewery:$("brewery")?.value||"",
+    prefecture:$("prefecture")?.value||"",
+    classification:$("classification")?.value||"",
+    polishing_ratio:$("polishing")?.value||"",
+    alcohol:$("alcohol")?.value||"",
+    volume:$("volume")?.value||""
+  };
+
+  if(valuesClearlyDifferent(current.brand,ref.brand,.4)){
+    out.push({field:"brand",label:"銘柄",read:ref.brand,input:current.brand});
+  }
+  if(valuesClearlyDifferent(current.product,ref.product,.38)){
+    out.push({field:"product",label:"商品名",read:ref.product,input:current.product});
+  }
+  if(valuesClearlyDifferent(current.brewery,ref.brewery,.42)){
+    out.push({field:"brewery",label:"蔵元",read:ref.brewery,input:current.brewery});
+  }
+
+  const pNow=firstNumber(current.polishing_ratio),pRef=firstNumber(ref.polishing_ratio);
+  if(pNow!==null&&pRef!==null&&Math.abs(pNow-pRef)>=5){
+    out.push({field:"polishing",label:"精米歩合",read:ref.polishing_ratio,input:current.polishing_ratio});
+  }
+  const aNow=firstNumber(current.alcohol),aRef=firstNumber(ref.alcohol);
+  if(aNow!==null&&aRef!==null&&Math.abs(aNow-aRef)>=2){
+    out.push({field:"alcohol",label:"アルコール度数",read:ref.alcohol,input:current.alcohol});
+  }
+  const vNow=volumeMl(current.volume),vRef=volumeMl(ref.volume);
+  if(vNow!==null&&vRef!==null&&Math.abs(vNow-vRef)>=100){
+    out.push({field:"volume",label:"容量",read:ref.volume,input:current.volume});
+  }
+  return out;
+}
+
 function validateRecordForm({render=true}={}){
   const errors=[];
   const warnings=[];
@@ -2709,6 +2781,12 @@ function validateRecordForm({render=true}={}){
   if(brewery && !/(酒造|酒蔵|醸造|酒店|株式会社|有限会社|合名会社|合同会社|本家|本舗)/.test(brewery) && brewery.length<=3){
     warnings.push("蔵元名が短いため、入力途中でないか確認してください。");
     fields.brewery="warning";
+  }
+
+  const recognitionDiffs=recognitionDiscrepancies();
+  for(const d of recognitionDiffs){
+    warnings.push(d.label+"がラベル読取結果と大きく異なります（読取："+d.read+" ／ 入力："+d.input+"）。");
+    if(fields[d.field]!=="error")fields[d.field]="warning";
   }
 
   if(render){
@@ -2835,7 +2913,8 @@ $("saveRecordBtn").onclick=async()=>{
    }
 
    if(S.recognition){
-     const top=(S.recognition.candidates||[])[0]||{};
+     const top=S.selectedRecognitionCandidate||(S.recognition.candidates||[])[0]||{};
+     const recognitionDiffFields=recognitionDiscrepancies().map(x=>x.field);
      const rr=await insert("recognition_results",{
        user_id:S.user.id,
        drinking_record_id:rec.id,
@@ -2858,7 +2937,9 @@ $("saveRecordBtn").onclick=async()=>{
          correct_brand:brand,
          correct_product:$("product").value.trim()||null,
          correct_brewery:$("brewery").value.trim()||null,
-         reason:"user_confirmed"
+         reason:recognitionDiffFields.length
+           ?"user_corrected:"+recognitionDiffFields.join(",")
+           :"user_confirmed"
        });
      }
    }
