@@ -240,6 +240,7 @@
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showSakeMasterCandidates()">🌱 商品マスター候補</button>
+  <button class="menu-item" onclick="showEventPhotoModeration()">📷 イベント写真の公開確認</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -1238,6 +1239,120 @@ async function showDataHealth() {
   );
 }
 
+
+
+async function adminSignedEventPhotoUrl(path){
+  if(!path)return null;
+  try{
+    const r=await fetch(
+      BASE + "/storage/v1/object/sign/event-photos/" + encodeURI(path),
+      {
+        method:"POST",
+        headers:{
+          "apikey":cfgKey(),
+          "Authorization":"Bearer " + token,
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({expiresIn:1800})
+      }
+    );
+    if(!r.ok) throw new Error(await r.text());
+    const d=await r.json();
+    const signed=d.signedURL||d.signedUrl||d.signed_url;
+    return signed ? (/^https?:\/\//i.test(signed)?signed:BASE+"/storage/v1"+signed) : null;
+  }catch(error){
+    console.error("イベント写真URL取得エラー:",error);
+    return null;
+  }
+}
+
+async function moderateEventPhoto(photoId,action,faceStatus=null){
+  try{
+    const r=await fetch(
+      BASE + "/rest/v1/rpc/admin_moderate_event_photo",
+      {
+        method:"POST",
+        headers:{
+          "apikey":cfgKey(),
+          "Authorization":"Bearer " + token,
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          p_photo_id:photoId,
+          p_action:action,
+          p_face_review_status:faceStatus
+        })
+      }
+    );
+    if(!r.ok) throw new Error(await r.text());
+    await showEventPhotoModeration();
+  }catch(error){
+    console.error(error);
+    alert("写真の状態更新に失敗しました。\n\n"+error.message);
+  }
+}
+
+async function showEventPhotoModeration(){
+  showAdminPanel("📷 イベント写真の公開確認","<p>確認待ちの写真を読み込んでいます...</p>");
+  try{
+    const r=await fetch(
+      BASE + "/rest/v1/event_photos?select=id,event_id,user_id,storage_path,caption,moderation_status,face_review_status,is_public,audience,created_at&moderation_status=in.(pending,hold)&order=created_at.asc&limit=100",
+      {
+        headers:{
+          "apikey":cfgKey(),
+          "Authorization":"Bearer " + token
+        }
+      }
+    );
+    if(!r.ok) throw new Error(await r.text());
+    const items=await r.json();
+
+    if(!items.length){
+      showAdminPanel("📷 イベント写真の公開確認","<p>現在、確認待ちの写真はありません ✅</p>");
+      return;
+    }
+
+    const blocks=[];
+    for(const item of items){
+      const url=await adminSignedEventPhotoUrl(item.storage_path);
+      const face=item.face_review_status||"not_checked";
+      const publicReady=["no_face","processed"].includes(face);
+
+      blocks.push(`
+        <div style="padding:16px 0;border-bottom:1px solid #eee;">
+          ${url?`<img src="${esc(url)}" alt="イベント写真" style="width:100%;max-width:360px;max-height:280px;object-fit:contain;border-radius:12px;background:#f5f5f5">`:"<div>画像を表示できません</div>"}
+          <div style="font-size:13px;line-height:1.7;margin-top:8px;color:#666">
+            コメント：${esc(item.caption||"なし")}<br>
+            公開状態：${esc(item.moderation_status)} ／ 顔確認：${esc(face)}<br>
+            現在：${item.is_public?"一般公開":"一般非公開"} ／ ${esc(item.audience||"event_members")}
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="moderateEventPhoto('${item.id}','mark_no_face')" style="padding:9px 11px;border:1px solid #aaa;border-radius:9px;background:white;cursor:pointer">🙂 顔なし確認</button>
+            <button onclick="moderateEventPhoto('${item.id}','mark_face_detected')" style="padding:9px 11px;border:1px solid #aaa;border-radius:9px;background:white;cursor:pointer">👤 顔あり</button>
+            <button onclick="moderateEventPhoto('${item.id}','mark_processed')" style="padding:9px 11px;border:1px solid #aaa;border-radius:9px;background:white;cursor:pointer">🛡 顔処理済み</button>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button
+              onclick="${publicReady?`moderateEventPhoto('${item.id}','approve_public','${face}')`:`alert('一般公開するには「顔なし確認」または「顔処理済み」が必要です。')`}"
+              style="padding:10px 12px;border:0;border-radius:9px;background:${publicReady?"#2f6f52":"#aaa"};color:white;cursor:pointer"
+            >🌐 一般公開を承認</button>
+            <button onclick="moderateEventPhoto('${item.id}','keep_members','${face}')" style="padding:10px 12px;border:0;border-radius:9px;background:#6c5d4c;color:white;cursor:pointer">👥 参加者内のみ承認</button>
+            <button onclick="moderateEventPhoto('${item.id}','hold','${face}')" style="padding:10px 12px;border:1px solid #c9a66b;border-radius:9px;background:white;cursor:pointer">⏸ 保留</button>
+            <button onclick="moderateEventPhoto('${item.id}','reject','${face}')" style="padding:10px 12px;border:1px solid #c66;border-radius:9px;background:white;color:#a22;cursor:pointer">✖ 非承認</button>
+          </div>
+        </div>
+      `);
+    }
+
+    showAdminPanel(
+      "📷 イベント写真の公開確認",
+      "<p style='font-size:13px;color:#666'>一般公開は、顔なし確認または顔処理済みの写真だけ許可されます。</p>"+blocks.join("")
+    );
+  }catch(error){
+    console.error(error);
+    showAdminPanel("📷 イベント写真の公開確認","<p>取得エラー："+esc(error.message)+"</p>");
+  }
+}
 
 async function loadSakeMasterCandidateCount() {
   try {
