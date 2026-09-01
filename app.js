@@ -466,7 +466,7 @@ function resetRecord(){
  ["brand","product","brewery","prefecture","classification","rice","riceVariety","polishing","alcohol","volume","restaurant","price","comment"].forEach(id=>{if($(id))$(id).value=""});
  ["preview","backPreview","foodPreview","memoryPreview"].forEach(id=>$(id)?.classList.add("hidden"));
  ["cameraInput","galleryInput","backCameraInput","backGalleryInput","foodCameraInput","foodGalleryInput","memoryCameraInput","memoryGalleryInput"].forEach(id=>{if($(id))$(id).value=""});
- $("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
+ $("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");if($("recordValidationMsg"))$("recordValidationMsg").innerHTML="";["polishing","alcohol","volume","price","prefecture","brand","product","brewery"].forEach(id=>$(id)?.classList.remove("field-error","field-warning"));$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
  show("recordView");
 }
 $("manualBtn").onclick=()=>{startFreshRecord()};
@@ -2639,9 +2639,120 @@ async function cleanupPendingRollbacks(){
  return remaining.length===0;
 }
 
+
+const JAPAN_PREFECTURES=[
+"北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
+"新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県",
+"奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県",
+"熊本県","大分県","宮崎県","鹿児島県","沖縄県"
+];
+
+function normalizeNumberText(v){
+  return String(v||"")
+    .replace(/[０-９．]/g,ch=>"０１２３４５６７８９．".indexOf(ch)===10?".":"0123456789"["０１２３４５６７８９".indexOf(ch)])
+    .replace(/,/g,"");
+}
+function firstNumber(v){
+  const m=normalizeNumberText(v).match(/-?\d+(?:\.\d+)?/);
+  return m?Number(m[0]):null;
+}
+function volumeMl(v){
+  const s=normalizeNumberText(v).toLowerCase();
+  const n=firstNumber(s);
+  if(n===null)return null;
+  if(/(?:^|[^m])l\b|リットル/.test(s) && !/ml|ｍｌ/.test(s))return n*1000;
+  return n;
+}
+function validateRecordForm({render=true}={}){
+  const errors=[];
+  const warnings=[];
+  const fields={};
+
+  const polishing=firstNumber($("polishing")?.value);
+  if(polishing!==null){
+    if(polishing<=0||polishing>100){errors.push("精米歩合は1〜100%の範囲で確認してください。");fields.polishing="error"}
+    else if(polishing<20){warnings.push("精米歩合が20%未満です。ラベルの数字をもう一度確認してください。");fields.polishing="warning"}
+  }
+
+  const alcohol=firstNumber($("alcohol")?.value);
+  if(alcohol!==null){
+    if(alcohol<0||alcohol>100){errors.push("アルコール度数は0〜100%の範囲で確認してください。");fields.alcohol="error"}
+    else if(alcohol<5||alcohol>30){warnings.push("アルコール度数が一般的な日本酒の範囲から外れています。ラベル表記を確認してください。");fields.alcohol="warning"}
+  }
+
+  const ml=volumeMl($("volume")?.value);
+  if(ml!==null){
+    if(ml<=0){errors.push("容量は0より大きい値を入力してください。");fields.volume="error"}
+    else if(ml<100||ml>10000){warnings.push("容量の値が珍しいため、ml / L の単位を確認してください。");fields.volume="warning"}
+  }
+
+  const priceText=String($("price")?.value||"").trim();
+  if(priceText){
+    const price=Number(normalizeNumberText(priceText));
+    if(!Number.isFinite(price)||price<0){errors.push("価格は0円以上の数字で入力してください。");fields.price="error"}
+    else if(price>1000000){warnings.push("価格が100万円を超えています。桁数を確認してください。");fields.price="warning"}
+  }
+
+  const pref=String($("prefecture")?.value||"").trim();
+  if(pref && !JAPAN_PREFECTURES.includes(pref)){
+    warnings.push("都道府県名が標準表記と異なります。例：奈良県、京都府、東京都。");
+    fields.prefecture="warning";
+  }
+
+  const brand=String($("brand")?.value||"").trim();
+  const product=String($("product")?.value||"").trim();
+  const brewery=String($("brewery")?.value||"").trim();
+  if(brand && product && brand===product){
+    warnings.push("銘柄と商品名が同じ文字になっています。分け方を確認してください。");
+    fields.brand=fields.product="warning";
+  }
+  if(brewery && !/(酒造|酒蔵|醸造|酒店|株式会社|有限会社|合名会社|合同会社|本家|本舗)/.test(brewery) && brewery.length<=3){
+    warnings.push("蔵元名が短いため、入力途中でないか確認してください。");
+    fields.brewery="warning";
+  }
+
+  if(render){
+    ["polishing","alcohol","volume","price","prefecture","brand","product","brewery"].forEach(id=>{
+      const el=$(id); if(!el)return;
+      el.classList.remove("field-error","field-warning");
+      if(fields[id]==="error")el.classList.add("field-error");
+      else if(fields[id]==="warning")el.classList.add("field-warning");
+    });
+    const box=$("recordValidationMsg");
+    if(box){
+      const parts=[];
+      if(errors.length)parts.push('<div class="msg err"><b>入力を確認してください</b><br>'+errors.map(escapeHtml).join("<br>")+'</div>');
+      if(warnings.length)parts.push('<div class="msg info"><b>念のため確認</b><br>'+warnings.map(escapeHtml).join("<br>")+'</div>');
+      box.innerHTML=parts.join("");
+    }
+  }
+  return {errors,warnings};
+}
+function wireRecordValidation(){
+  const ids=["polishing","alcohol","volume","price","prefecture","brand","product","brewery"];
+  let timer=null;
+  const run=()=>{
+    clearTimeout(timer);
+    timer=setTimeout(()=>validateRecordForm({render:true}),250);
+  };
+  ids.forEach(id=>{
+    $(id)?.addEventListener("input",run);
+    $(id)?.addEventListener("blur",()=>validateRecordForm({render:true}));
+  });
+}
+
 $("saveRecordBtn").onclick=async()=>{
  syncActiveNav("recordView");
  if(!requireOnline("現在オフラインです。入力内容は消えません。通信が戻ってから保存してください。"))return;
+ const validation=validateRecordForm({render:true});
+ if(validation.errors.length){
+   msg($("recordMsg"),"入力内容に確認が必要な項目があります。赤い欄を確認してください。","err");
+   return;
+ }
+ if(validation.warnings.length){
+   const ok=confirm("入力内容に確認したい項目があります。\n\n・"+validation.warnings.join("\n・")+"\n\nこの内容で保存しますか？");
+   if(!ok)return;
+ }
  if(S.savingRecord)return;
  S.savingRecord=true;
  let brand=$("brand").value.trim();
@@ -3355,6 +3466,7 @@ document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
   }else show(b.dataset.page);
 });
 wireRecordDraftAutosave();
+wireRecordValidation();
 restore();
 
 if($("detailBackBtn")) $("detailBackBtn").onclick=()=>show("historyView");
