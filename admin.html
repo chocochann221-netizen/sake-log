@@ -591,6 +591,56 @@ async function enqueueRecognitionImprovement(targetType, payload){
   }
 }
 
+
+async function processRecognitionImprovement(queueId,action){
+  const labels={
+    apply_dictionary:"辞書へ反映",
+    apply_master:"マスターへ反映",
+    dismiss:"却下"
+  };
+  const note=prompt((labels[action]||"処理")+"のメモ（任意）","");
+  if(note===null)return;
+  const ok=confirm((labels[action]||"この処理")+"を実行しますか？");
+  if(!ok)return;
+
+  try{
+    const key=cfgKey();
+    const r=await fetch(BASE+"/rest/v1/rpc/admin_process_recognition_improvement",{
+      method:"POST",
+      headers:{
+        "apikey":key,
+        "Authorization":"Bearer "+token,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        p_queue_id:queueId,
+        p_action:action,
+        p_review_note:note.trim()||null
+      })
+    });
+    const text=await r.text();
+    if(!r.ok)throw new Error(text);
+    const result=JSON.parse(text);
+
+    if(action==="apply_dictionary"){
+      alert("🧠 辞書へ反映しました。更新："+(result.updated_rows||0)+"件");
+    }else if(action==="apply_master"){
+      alert("🍶 マスターへ反映しました。");
+    }else{
+      alert("候補を却下しました。");
+    }
+    await showRecognitionImprovementQueue();
+  }catch(error){
+    console.error(error);
+    const msgText=String(error.message||error);
+    if(/matching dictionary signature not found/i.test(msgText)){
+      alert("対応する辞書データが見つかりませんでした。\nこの候補はマスター確認側で扱うか、元の辞書データを確認してください。");
+    }else{
+      alert("改善候補の処理に失敗しました。\n\n"+msgText);
+    }
+  }
+}
+
 async function showRecognitionImprovementQueue(){
   showAdminPanel("📥 改善キュー","<p>改善候補を読み込んでいます...</p>");
   try{
@@ -615,6 +665,14 @@ async function showRecognitionImprovementQueue(){
         <div style="font-size:12px;color:#777;margin-top:7px">
           修正項目：${esc((x.correction_fields||[]).join("・")||"—")}<br>
           状態：${esc(x.status)}
+          ${x.review_note?"<br>メモ："+esc(x.review_note):""}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          ${x.target_type==="dictionary"
+            ?`<button onclick="processRecognitionImprovement('${x.id}','apply_dictionary')" style="padding:9px 11px;border:0;border-radius:9px;background:#8a6b3d;color:white;cursor:pointer">🧠 確認して辞書へ反映</button>`
+            :`<button onclick="processRecognitionImprovement('${x.id}','apply_master')" style="padding:9px 11px;border:0;border-radius:9px;background:#2f6f52;color:white;cursor:pointer">🍶 確認してマスターへ反映</button>`
+          }
+          <button onclick="processRecognitionImprovement('${x.id}','dismiss')" style="padding:9px 11px;border:1px solid #b66;border-radius:9px;background:white;color:#a33;cursor:pointer">✖ 却下</button>
         </div>
       </div>
     `).join("");
