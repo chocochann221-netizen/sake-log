@@ -326,6 +326,10 @@ function clearSession(){
  S.lat=null;
  S.lng=null;
  S.authBusy=false;
+ S.currentSaveRequestId=null;
+ S.currentEventPhotoRequestId=null;
+ clearLocalOperation(PENDING_SAVE_STATE_KEY);
+ clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
 
  if($("password")) $("password").value="";
  if($("userEmail")) $("userEmail").textContent="";
@@ -352,6 +356,7 @@ async function restore(){
    await cleanupPendingRollbacks().catch(()=>{});
    await cleanupPendingStorageDeletes().catch(()=>{});
    show("homeView"); loadMyUpcomingEventList().catch(()=>{});
+   await recoverInterruptedOperations().catch(()=>{});
    return;
  }
 
@@ -363,6 +368,7 @@ async function restore(){
    await cleanupPendingRollbacks().catch(()=>{});
    await cleanupPendingStorageDeletes().catch(()=>{});
    show("homeView"); loadMyUpcomingEventList().catch(()=>{});
+   await recoverInterruptedOperations().catch(()=>{});
    if(localStorage.getItem("sakelog_line_linked_notice")==="1"){
      localStorage.removeItem("sakelog_line_linked_notice");
      alert("LINEをこの和酒ログアカウントに連携しました。次回からLINEでも同じ記録に入れます。");
@@ -1063,6 +1069,10 @@ async function uploadEventPhoto(file,eventId,requestId){
     ?"jpg"
     :((file.name?.split(".").pop()||"jpg").toLowerCase());
   const path=`${S.user.id}/${eventId}/${requestId}.${ext}`;
+  const pending=readLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
+  if(pending&&pending.requestId===requestId){
+    writeLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY,{...pending,storagePath:path});
+  }
   const url=BASE+"/storage/v1/object/event-photos/"+encodeURI(path);
   const contentType=body.type||file.type||"image/jpeg";
   const r=await authFetch(url,{
@@ -1096,6 +1106,13 @@ async function addEventPhoto(file){
   setEventPhotoUploadDisabled(true);
   const requestId=S.currentEventPhotoRequestId||makeClientRequestId();
   S.currentEventPhotoRequestId=requestId;
+  writeLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY,{
+    userId:S.user.id,
+    requestId,
+    eventId,
+    storagePath:null,
+    startedAt:Date.now()
+  });
   try{
     msg($("eventPhotoMsg"),"写真を送信しています…","info");
     const path=await uploadEventPhoto(file,eventId,requestId);
@@ -1123,9 +1140,16 @@ async function addEventPhoto(file){
       "ok"
     );
     if($("eventPhotoCaption")) $("eventPhotoCaption").value="";
+    clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
     S.currentEventPhotoRequestId=null;
     setTimeout(()=>openEventDetail(eventId),700);
   }catch(e){
+    const pending=readLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
+    if(pending?.storagePath){
+      try{await deleteStorageObjectFromBucket("event-photos",pending.storagePath)}catch{}
+    }
+    clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
+    S.currentEventPhotoRequestId=null;
     msg($("eventPhotoMsg"),"写真を追加できませんでした："+(e.message||e),"err");
   }finally{
     eventPhotoUploadBusy=false;
@@ -2141,6 +2165,125 @@ async function uploadPhoto(file){
  throw new Error((lastError?.message||"写真保存に失敗しました")+"（送信画像 約"+sizeMb+"MB）");
 }
 
+
+const PENDING_SAVE_STATE_KEY="sakelog_pending_save_state_v1";
+const PENDING_EVENT_PHOTO_STATE_KEY="sakelog_pending_event_photo_state_v1";
+
+function readLocalOperation(key){
+  try{
+    const v=JSON.parse(localStorage.getItem(key)||"null");
+    return v&&typeof v==="object"?v:null;
+  }catch{return null}
+}
+function writeLocalOperation(key,value){
+  try{
+    if(value)localStorage.setItem(key,JSON.stringify(value));
+    else localStorage.removeItem(key);
+  }catch{}
+}
+function clearLocalOperation(key){writeLocalOperation(key,null)}
+
+function showRecoveryNotice(html){
+  const box=$("recoveryNotice");
+  if(!box)return;
+  if(!html){box.innerHTML="";box.classList.add("hidden");return}
+  box.innerHTML='<div class="card" style="border-color:#d8c9a9;background:#fffaf1">'+html+'</div>';
+  box.classList.remove("hidden");
+}
+
+async function recoverInterruptedOperations(){
+  if(!S.user)return;
+
+  const notices=[];
+
+  // Drinking record recovery.
+  const pendingSave=readLocalOperation(PENDING_SAVE_STATE_KEY);
+  if(pendingSave){
+    if(pendingSave.userId!==S.user.id){
+      clearLocalOperation(PENDING_SAVE_STATE_KEY);
+    }else if(pendingSave.requestId){
+      try{
+        const rows=await select(
+          "drinking_records",
+          "select=id,brand_name,product_name,brewery_name,created_at&client_request_id=eq."+
+          encodeURIComponent(pendingSave.requestId)+"&limit=1"
+        );
+        const rec=rows?.[0];
+        if(rec){
+          const photos=await select(
+            "sake_photos",
+            "select=photo_type&drinking_record_id=eq."+encodeURIComponent(rec.id)
+          ).catch(()=>[]);
+          const have=new Set((photos||[]).map(x=>x.photo_type));
+          const expected=Array.isArray(pendingSave.expectedPhotoTypes)?pendingSave.expectedPhotoTypes:[];
+          const missing=expected.filter(x=>!have.has(x));
+          if(missing.length){
+            notices.push(
+              '<b>前回のLOGは途中まで保存されています。</b>'+
+              '<div class="small" style="margin-top:5px">二重登録はしていません。写真の一部が未保存の可能性があります。内容を確認してください。</div>'+
+              '<button class="btn outline" style="margin-top:9px" onclick="openRecordDetail(\''+escapeHtml(rec.id)+'\')">前回のLOGを確認</button>'
+            );
+          }else{
+            notices.push(
+              '<b>前回のLOGは保存できていました ✓</b>'+
+              '<div class="small" style="margin-top:5px">通信が途切れても、同じ記録を重複して作らず確認できました。</div>'+
+              '<button class="btn outline" style="margin-top:9px" onclick="openRecordDetail(\''+escapeHtml(rec.id)+'\')">保存した一杯を見る</button>'
+            );
+          }
+        }else{
+          notices.push(
+            '<b>前回の保存は完了していませんでした。</b>'+
+            '<div class="small" style="margin-top:5px">重複したLOGは作られていません。必要ならもう一度記録してください。</div>'
+          );
+        }
+      }catch(e){
+        console.warn("save recovery check skipped",e);
+      }finally{
+        clearLocalOperation(PENDING_SAVE_STATE_KEY);
+        S.currentSaveRequestId=null;
+      }
+    }
+  }
+
+  // Event photo recovery.
+  const pendingPhoto=readLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
+  if(pendingPhoto){
+    if(pendingPhoto.userId!==S.user.id){
+      clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
+    }else if(pendingPhoto.requestId){
+      try{
+        const rows=await select(
+          "event_photos",
+          "select=id,event_id&client_request_id=eq."+encodeURIComponent(pendingPhoto.requestId)+"&limit=1"
+        );
+        if(rows?.length){
+          notices.push(
+            '<b>前回のイベント写真は保存できていました ✓</b>'+
+            '<div class="small" style="margin-top:5px">写真の二重登録はありません。</div>'
+          );
+        }else{
+          if(pendingPhoto.storagePath){
+            try{await deleteStorageObjectFromBucket("event-photos",pendingPhoto.storagePath)}catch(e){
+              console.warn("orphan event photo cleanup pending",e);
+            }
+          }
+          notices.push(
+            '<b>前回のイベント写真は登録完了していませんでした。</b>'+
+            '<div class="small" style="margin-top:5px">途中の画像データは可能な範囲で整理しました。必要ならもう一度追加してください。</div>'
+          );
+        }
+      }catch(e){
+        console.warn("event photo recovery check skipped",e);
+      }finally{
+        clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
+        S.currentEventPhotoRequestId=null;
+      }
+    }
+  }
+
+  showRecoveryNotice(notices.join('<div style="height:10px"></div>'));
+}
+
 function makeClientRequestId(){
   try{return crypto.randomUUID()}catch{
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,ch=>{
@@ -2315,6 +2458,18 @@ $("saveRecordBtn").onclick=async()=>{
    await cleanupPendingRollbacks();
 
    if(!S.currentSaveRequestId)S.currentSaveRequestId=makeClientRequestId();
+   const expectedPhotoTypes=[
+     S.photo?"front":null,
+     S.backPhoto?"back":null,
+     S.foodPhoto?"food":null,
+     S.memoryPhoto?"memory":null
+   ].filter(Boolean);
+   writeLocalOperation(PENDING_SAVE_STATE_KEY,{
+     userId:S.user.id,
+     requestId:S.currentSaveRequestId,
+     expectedPhotoTypes,
+     startedAt:Date.now()
+   });
    rec=await idempotentInsert("drinking_records",{
      user_id:S.user.id,
      client_request_id:S.currentSaveRequestId,
@@ -2408,6 +2563,7 @@ $("saveRecordBtn").onclick=async()=>{
    await saveToSharedDictionary();
 
    msg($("recordMsg"),"✓ 保存しました。","ok");
+   clearLocalOperation(PENDING_SAVE_STATE_KEY);
    S.currentSaveRequestId=null;
    setTimeout(()=>showRecordComplete(rec),350);
  }catch(e){
@@ -2421,9 +2577,13 @@ $("saveRecordBtn").onclick=async()=>{
        try{await deleteStorageObject(path)}catch{rollbackClean=false}
      }
    }
+   if(rollbackClean){
+     clearLocalOperation(PENDING_SAVE_STATE_KEY);
+     S.currentSaveRequestId=null;
+   }
    const suffix=rollbackClean
      ?" 保存途中のデータは取り消しました。入力内容と写真はこの画面に残っています。"
-     :" 保存途中のデータは次回接続時に自動で整理します。入力内容と写真はこの画面に残っています。";
+     :" 保存途中のデータは次回起動時にも確認します。入力内容と写真はこの画面に残っています。";
    msg($("recordMsg"),"保存できませんでした: "+(e.message||e)+"。"+suffix,"err");
  }finally{
    S.savingRecord=false;
