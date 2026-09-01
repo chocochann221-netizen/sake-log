@@ -53,6 +53,7 @@ function show(id){
    loadProfileEventStats().catch(()=>{});
    loadProfileEventYearReview().catch(()=>{});
    loadProfileEventDiscoveries().catch(()=>{});
+   loadProfileEventPhotos().catch(()=>{});
  }
  if(id==="analysisView")loadAnalysis();
 }
@@ -1223,6 +1224,80 @@ async function loadProfileEventYearReview(){
   }catch(e){
     console.warn("profile event year review failed",e);
     box.innerHTML='<div class="small">今年の振り返りを読み込めませんでした。</div>';
+  }
+}
+
+
+async function requestMyEventPhotoDeletion(photoId){
+  const reason=prompt("削除理由（任意）","");
+  if(reason===null)return;
+  const ok=confirm("この写真の削除を依頼しますか？\n一般公開中の場合は、依頼と同時に公開停止されます。");
+  if(!ok)return;
+  try{
+    await rpc("request_event_photo_deletion",{
+      p_photo_id:photoId,
+      p_reason:reason.trim()||null
+    });
+    alert("削除依頼を受け付けました。公開中の写真は公開停止されています。");
+    await loadProfileEventPhotos();
+  }catch(e){
+    alert("削除依頼を送れませんでした。\n\n"+(e.message||e));
+  }
+}
+
+function eventPhotoStatusLabel(p){
+  if(p.deletion_requested_at)return "削除依頼中";
+  if(p.is_public && p.audience==="public" && p.moderation_status==="approved")return "一般公開中";
+  if(p.moderation_status==="approved" && p.audience==="event_members")return "参加者内のみ";
+  if(p.moderation_status==="rejected")return "非承認";
+  if(p.moderation_status==="hold")return "確認中";
+  return "確認待ち";
+}
+
+async function loadProfileEventPhotos(){
+  const box=$("profileEventPhotos");
+  if(!box||!S.user)return;
+  box.innerHTML="読み込み中…";
+  try{
+    const rows=await select(
+      "event_photos",
+      "select=id,event_id,storage_path,caption,moderation_status,face_review_status,is_public,audience,created_at,deletion_requested_at,deletion_request_reason"+
+      "&user_id=eq."+encodeURIComponent(S.user.id)+
+      "&order=created_at.desc&limit=50"
+    );
+
+    if(!rows.length){
+      box.innerHTML='<div class="small">まだイベント写真はありません。</div>';
+      return;
+    }
+
+    const items=[];
+    for(const p of rows){
+      const url=await createSignedStorageUrl("event-photos",p.storage_path,1800);
+      items.push({...p,url});
+    }
+
+    box.innerHTML=`
+      <div class="small" style="margin-bottom:8px">自分が投稿した写真だけ表示しています。公開状態の確認と削除依頼ができます。</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        ${items.map(p=>`
+          <div style="border:1px solid #e1e7e3;border-radius:14px;padding:9px;background:#fff">
+            ${p.url?`<img src="${escapeHtml(p.url)}" alt="" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;background:#eee">`:"<div class='small'>画像を表示できません</div>"}
+            <div class="small" style="margin-top:7px;line-height:1.55">
+              <b>${escapeHtml(eventPhotoStatusLabel(p))}</b><br>
+              ${p.caption?escapeHtml(p.caption):"ひとことなし"}
+              ${p.face_review_status && p.face_review_status!=="not_checked"?"<br>顔確認："+escapeHtml(p.face_review_status):""}
+            </div>
+            ${p.deletion_requested_at
+              ?'<div class="small" style="margin-top:7px;color:#a22">削除依頼を受け付けています。</div>'
+              :`<button class="btn outline" style="padding:8px 10px;font-size:12px;margin-top:7px;border-color:#c66;color:#a22" onclick="requestMyEventPhotoDeletion('${escapeHtml(p.id)}')">削除を依頼</button>`}
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }catch(e){
+    console.warn("profile event photos failed",e);
+    box.innerHTML='<div class="small">イベント写真を読み込めませんでした。</div>';
   }
 }
 
