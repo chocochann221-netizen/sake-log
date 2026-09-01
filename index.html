@@ -9,6 +9,7 @@
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f6f8f6;color:#17211c}
 header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #dfe4e0;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.network-banner{position:sticky;top:57px;z-index:19;padding:9px 14px;text-align:center;font-size:12px;font-weight:700;background:#fff4d8;color:#7b5a14;border-bottom:1px solid #ead7a4}
 .brand{font-size:22px;font-weight:800}.pill{font-size:12px;background:#edf5f1;color:#238464;padding:4px 9px;border-radius:999px}
 main{max-width:680px;margin:auto;padding:18px 18px 95px}.card{background:#fff;border:1px solid #dfe4e0;border-radius:22px;padding:18px;margin-bottom:14px}
 h1,h2,h3{margin:0 0 12px}.small{font-size:12px;color:#6f7773}.hidden{display:none!important}
@@ -83,6 +84,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <div class="brand">🍶 和酒ログ</div>
 <button id="logoutTop" class="outline" style="padding:8px 11px;border-radius:10px">ログアウト</button>
 </header>
+<div id="networkBanner" class="network-banner hidden">📡 オフラインです。入力内容はそのまま残ります。通信が戻ってから保存してください。</div>
 <main>
 <section id="setupView" class="hidden">
 <div class="card">
@@ -276,6 +278,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
 </div>
 </nav>
-<script src="app.js?v=523"></script>
+<script src="app.js?v=524"></script>
 <script src="detail-knowledge.js?v=2"></script>
 </body></html>
