@@ -26,6 +26,7 @@ window.addEventListener("online",async()=>{
     await cleanupPendingRollbacks().catch(()=>{});
     await cleanupPendingStorageDeletes().catch(()=>{});
     await recoverInterruptedOperations().catch(()=>{});
+   if($("recoveryNotice")?.classList.contains("hidden")) maybeShowDraftRecoveryNotice();
   }
 });
 window.addEventListener("offline",()=>updateNetworkState());
@@ -381,6 +382,7 @@ async function restore(){
    await cleanupPendingStorageDeletes().catch(()=>{});
    show("homeView"); loadMyUpcomingEventList().catch(()=>{});
    await recoverInterruptedOperations().catch(()=>{});
+   if($("recoveryNotice")?.classList.contains("hidden")) maybeShowDraftRecoveryNotice();
    return;
  }
 
@@ -393,6 +395,7 @@ async function restore(){
    await cleanupPendingStorageDeletes().catch(()=>{});
    show("homeView"); loadMyUpcomingEventList().catch(()=>{});
    await recoverInterruptedOperations().catch(()=>{});
+   if($("recoveryNotice")?.classList.contains("hidden")) maybeShowDraftRecoveryNotice();
    if(localStorage.getItem("sakelog_line_linked_notice")==="1"){
      localStorage.removeItem("sakelog_line_linked_notice");
      alert("LINEをこの和酒ログアカウントに連携しました。次回からLINEでも同じ記録に入れます。");
@@ -420,7 +423,7 @@ function resetRecord(){
  $("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
  show("recordView");
 }
-$("manualBtn").onclick=resetRecord;
+$("manualBtn").onclick=()=>{clearRecordDraft();resetRecord()};
 $("rating").oninput=()=> $("ratingVal").textContent=Number($("rating").value).toFixed(1);
 
 function updateAnalyzeButton(){
@@ -428,6 +431,7 @@ function updateAnalyzeButton(){
 }
 function attachPhoto(file){
  const keepBack=S.backPhoto;
+ clearRecordDraft();
  resetRecord();
  S.backPhoto=keepBack;
  S.photo=file;$("preview").src=URL.createObjectURL(file);$("preview").classList.remove("hidden");
@@ -435,7 +439,7 @@ function attachPhoto(file){
  updateAnalyzeButton();msg($("recordMsg"),"表ラベルを選択しました。裏ラベルも追加すると識別精度を上げやすくなります。","info");
 }
 function attachBackPhoto(file){
- if(!S.photo) resetRecord();
+ if(!S.photo){clearRecordDraft();resetRecord();}
  S.backPhoto=file;$("backPreview").src=URL.createObjectURL(file);$("backPreview").classList.remove("hidden");
  updateAnalyzeButton();
  msg($("recordMsg"),
@@ -1956,6 +1960,7 @@ async function logEventSake(eventId,eventSakeId,sakeId){
     $("brewery").value=s.brewery_name||"";
     $("classification").value=s.classification||"";
     msg($("recordMsg"),"📅 イベントの出品酒から記録を開始しました。写真を追加しても、そのままLOGしてもOKです。","info");
+    saveRecordDraft();
   }catch(e){
     alert("イベントから記録を開始できませんでした。\n\n"+e.message);
   }
@@ -2194,6 +2199,113 @@ async function uploadPhoto(file){
  throw new Error((lastError?.message||"写真保存に失敗しました")+"（送信画像 約"+sizeMb+"MB）");
 }
 
+
+
+const RECORD_DRAFT_KEY="sakelog_record_draft_v1";
+const RECORD_DRAFT_FIELDS=["brand","product","brewery","prefecture","classification","rice","riceVariety","polishing","alcohol","volume","restaurant","price","comment"];
+
+function readRecordDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem(RECORD_DRAFT_KEY)||"null");
+    return d&&typeof d==="object"?d:null;
+  }catch{return null}
+}
+function clearRecordDraft(){
+  try{localStorage.removeItem(RECORD_DRAFT_KEY)}catch{}
+}
+function saveRecordDraft(){
+  if(!S.user)return;
+  const values={};
+  let hasValue=false;
+  for(const id of RECORD_DRAFT_FIELDS){
+    const el=$(id);
+    if(!el)continue;
+    values[id]=el.value||"";
+    if(String(values[id]).trim())hasValue=true;
+  }
+  const rating=$("rating")?.value||"4";
+  const hasContext=!!(S.currentEventId||S.currentSakeId||S.lat||S.lng);
+  if(!hasValue && !hasContext && rating==="4"){
+    clearRecordDraft();
+    return;
+  }
+  try{
+    localStorage.setItem(RECORD_DRAFT_KEY,JSON.stringify({
+      userId:S.user.id,
+      values,
+      rating,
+      currentEventId:S.currentEventId||null,
+      currentEventSakeId:S.currentEventSakeId||null,
+      currentSakeId:S.currentSakeId||null,
+      lat:S.lat??null,
+      lng:S.lng??null,
+      hadFrontPhoto:!!S.photo,
+      hadBackPhoto:!!S.backPhoto,
+      hadFoodPhoto:!!S.foodPhoto,
+      hadMemoryPhoto:!!S.memoryPhoto,
+      savedAt:Date.now()
+    }));
+  }catch{}
+}
+function restoreRecordDraftToForm(){
+  const d=readRecordDraft();
+  if(!d||d.userId!==S.user?.id)return false;
+
+  for(const id of RECORD_DRAFT_FIELDS){
+    if($(id))$(id).value=d.values?.[id]||"";
+  }
+  if($("rating")){
+    $("rating").value=d.rating||"4";
+    $("ratingVal").textContent=Number($("rating").value).toFixed(1);
+  }
+
+  S.currentEventId=d.currentEventId||null;
+  S.currentEventSakeId=d.currentEventSakeId||null;
+  S.currentSakeId=d.currentSakeId||null;
+  S.lat=d.lat??null;
+  S.lng=d.lng??null;
+
+  show("recordView");
+  const photoNote=(d.hadFrontPhoto||d.hadBackPhoto||d.hadFoodPhoto||d.hadMemoryPhoto)
+    ?" 写真は端末の安全上、自動復元できないため必要な写真だけ選び直してください。"
+    :"";
+  msg($("recordMsg"),"前回入力途中だった内容を復元しました。"+photoNote,"info");
+  return true;
+}
+function discardRecordDraft(){
+  clearRecordDraft();
+  showRecoveryNotice("");
+}
+function resumeRecordDraft(){
+  if(restoreRecordDraftToForm())showRecoveryNotice("");
+}
+function maybeShowDraftRecoveryNotice(){
+  const d=readRecordDraft();
+  if(!d)return;
+  if(d.userId!==S.user?.id){clearRecordDraft();return}
+  const age=Date.now()-Number(d.savedAt||0);
+  if(age>7*24*60*60*1000){clearRecordDraft();return}
+  showRecoveryNotice(
+    '<b>入力途中の一杯があります。</b>'+
+    '<div class="small" style="margin-top:5px">保存前にアプリを閉じても、文字入力はこの端末に残しています。</div>'+
+    '<div class="grid" style="margin-top:9px">'+
+      '<button class="btn secondary" onclick="resumeRecordDraft()">入力を続ける</button>'+
+      '<button class="btn outline" onclick="discardRecordDraft()">破棄する</button>'+
+    '</div>'
+  );
+}
+function wireRecordDraftAutosave(){
+  let timer=null;
+  const schedule=()=>{
+    clearTimeout(timer);
+    timer=setTimeout(saveRecordDraft,250);
+  };
+  for(const id of RECORD_DRAFT_FIELDS){
+    $(id)?.addEventListener("input",schedule);
+    $(id)?.addEventListener("change",schedule);
+  }
+  $("rating")?.addEventListener("input",schedule);
+}
 
 const PENDING_SAVE_STATE_KEY="sakelog_pending_save_state_v1";
 const PENDING_EVENT_PHOTO_STATE_KEY="sakelog_pending_event_photo_state_v1";
@@ -2594,6 +2706,7 @@ $("saveRecordBtn").onclick=async()=>{
 
    msg($("recordMsg"),"✓ 保存しました。","ok");
    clearLocalOperation(PENDING_SAVE_STATE_KEY);
+   clearRecordDraft();
    S.currentSaveRequestId=null;
    setTimeout(()=>showRecordComplete(rec),350);
  }catch(e){
@@ -2614,6 +2727,7 @@ $("saveRecordBtn").onclick=async()=>{
    const suffix=rollbackClean
      ?" 保存途中のデータは取り消しました。入力内容と写真はこの画面に残っています。"
      :" 保存途中のデータは次回起動時にも確認します。入力内容と写真はこの画面に残っています。";
+   saveRecordDraft();
    msg($("recordMsg"),"保存できませんでした: "+(e.message||e)+"。"+suffix,"err");
  }finally{
    S.savingRecord=false;
@@ -3169,7 +3283,13 @@ if($("googleLoginBtn")) $("googleLoginBtn").onclick=()=>startOAuth("google");
 if($("appleLoginBtn")) $("appleLoginBtn").onclick=()=>startOAuth("apple");
 if($("lineLoginBtn")) $("lineLoginBtn").onclick=startLineLogin;
 
-document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>b.dataset.page==="recordView"?resetRecord():show(b.dataset.page));
+document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
+  if(b.dataset.page==="recordView"){
+    clearRecordDraft();
+    resetRecord();
+  }else show(b.dataset.page);
+});
+wireRecordDraftAutosave();
 restore();
 
 if($("detailBackBtn")) $("detailBackBtn").onclick=()=>show("historyView");
