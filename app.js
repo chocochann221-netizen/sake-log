@@ -275,7 +275,7 @@ async function authFetch(url,options={}){
  let r=await make();
  if(r.status===401){
   const t=await r.clone().text().catch(()=>"");
-  if(/jwt expired|expired|invalid jwt/i.test(t)){
+  if(/jwt expired|expired|invalid jwt|jwt issued at future|issued at future|not yet valid/i.test(t)){
    try{
      await refreshSession();
    }catch{
@@ -284,6 +284,14 @@ async function authFetch(url,options={}){
      throw new Error("ログインの有効期限が切れました。もう一度ログインしてください。");
    }
    r=await make();
+   if(r.status===401){
+     const retryText=await r.clone().text().catch(()=>"");
+     if(/jwt issued at future|issued at future|not yet valid/i.test(retryText)){
+       clearSession();
+       show("authView");
+       throw new Error("端末の日時がサーバーとずれています。スマホの「日付と時刻」を自動設定にして、もう一度ログインしてください。");
+     }
+   }
   }
  }
  return r;
