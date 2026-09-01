@@ -239,6 +239,7 @@
   <button class="menu-item" onclick="showCorrections()">✏️ 誤認識・修正データ</button>
   <button class="menu-item" onclick="showCorrectionAnalytics()">📊 認識ズレ分析</button>
   <button class="menu-item" onclick="showRecognitionImprovementCandidates()">🛠 要改善候補</button>
+  <button class="menu-item" onclick="showRecognitionImprovementQueue()">📥 改善キュー</button>
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showSakeMasterCandidates()">🌱 商品マスター候補</button>
@@ -557,6 +558,77 @@ function correctionFieldLabels(reason){
 }
 
 
+
+async function enqueueRecognitionImprovement(targetType, payload){
+  try{
+    const key=cfgKey();
+    const r=await fetch(BASE+"/rest/v1/rpc/admin_enqueue_recognition_improvement",{
+      method:"POST",
+      headers:{
+        "apikey":key,
+        "Authorization":"Bearer "+token,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        p_target_type:targetType,
+        p_predicted_brand:payload.predictedBrand||null,
+        p_predicted_product:payload.predictedProduct||null,
+        p_correct_brand:payload.correctBrand,
+        p_correct_product:payload.correctProduct||null,
+        p_correct_brewery:payload.correctBrewery||null,
+        p_occurrence_count:payload.count||1,
+        p_correction_fields:payload.fields||[]
+      })
+    });
+    const text=await r.text();
+    if(!r.ok)throw new Error(text);
+    alert(targetType==="dictionary"
+      ?"🧠 辞書改善候補へ送りました。"
+      :"🍶 マスター確認候補へ送りました。");
+  }catch(error){
+    console.error(error);
+    alert("改善候補への登録に失敗しました。\n\n"+error.message);
+  }
+}
+
+async function showRecognitionImprovementQueue(){
+  showAdminPanel("📥 改善キュー","<p>改善候補を読み込んでいます...</p>");
+  try{
+    const key=cfgKey();
+    const r=await fetch(
+      BASE+"/rest/v1/recognition_improvement_queue?select=id,target_type,predicted_brand,predicted_product,correct_brand,correct_product,correct_brewery,occurrence_count,correction_fields,status,review_note,created_at,updated_at&status=in.(pending,reviewing)&order=occurrence_count.desc,updated_at.desc&limit=100",
+      {headers:{"apikey":key,"Authorization":"Bearer "+token}}
+    );
+    const text=await r.text();
+    if(!r.ok)throw new Error(text);
+    const items=JSON.parse(text);
+
+    const rows=items.map(x=>`
+      <div style="padding:14px 0;border-bottom:1px solid #eee">
+        <div style="font-size:12px;color:#777">
+          ${x.target_type==="dictionary"?"🧠 辞書改善":"🍶 マスター確認"} ／ ${x.occurrence_count}回発生
+        </div>
+        <div style="margin-top:6px"><b>${esc([x.predicted_brand,x.predicted_product].filter(Boolean).join(" ")||"不明")}</b></div>
+        <div style="font-size:19px;margin:4px 0">↓</div>
+        <div><b>${esc([x.correct_brand,x.correct_product].filter(Boolean).join(" "))}</b></div>
+        ${x.correct_brewery?`<div style="font-size:12px;color:#777;margin-top:3px">蔵元：${esc(x.correct_brewery)}</div>`:""}
+        <div style="font-size:12px;color:#777;margin-top:7px">
+          修正項目：${esc((x.correction_fields||[]).join("・")||"—")}<br>
+          状態：${esc(x.status)}
+        </div>
+      </div>
+    `).join("");
+
+    showAdminPanel(
+      "📥 改善キュー",
+      rows||"<p>現在、処理待ちの改善候補はありません。</p>"
+    );
+  }catch(error){
+    console.error(error);
+    showAdminPanel("📥 改善キュー","<p>取得エラー："+esc(error.message)+"</p>");
+  }
+}
+
 async function showRecognitionImprovementCandidates(){
   showAdminPanel("🛠 要改善候補","<p>繰り返し起きている誤認識を探しています...</p>");
   try{
@@ -627,6 +699,32 @@ async function showRecognitionImprovementCandidates(){
               :g.count>=3
                 ?"繰り返し発生しています。次の数件も同じ修正が続くか要監視です。"
                 :"2回発生しています。再発したら改善対象に上げる候補です。"}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button
+              onclick='enqueueRecognitionImprovement("dictionary",${JSON.stringify({
+                predictedBrand:g.from.split(" ")[0]||"",
+                predictedProduct:g.from.split(" ").slice(1).join(" "),
+                correctBrand:g.to.split(" ")[0]||"",
+                correctProduct:g.to.split(" ").slice(1).join(" "),
+                correctBrewery:g.brewery||"",
+                count:g.count,
+                fields:Object.keys(g.fields)
+              })})'
+              style="padding:9px 11px;border:1px solid #8a6b3d;border-radius:9px;background:white;cursor:pointer"
+            >🧠 辞書改善候補へ</button>
+            <button
+              onclick='enqueueRecognitionImprovement("master",${JSON.stringify({
+                predictedBrand:g.from.split(" ")[0]||"",
+                predictedProduct:g.from.split(" ").slice(1).join(" "),
+                correctBrand:g.to.split(" ")[0]||"",
+                correctProduct:g.to.split(" ").slice(1).join(" "),
+                correctBrewery:g.brewery||"",
+                count:g.count,
+                fields:Object.keys(g.fields)
+              })})'
+              style="padding:9px 11px;border:1px solid #2f6f52;border-radius:9px;background:white;cursor:pointer"
+            >🍶 マスター確認候補へ</button>
           </div>
         </div>
       `;
