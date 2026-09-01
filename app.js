@@ -7,6 +7,30 @@ const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 
+
+function updateNetworkState(){
+  const online=navigator.onLine!==false;
+  const banner=$("networkBanner");
+  if(banner)banner.classList.toggle("hidden",online);
+  document.body.dataset.network=online?"online":"offline";
+  return online;
+}
+function requireOnline(messageText){
+  if(updateNetworkState())return true;
+  alert(messageText||"現在オフラインです。通信が戻ってからもう一度お試しください。");
+  return false;
+}
+window.addEventListener("online",async()=>{
+  updateNetworkState();
+  if(S.user){
+    await cleanupPendingRollbacks().catch(()=>{});
+    await cleanupPendingStorageDeletes().catch(()=>{});
+    await recoverInterruptedOperations().catch(()=>{});
+  }
+});
+window.addEventListener("offline",()=>updateNetworkState());
+updateNetworkState();
+
 window.addEventListener("error",e=>{
   console.error("JavaScript error:",e.error||e.message);
   const el=$("recordMsg")||$("editMsg");
@@ -1102,6 +1126,7 @@ function setEventPhotoUploadDisabled(disabled){
 async function addEventPhoto(file){
   const eventId=S.currentEventId;
   if(!eventId||!file||eventPhotoUploadBusy)return;
+  if(!requireOnline("現在オフラインです。イベント写真は通信が戻ってから追加してください。"))return;
   eventPhotoUploadBusy=true;
   setEventPhotoUploadDisabled(true);
   const requestId=S.currentEventPhotoRequestId||makeClientRequestId();
@@ -1273,6 +1298,7 @@ async function loadProfileEventYearReview(){
 
 
 async function requestMyEventPhotoDeletion(photoId){
+  if(!requireOnline("現在オフラインです。削除依頼は通信が戻ってから送信してください。"))return;
   const reason=prompt("削除理由（任意）","");
   if(reason===null)return;
   const ok=confirm("この写真の削除を依頼しますか？\n一般公開中の場合は、依頼と同時に公開停止されます。");
@@ -1737,6 +1763,7 @@ function setEventActionButtonsDisabled(eventId,disabled){
 }
 
 async function checkInCurrentEvent(eventId){
+  if(!requireOnline("現在オフラインです。参加記録は通信が戻ってから残してください。"))return;
   const key="checkin:"+eventId;
   if(!lockEventAction(key))return;
   setEventActionButtonsDisabled(eventId,true);
@@ -1770,6 +1797,7 @@ function canShowEventCheckIn(e){
 }
 
 async function joinCurrentEvent(eventId){
+  if(!requireOnline("現在オフラインです。参加予定への追加は通信が戻ってから行ってください。"))return;
   const key="join:"+eventId;
   if(!lockEventAction(key))return;
   setEventActionButtonsDisabled(eventId,true);
@@ -1792,6 +1820,7 @@ async function joinCurrentEvent(eventId){
 }
 
 async function leaveCurrentEvent(eventId){
+  if(!requireOnline("現在オフラインです。参加予定の変更は通信が戻ってから行ってください。"))return;
   const ok=confirm("参加予定から外しますか？");
   if(!ok)return;
   const key="leave:"+eventId;
@@ -2434,6 +2463,7 @@ async function cleanupPendingRollbacks(){
 
 $("saveRecordBtn").onclick=async()=>{
  syncActiveNav("recordView");
+ if(!requireOnline("現在オフラインです。入力内容は消えません。通信が戻ってから保存してください。"))return;
  if(S.savingRecord)return;
  S.savingRecord=true;
  let brand=$("brand").value.trim();
