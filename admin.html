@@ -250,6 +250,7 @@
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showSakeMasterCandidates()">🌱 商品マスター候補</button>
   <button class="menu-item" onclick="showEventPhotoModeration()">📷 イベント写真の公開確認</button>
+  <button class="menu-item" onclick="showOAuthDiagnostics()">🔐 OAuth・本番URL診断</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
   
 </div>
@@ -427,6 +428,73 @@ function showAdminPanel(title, html) {
   });
 }
 
+
+
+async function showOAuthDiagnostics(){
+  showAdminPanel("🔐 OAuth・本番URL診断","<p>本番URLとログイン設定を確認しています...</p>");
+  try{
+    const key=cfgKey();
+    const expectedOrigin="https://sake-log-git.pages.dev";
+    const expectedAppUrl=expectedOrigin+"/";
+    const currentOrigin=location.origin;
+    const currentAppUrl=location.origin+location.pathname;
+    const callbackUrl=BASE+"/auth/v1/callback";
+
+    const settingsRes=await fetch(BASE+"/auth/v1/settings",{
+      headers:{"apikey":key}
+    });
+    const settings=await settingsRes.json().catch(()=>null);
+    if(!settingsRes.ok)throw new Error("Supabase Auth settings を取得できませんでした");
+
+    let lineStatus="未確認";
+    try{
+      const lineRes=await fetch(BASE+"/functions/v1/line-login",{
+        method:"OPTIONS",
+        headers:{
+          "apikey":key,
+          "Origin":currentOrigin,
+          "Access-Control-Request-Method":"POST",
+          "Access-Control-Request-Headers":"authorization,apikey,content-type"
+        }
+      });
+      lineStatus=lineRes.ok?"稼働中":"応答あり（HTTP "+lineRes.status+"）";
+    }catch{
+      lineStatus="ブラウザから確認できません";
+    }
+
+    const googleEnabled=settings?.external?.google===true;
+    const appleEnabled=settings?.external?.apple===true;
+    const originOk=currentOrigin===expectedOrigin;
+    const pathOk=currentAppUrl===expectedAppUrl||currentAppUrl===expectedOrigin;
+
+    const row=(label,status,ok,detail="")=>`
+      <div style="padding:12px 0;border-bottom:1px solid #eee">
+        <div style="display:flex;justify-content:space-between;gap:10px">
+          <b>${esc(label)}</b>
+          <span style="font-weight:700;color:${ok?"#2f6f52":"#a34a32"}">${ok?"✅ ":"⚠️ "}${esc(status)}</span>
+        </div>
+        ${detail?`<div style="font-size:12px;color:#777;margin-top:5px;word-break:break-all">${esc(detail)}</div>`:""}
+      </div>`;
+
+    const html=
+      "<div style='font-size:13px;color:#666;margin-bottom:10px'>この画面は、公開中の和酒ログからSupabaseの公開Auth設定とLINE Edge Functionの応答を確認します。</div>"+
+      row("現在の公開元",originOk?"本番URL":"本番URLと異なる",originOk,currentOrigin)+
+      row("アプリの戻り先",pathOk?"本番ルート":"パスを要確認",pathOk,currentAppUrl)+
+      row("Googleログイン",googleEnabled?"有効":"無効",googleEnabled,callbackUrl)+
+      row("Appleログイン",appleEnabled?"有効":"無効",appleEnabled,callbackUrl)+
+      row("LINEログイン",lineStatus,lineStatus==="稼働中","許可済み本番URL: "+expectedAppUrl)+
+      "<div style='margin-top:16px;padding:12px;border-radius:12px;background:#fff8e8;font-size:12px;line-height:1.7'>"+
+      "<b>Supabase Dashboardで最後に目視確認する項目</b><br>"+
+      "Authentication → URL Configuration の Site URL / Redirect URLs に <b>"+esc(expectedAppUrl)+"</b> が入っていること。"+
+      "この値は公開 settings API からは取得できないため、管理画面上では自動判定できません。"+
+      "</div>";
+
+    showAdminPanel("🔐 OAuth・本番URL診断",html);
+  }catch(error){
+    console.error(error);
+    showAdminPanel("🔐 OAuth・本番URL診断","<p>診断エラー："+esc(error.message)+"</p>");
+  }
+}
 
 async function showUsers() {
 
