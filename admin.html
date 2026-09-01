@@ -238,6 +238,7 @@
   <button class="menu-item" onclick="showRecognition()">🔍 AI認識結果</button>
   <button class="menu-item" onclick="showCorrections()">✏️ 誤認識・修正データ</button>
   <button class="menu-item" onclick="showCorrectionAnalytics()">📊 認識ズレ分析</button>
+  <button class="menu-item" onclick="showRecognitionImprovementCandidates()">🛠 要改善候補</button>
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showSakeMasterCandidates()">🌱 商品マスター候補</button>
@@ -553,6 +554,92 @@ function correctionFieldLabels(reason){
   if(!raw.startsWith("user_corrected:"))return [];
   return raw.slice("user_corrected:".length).split(",")
     .map(x=>x.trim()).filter(Boolean).map(x=>map[x]||x);
+}
+
+
+async function showRecognitionImprovementCandidates(){
+  showAdminPanel("🛠 要改善候補","<p>繰り返し起きている誤認識を探しています...</p>");
+  try{
+    const key=cfgKey();
+    const r=await fetch(
+      BASE+"/rest/v1/corrections?select=id,predicted_brand,predicted_product,correct_brand,correct_product,correct_brewery,reason,created_at&order=created_at.desc&limit=1000",
+      {headers:{"apikey":key,"Authorization":"Bearer "+token}}
+    );
+    const text=await r.text();
+    if(!r.ok)throw new Error(text);
+    const items=JSON.parse(text);
+
+    const groups={};
+    for(const x of items){
+      const reason=String(x.reason||"");
+      if(!reason.startsWith("user_corrected:"))continue;
+
+      const from=[x.predicted_brand,x.predicted_product].filter(Boolean).join(" ").trim()||"不明";
+      const to=[x.correct_brand,x.correct_product].filter(Boolean).join(" ").trim()||"未設定";
+      if(from===to)continue;
+
+      const fields=correctionFieldLabels(reason);
+      const keyName=from+"|||"+to;
+      if(!groups[keyName])groups[keyName]={
+        from,to,count:0,last:null,fields:{},brewery:x.correct_brewery||""
+      };
+      const g=groups[keyName];
+      g.count++;
+      const t=new Date(x.created_at).getTime();
+      if(!g.last||t>g.last)g.last=t;
+      fields.forEach(f=>g.fields[f]=(g.fields[f]||0)+1);
+    }
+
+    const scored=Object.values(groups).map(g=>{
+      const daysSince=g.last?Math.max(0,(Date.now()-g.last)/86400000):999;
+      const recency=daysSince<=7?2:daysSince<=30?1:0;
+      const severity=g.count>=5?3:g.count>=3?2:g.count>=2?1:0;
+      const fieldSpread=Object.keys(g.fields).length>=2?1:0;
+      return {...g,score:severity+recency+fieldSpread,daysSince};
+    }).filter(g=>g.count>=2)
+      .sort((a,b)=>b.score-a.score||b.count-a.count||a.daysSince-b.daysSince);
+
+    if(!scored.length){
+      showAdminPanel(
+        "🛠 要改善候補",
+        "<p>同じ誤認識が2回以上繰り返された候補は、今のところありません ✅</p>"+
+        "<p style='font-size:12px;color:#777'>修正履歴が増えると、自動でここに浮かびます。</p>"
+      );
+      return;
+    }
+
+    const rows=scored.slice(0,30).map(g=>{
+      const level=g.score>=6?"高":g.score>=4?"中":"低";
+      const badge=level==="高"?"🔴":level==="中"?"🟠":"🟡";
+      const fields=Object.entries(g.fields).sort((a,b)=>b[1]-a[1]).map(([k,n])=>k+" "+n+"件").join("・");
+      const last=g.last?new Date(g.last).toLocaleString("ja-JP"):"—";
+      return `
+        <div style="padding:14px 0;border-bottom:1px solid #eee">
+          <div style="font-size:12px;color:#777">${badge} 優先度：${level} ／ ${g.count}回発生</div>
+          <div style="margin-top:6px"><b>${esc(g.from)}</b></div>
+          <div style="font-size:20px;margin:4px 0">↓</div>
+          <div><b>${esc(g.to)}</b></div>
+          ${g.brewery?`<div style="font-size:12px;color:#777;margin-top:3px">蔵元：${esc(g.brewery)}</div>`:""}
+          <div style="font-size:12px;color:#777;margin-top:7px">修正項目：${esc(fields||"—")}<br>最終発生：${esc(last)}</div>
+          <div style="margin-top:8px;padding:9px 10px;border-radius:10px;background:#faf7f0;font-size:12px">
+            ${g.count>=5
+              ?"同じ誤認識が5回以上あります。辞書・マスター・画像類似候補の優先順位を見直す候補です。"
+              :g.count>=3
+                ?"繰り返し発生しています。次の数件も同じ修正が続くか要監視です。"
+                :"2回発生しています。再発したら改善対象に上げる候補です。"}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    showAdminPanel(
+      "🛠 要改善候補",
+      "<p style='font-size:13px;color:#666'>同じ認識違いが2回以上繰り返されたものを、自動で優先順位付けしています。</p>"+rows
+    );
+  }catch(error){
+    console.error(error);
+    showAdminPanel("🛠 要改善候補","<p>取得エラー："+esc(error.message)+"</p>");
+  }
 }
 
 async function showCorrectionAnalytics(){
