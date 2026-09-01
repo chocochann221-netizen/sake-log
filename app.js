@@ -3,6 +3,7 @@ const PUBLISHABLE_KEY="sb_publishable_iN9jbt45ga1sPbzt5aw-0w_iWs8eWW-";
 const $=id=>document.getElementById(id);
 const S={signup:false,user:null,token:null,refreshToken:null,photo:null,backPhoto:null,foodPhoto:null,memoryPhoto:null,lat:null,lng:null,recognition:null,currentImageCacheKey:null,currentFrontHash:null,currentBackHash:null,detailRecord:null,authBusy:false,currentEventId:null,currentEventSakeId:null,currentSakeId:null,currentSaveRequestId:null,currentEventPhotoRequestId:null};
 const photoObjectUrls=new Map();
+let freshPhotoPickerConfirmed=false;
 const cfgKey=()=>localStorage.getItem("sakelog_pubkey")||PUBLISHABLE_KEY;
 const msg=(el,text,type="ok")=>el.innerHTML=text?`<div class="msg ${type}">${escapeHtml(text)}</div>`:"";
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -414,6 +415,51 @@ async function logout(){
 }
 $("logoutTop").onclick=logout;
 
+
+function hasCurrentRecordWork(){
+  const fieldValue=RECORD_DRAFT_FIELDS.some(id=>String($(id)?.value||"").trim());
+  return fieldValue || !!(S.photo||S.backPhoto||S.foodPhoto||S.memoryPhoto||S.currentEventId||S.currentSakeId);
+}
+function confirmStartFreshRecord(){
+  const draft=readRecordDraft();
+  const hasDraft=!!(draft&&draft.userId===S.user?.id);
+  if(!hasDraft && !hasCurrentRecordWork())return true;
+  return confirm("入力途中の一杯があります。\n\n今の内容を破棄して、新しい一杯を始めますか？");
+}
+function startFreshRecord(){
+  if(!confirmStartFreshRecord())return false;
+  clearRecordDraft();
+  resetRecord();
+  return true;
+}
+function recordViewIsVisible(){
+  return !$("recordView")?.classList.contains("hidden");
+}
+function replaceFrontPhotoWithoutReset(file){
+  if(!file)return;
+  S.photo=file;
+  $("preview").src=URL.createObjectURL(file);
+  $("preview").classList.remove("hidden");
+  S.recognition=null;
+  S.currentImageCacheKey=null;
+  S.currentFrontHash=null;
+  updateAnalyzeButton();
+  saveRecordDraft();
+  msg($("recordMsg"),"表ラベルを変更しました。入力済みの内容はそのまま残しています。","info");
+}
+function replaceBackPhotoWithoutReset(file){
+  if(!file)return;
+  S.backPhoto=file;
+  $("backPreview").src=URL.createObjectURL(file);
+  $("backPreview").classList.remove("hidden");
+  S.recognition=null;
+  S.currentImageCacheKey=null;
+  S.currentBackHash=null;
+  updateAnalyzeButton();
+  saveRecordDraft();
+  msg($("recordMsg"),"裏ラベルを変更しました。入力済みの内容はそのまま残しています。","info");
+}
+
 function resetRecord(){
  S.currentImageCacheKey=null; S.currentFrontHash=null; S.currentBackHash=null;
  S.photo=null;S.backPhoto=null;S.foodPhoto=null;S.memoryPhoto=null;S.recognition=null;S.lat=null;S.lng=null;S.currentEventId=null;S.currentEventSakeId=null;S.currentSakeId=null;S.currentSaveRequestId=null;
@@ -423,30 +469,47 @@ function resetRecord(){
  $("analyzeBtn").classList.add("hidden");$("candidateBox").classList.add("hidden");msg($("analysisMsg"),"");$("rating").value=4;$("ratingVal").textContent="4.0";$("locMsg").textContent="";msg($("recordMsg"),"");
  show("recordView");
 }
-$("manualBtn").onclick=()=>{clearRecordDraft();resetRecord()};
+$("manualBtn").onclick=()=>{startFreshRecord()};
 $("rating").oninput=()=> $("ratingVal").textContent=Number($("rating").value).toFixed(1);
 
 function updateAnalyzeButton(){
  $("analyzeBtn").classList.toggle("hidden",!(S.photo||S.backPhoto));
 }
 function attachPhoto(file){
- const keepBack=S.backPhoto;
- clearRecordDraft();
- resetRecord();
- S.backPhoto=keepBack;
- S.photo=file;$("preview").src=URL.createObjectURL(file);$("preview").classList.remove("hidden");
- if(S.backPhoto){$("backPreview").src=URL.createObjectURL(S.backPhoto);$("backPreview").classList.remove("hidden");}
- updateAnalyzeButton();msg($("recordMsg"),"表ラベルを選択しました。裏ラベルも追加すると識別精度を上げやすくなります。","info");
+ if(!file)return;
+ if(recordViewIsVisible() && hasCurrentRecordWork()){
+   replaceFrontPhotoWithoutReset(file);
+   return;
+ }
+ if(freshPhotoPickerConfirmed){
+   freshPhotoPickerConfirmed=false;
+   clearRecordDraft();
+   resetRecord();
+ }else if(!startFreshRecord())return;
+ S.photo=file;
+ $("preview").src=URL.createObjectURL(file);
+ $("preview").classList.remove("hidden");
+ updateAnalyzeButton();
+ saveRecordDraft();
+ msg($("recordMsg"),"表ラベルを選択しました。裏ラベルも追加すると識別精度を上げやすくなります。","info");
 }
 function attachBackPhoto(file){
- if(!S.photo){clearRecordDraft();resetRecord();}
- S.backPhoto=file;$("backPreview").src=URL.createObjectURL(file);$("backPreview").classList.remove("hidden");
+ if(!file)return;
+ if(recordViewIsVisible() && hasCurrentRecordWork()){
+   replaceBackPhotoWithoutReset(file);
+   return;
+ }
+ if(freshPhotoPickerConfirmed){
+   freshPhotoPickerConfirmed=false;
+   clearRecordDraft();
+   resetRecord();
+ }else if(!startFreshRecord())return;
+ S.backPhoto=file;
+ $("backPreview").src=URL.createObjectURL(file);
+ $("backPreview").classList.remove("hidden");
  updateAnalyzeButton();
- msg($("recordMsg"),
-   S.photo
-     ?"裏ラベルを追加しました。表＋裏を同じ1本として保存します。"
-     :"裏ラベルを選択しました。裏ラベルだけでも解析・保存できます。",
-   "info");
+ saveRecordDraft();
+ msg($("recordMsg"),"裏ラベルを選択しました。裏ラベルだけでも解析・保存できます。","info");
 }
 function attachFoodPhoto(file){
   S.foodPhoto=file;
@@ -459,14 +522,17 @@ function attachMemoryPhoto(file){
   $("memoryPreview").src=URL.createObjectURL(file);
   $("memoryPreview").classList.remove("hidden");
 }
-$("cameraBtn").onclick=()=> $("cameraInput").click();
-$("galleryBtn").onclick=()=> $("galleryInput").click();
-$("backCameraBtn").onclick=()=> $("backCameraInput").click();
-$("backGalleryBtn").onclick=()=> $("backGalleryInput").click();
-$("cameraInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachPhoto(f)};
-$("galleryInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachPhoto(f)};
-$("backCameraInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachBackPhoto(f)};
-$("backGalleryInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachBackPhoto(f)};
+$("cameraBtn").onclick=()=>{if(confirmStartFreshRecord()){freshPhotoPickerConfirmed=true;$("cameraInput").click()}};
+$("galleryBtn").onclick=()=>{if(confirmStartFreshRecord()){freshPhotoPickerConfirmed=true;$("galleryInput").click()}};
+$("backCameraBtn").onclick=()=>{if(confirmStartFreshRecord()){freshPhotoPickerConfirmed=true;$("backCameraInput").click()}};
+$("backGalleryBtn").onclick=()=>{if(confirmStartFreshRecord()){freshPhotoPickerConfirmed=true;$("backGalleryInput").click()}};
+function clearFreshPhotoPickerConfirmationSoon(){
+  setTimeout(()=>{freshPhotoPickerConfirmed=false},500);
+}
+$("cameraInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachPhoto(f);else clearFreshPhotoPickerConfirmationSoon()};
+$("galleryInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachPhoto(f);else clearFreshPhotoPickerConfirmationSoon()};
+$("backCameraInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachBackPhoto(f);else clearFreshPhotoPickerConfirmationSoon()};
+$("backGalleryInput").onchange=e=>{const f=e.target.files?.[0];if(f)attachBackPhoto(f);else clearFreshPhotoPickerConfirmationSoon()};
 $("foodCameraInput").onchange=e=>{
   const f=e.target.files?.[0];
   if(f)attachFoodPhoto(f);
@@ -3285,8 +3351,7 @@ if($("lineLoginBtn")) $("lineLoginBtn").onclick=startLineLogin;
 
 document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{
   if(b.dataset.page==="recordView"){
-    clearRecordDraft();
-    resetRecord();
+    startFreshRecord();
   }else show(b.dataset.page);
 });
 wireRecordDraftAutosave();
