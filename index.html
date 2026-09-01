@@ -13,7 +13,7 @@ header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid 
 .brand{font-size:22px;font-weight:800}.pill{font-size:12px;background:#edf5f1;color:#238464;padding:4px 9px;border-radius:999px}
 main{max-width:680px;margin:auto;padding:18px 18px 95px}.card{background:#fff;border:1px solid #dfe4e0;border-radius:22px;padding:18px;margin-bottom:14px}
 h1,h2,h3{margin:0 0 12px}.small{font-size:12px;color:#6f7773}.hidden{display:none!important}
-label{display:block;font-size:13px;color:#707874;margin:10px 0 6px}input,textarea{width:100%;padding:13px;border:1px solid #d5dcd8;border-radius:13px;font:inherit}
+label{display:block;font-size:13px;color:#707874;margin:10px 0 6px}input,textarea{width:100%;padding:13px;border:1px solid #d5dcd8;border-radius:13px;font:inherit}.field-error{border-color:#c94c43!important;background:#fff8f7}.field-warning{border-color:#c69b45!important;background:#fffdf6}
 textarea{min-height:90px}.btn{width:100%;padding:14px;border:0;border-radius:14px;font-weight:800;margin-top:9px;font-size:16px}.primary{background:#238464;color:#fff}.secondary{background:#edf5f1;color:#238464}.outline{background:#fff;border:1px solid #dfe4e0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.msg{margin-top:12px;padding:11px;border-radius:12px;white-space:pre-wrap;word-break:break-word}.ok{background:#e8f7ef;color:#17683f}.err{background:#fff0ee;color:#a32c22}.info{background:#eef5ff;color:#235a90}
 .preview{width:100%;max-height:300px;object-fit:contain;border-radius:14px;background:#f0f1f0}.record{padding:11px 0;border-bottom:1px solid #e6ebe7}.record:last-child{border-bottom:0}.record b{display:block}
@@ -188,14 +188,14 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <label>特定名称・酒類区分</label><input id="classification" placeholder="例：純米吟醸">
 <label>原材料名</label><input id="rice" placeholder="例：米（国産）">
 <label>使用米・原料米</label><input id="riceVariety" placeholder="例：朝日米100%">
-<label>精米歩合</label><input id="polishing" placeholder="例：60%">
-<label>アルコール度数</label><input id="alcohol" placeholder="例：14%">
-<label>容量</label><input id="volume" placeholder="例：720ml">
+<label>精米歩合</label><input id="polishing" inputmode="decimal" placeholder="例：60%">
+<label>アルコール度数</label><input id="alcohol" inputmode="decimal" placeholder="例：14%">
+<label>容量</label><input id="volume" inputmode="decimal" placeholder="例：720ml">
 <label>評価（1〜5）</label><input id="rating" type="range" min="1" max="5" step=".5" value="4">
 <div><span id="ratingVal">4.0</span> ★</div>
 <label>飲んだ店</label><input id="restaurant">
-<label>価格（円・任意）</label><input id="price" inputmode="numeric">
-<label>コメント</label><textarea id="comment"></textarea>
+<label>価格（円・任意）</label><input id="price" inputmode="numeric" min="0">
+<label>コメント</label><textarea id="comment" maxlength="1000"></textarea>
 <div class="memory-photo-section">
 <h3 style="margin-top:18px">この日の思い出</h3>
 <div class="grid">
@@ -211,6 +211,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 </div>
 <button id="locateBtn" class="btn outline">📍 現在地を記録</button>
 <div id="locMsg" class="small"></div>
+<div id="recordValidationMsg"></div>
 <button id="saveRecordBtn" class="btn primary">記録を保存</button>
 <div id="recordMsg"></div>
 </div>
@@ -278,6 +279,6 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="navbtn" data-page="profileView"><span>☺</span>設定</button>
 </div>
 </nav>
-<script src="app.js?v=524"></script>
+<script src="app.js?v=525"></script>
 <script src="detail-knowledge.js?v=2"></script>
 </body></html>
