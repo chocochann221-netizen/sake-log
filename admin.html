@@ -237,6 +237,7 @@
   <button class="menu-item" onclick="showUsers()">👥 ユーザー管理</button>
   <button class="menu-item" onclick="showRecognition()">🔍 AI認識結果</button>
   <button class="menu-item" onclick="showCorrections()">✏️ 誤認識・修正データ</button>
+  <button class="menu-item" onclick="showCorrectionAnalytics()">📊 認識ズレ分析</button>
   <button class="menu-item" onclick="showSakeMaster()">🍶 日本酒マスター管理</button>
   <button class="menu-item" onclick="showDictionary()">🧠 学習辞書管理</button>
   <button class="menu-item" onclick="showSakeMasterCandidates()">🌱 商品マスター候補</button>
@@ -541,6 +542,85 @@ async function showUsers() {
     );
   }
 }
+
+function correctionFieldLabels(reason){
+  const map={
+    brand:"銘柄",product:"商品名",brewery:"蔵元",
+    polishing:"精米歩合",alcohol:"度数",volume:"容量",
+    prefecture:"都道府県",classification:"分類"
+  };
+  const raw=String(reason||"");
+  if(!raw.startsWith("user_corrected:"))return [];
+  return raw.slice("user_corrected:".length).split(",")
+    .map(x=>x.trim()).filter(Boolean).map(x=>map[x]||x);
+}
+
+async function showCorrectionAnalytics(){
+  showAdminPanel("📊 認識ズレ分析","<p>修正履歴を集計しています...</p>");
+  try{
+    const key=cfgKey();
+    const r=await fetch(
+      BASE+"/rest/v1/corrections?select=id,predicted_brand,predicted_product,correct_brand,correct_product,correct_brewery,reason,created_at&order=created_at.desc&limit=500",
+      {headers:{"apikey":key,"Authorization":"Bearer "+token}}
+    );
+    const text=await r.text();
+    if(!r.ok)throw new Error(text);
+    const items=JSON.parse(text);
+
+    const corrected=items.filter(x=>String(x.reason||"").startsWith("user_corrected:"));
+    const legacy=items.filter(x=>!String(x.reason||"").startsWith("user_corrected:"));
+    const fieldCounts={};
+    corrected.forEach(x=>correctionFieldLabels(x.reason).forEach(k=>fieldCounts[k]=(fieldCounts[k]||0)+1));
+
+    const pairCounts={};
+    corrected.forEach(x=>{
+      const from=[x.predicted_brand,x.predicted_product].filter(Boolean).join(" ")||"不明";
+      const to=[x.correct_brand,x.correct_product].filter(Boolean).join(" ")||"未設定";
+      if(from===to)return;
+      const k=from+" → "+to;
+      pairCounts[k]=(pairCounts[k]||0)+1;
+    });
+
+    const recent7=corrected.filter(x=>Date.now()-new Date(x.created_at).getTime()<=7*86400000).length;
+    const recent30=corrected.filter(x=>Date.now()-new Date(x.created_at).getTime()<=30*86400000).length;
+
+    const fields=Object.entries(fieldCounts).sort((a,b)=>b[1]-a[1]);
+    const maxField=fields[0]?.[1]||1;
+    const pairs=Object.entries(pairCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+    const summary=`
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px">
+        <div style="background:#f7f5ef;border-radius:12px;padding:14px"><div style="font-size:12px;color:#777">項目付き修正</div><strong style="font-size:25px">${corrected.length}</strong></div>
+        <div style="background:#f7f5ef;border-radius:12px;padding:14px"><div style="font-size:12px;color:#777">直近7日</div><strong style="font-size:25px">${recent7}</strong></div>
+        <div style="background:#f7f5ef;border-radius:12px;padding:14px"><div style="font-size:12px;color:#777">直近30日</div><strong style="font-size:25px">${recent30}</strong></div>
+        <div style="background:#f7f5ef;border-radius:12px;padding:14px"><div style="font-size:12px;color:#777">旧形式の修正履歴</div><strong style="font-size:25px">${legacy.length}</strong></div>
+      </div>`;
+
+    const fieldHtml=fields.length?fields.map(([name,n])=>`
+      <div style="margin:12px 0">
+        <div style="display:flex;justify-content:space-between;font-size:13px"><b>${esc(name)}</b><span>${n}件</span></div>
+        <div style="height:8px;background:#eee;border-radius:999px;margin-top:5px;overflow:hidden">
+          <div style="height:100%;width:${Math.max(4,Math.round(n/maxField*100))}%;background:#8a6b3d"></div>
+        </div>
+      </div>`).join(""):"<p style='color:#777'>項目別データはこれから蓄積されます。</p>";
+
+    const pairHtml=pairs.length?pairs.map(([name,n])=>`
+      <div style="padding:10px 0;border-bottom:1px solid #eee">
+        <strong>${esc(name)}</strong><br><span style="font-size:12px;color:#777">${n}件</span>
+      </div>`).join(""):"<p style='color:#777'>繰り返し発生している銘柄違いはまだありません。</p>";
+
+    showAdminPanel("📊 認識ズレ分析",
+      summary+
+      "<h3 style='margin-top:22px'>どの項目が外れやすい？</h3>"+fieldHtml+
+      "<h3 style='margin-top:26px'>繰り返し起きている認識違い</h3>"+pairHtml+
+      "<p style='font-size:12px;color:#888;margin-top:18px'>※ 保存時にユーザーがラベル読取結果から大きく修正した項目を集計しています。過去の旧形式データは総数には残りますが、項目別集計には含めません。</p>"
+    );
+  }catch(error){
+    console.error(error);
+    showAdminPanel("📊 認識ズレ分析","<p>取得エラー："+esc(error.message)+"</p>");
+  }
+}
+
 async function showCorrections() {
 
   showAdminPanel(
@@ -603,7 +683,9 @@ async function showCorrections() {
 
         <span style="font-size:13px;color:#777">
           蔵元：${item.correct_brewery || "未設定"}<br>
-          修正理由：${item.reason || "—"}<br>
+          修正理由：${correctionFieldLabels(item.reason).length
+            ? "修正：" + correctionFieldLabels(item.reason).map(esc).join("・")
+            : esc(item.reason || "—")}<br>
           日時：${item.created_at
             ? new Date(item.created_at).toLocaleString("ja-JP")
             : "—"}
