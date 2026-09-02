@@ -55,8 +55,9 @@ window.addEventListener("unhandledrejection",e=>{
 });
 
 function syncActiveNav(id){
+ const navPage=id==="detailView" ? "historyView" : id;
  document.querySelectorAll(".navbtn").forEach(b=>{
-   const active=b.dataset.page===id;
+   const active=b.dataset.page===navPage;
    b.classList.toggle("active",active);
    b.classList.toggle("is-active",active);
    if(active)b.setAttribute("aria-current","page");
