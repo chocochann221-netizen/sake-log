@@ -3207,6 +3207,8 @@ function openRecordKnowledge(r){
        <h3 style="margin:4px 0 9px">${escapeHtml(x.value)}</h3>
        <div style="line-height:1.8">${escapeHtml(x.body)}</div>
        ${x.title==="使用米・原料米"?`<a class="btn outline" style="display:block;text-decoration:none;margin-top:12px" href="rice-guide.html?name=${encodeURIComponent(x.value)}">この米を知る →</a>`:""}
+       ${x.title==="特定名称・酒類区分"?`<a class="btn outline" style="display:block;text-decoration:none;margin-top:12px" href="sake-terms.html#tokutei-meisho">純米・吟醸などを知る →</a>`:""}
+       ${x.title==="精米歩合"?`<a class="btn outline" style="display:block;text-decoration:none;margin-top:12px" href="knowledge.html#label-guide">精米歩合をもう少し知る →</a>`:""}
      </section>
    `).join(""):`<div class="msg info">この一本から案内できる知識を準備中です。</div>`}
    <div style="margin:22px 0;padding:18px;border-left:4px solid #9b7654;background:#f7f0e5">
