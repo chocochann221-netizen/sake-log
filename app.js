@@ -3168,16 +3168,53 @@ ${foodHtml||memoryHtml?`
        ].filter(x=>x[1]).map(([k,v])=>`<div><b>${escapeHtml(k)}</b>${escapeHtml(v)}</div>`).join("")}
      </div>
      ${r.comment?`<div class="detail-comment">${escapeHtml(r.comment)}</div>`:""}
+     <button id="recordKnowledgeBtn" class="btn outline" style="margin-top:18px;text-align:left;padding:18px 20px">
+       <span class="small" style="display:block;color:#278b70;font-weight:800;margin-bottom:5px">この一本から、もう少し奥へ</span>
+       <span style="display:block;font-size:22px;font-weight:900">この一本を、もっと知る</span>
+       <span class="small" style="display:block;margin-top:7px;line-height:1.6">米、精米歩合、造り方など、この酒に関係するところだけを知識の蔵から案内します。</span>
+       <span style="display:block;color:#278b70;font-weight:800;margin-top:10px">知識の蔵へ →</span>
+     </button>
      <div class="detail-actions">
        <button id="editRecordBtn" class="btn secondary">✏️ 編集する</button>
        <button id="deleteRecordBtn" class="btn danger">🗑️ 削除する</button>
      </div>`;
+   $("recordKnowledgeBtn").onclick=()=>openRecordKnowledge(r);
    $("editRecordBtn").onclick=()=>renderRecordEditor(r);
    $("deleteRecordBtn").onclick=()=>deleteCurrentRecord();
  }catch(e){
    $("detailBody").innerHTML=`<div class="msg err">${escapeHtml(e.message)}</div>`;
  }
 }
+function openRecordKnowledge(r){
+ const items=[];
+ const add=(title,value,body)=>{if(value)items.push({title,value,body})};
+ add("特定名称・酒類区分",r.classification,"名前は、原料や精米歩合、醸造方法などの違いを知る入口です。まずは難しい分類を覚えるより、今飲んだ一本の表示から少しずつ辿れます。");
+ add("使用米・原料米",r.rice_variety,"酒米や原料米は、品種だけで味が決まるものではありません。蔵の造りや精米、酵母などと重なって、この一本の個性になります。");
+ add("精米歩合",r.polishing_ratio,"精米歩合は、玄米を磨いたあとに残った割合です。数字が小さいほど多く磨いていますが、小さいほど必ずおいしい、という意味ではありません。");
+ add("原材料",r.rice,"日本酒の基本は米・米こうじ・水。表示を見ると、この一本が何から造られているかを確認できます。");
+ add("アルコール",r.alcohol,"アルコール度数も口当たりや飲みごたえを感じる手がかりのひとつです。温度や料理との組み合わせでも印象は変わります。");
+ const title=[r.brand_name,r.product_name].filter(Boolean).join(" ")||"この一本";
+ $("detailBody").innerHTML=`
+   <button id="knowledgeBackBtn" class="btn outline">← この一杯に戻る</button>
+   <div style="padding:22px 4px 8px">
+     <div class="small" style="color:#278b70;font-weight:800">知識の蔵</div>
+     <h2 style="margin:6px 0 4px">${escapeHtml(title)}から知る</h2>
+     <div class="small">${escapeHtml(r.brewery_name||"")}　飲んだ一本に関係することだけ、少しずつ。</div>
+   </div>
+   ${items.length?items.map(x=>`
+     <section style="margin-top:14px;padding:18px;border:1px solid #e5ded2;border-radius:18px;background:#fffdf8">
+       <div class="small" style="font-weight:800;color:#7d7469">${escapeHtml(x.title)}</div>
+       <h3 style="margin:4px 0 9px">${escapeHtml(x.value)}</h3>
+       <div style="line-height:1.8">${escapeHtml(x.body)}</div>
+     </section>
+   `).join(""):`<div class="msg info">この一本から案内できる知識を準備中です。</div>`}
+   <div style="margin:22px 0;padding:18px;border-left:4px solid #9b7654;background:#f7f0e5">
+     <b>知識を先に覚える場所ではなく、飲んだ一本から知る場所。</b>
+     <div class="small" style="margin-top:6px;line-height:1.7">和酒ログでは、難しい日本酒用語を並べるのではなく、自分の記録とつながった知識から案内していきます。</div>
+   </div>`;
+ $("knowledgeBackBtn").onclick=()=>openRecordDetail(r.id);
+}
+
 function renderRecordEditor(r){
  $("detailBody").innerHTML=`
    <h2>記録を編集</h2>
