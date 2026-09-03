@@ -3206,6 +3206,7 @@ function openRecordKnowledge(r){
        <div class="small" style="font-weight:800;color:#7d7469">${escapeHtml(x.title)}</div>
        <h3 style="margin:4px 0 9px">${escapeHtml(x.value)}</h3>
        <div style="line-height:1.8">${escapeHtml(x.body)}</div>
+       ${x.title==="使用米・原料米"?`<a class="btn outline" style="display:block;text-decoration:none;margin-top:12px" href="rice-guide.html?name=${encodeURIComponent(x.value)}">この米を知る →</a>`:""}
      </section>
    `).join(""):`<div class="msg info">この一本から案内できる知識を準備中です。</div>`}
    <div style="margin:22px 0;padding:18px;border-left:4px solid #9b7654;background:#f7f0e5">
