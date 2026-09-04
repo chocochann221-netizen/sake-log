@@ -182,8 +182,14 @@
   function riceVarietyOf(r){return r?.rice_variety||r?.riceVariety||r?.riceVarietyName||"";}
   function buildKnowledgeUrl(r){
     const q=new URLSearchParams();
-    if(r?.brand_name)q.set("brand",r.brand_name);if(r?.product_name)q.set("product",r.product_name);if(r?.rice)q.set("rice",r.rice);
-    const rv=riceVarietyOf(r);if(rv)q.set("riceVariety",rv);if(r?.polishing_ratio)q.set("polishing",r.polishing_ratio);if(r?.classification)q.set("classification",r.classification);
+    if(r?.brand_name)q.set("brand",r.brand_name);
+    if(r?.product_name)q.set("product",r.product_name);
+    if(r?.rice)q.set("rice",r.rice);
+    const rv=riceVarietyOf(r);if(rv)q.set("riceVariety",rv);
+    if(r?.polishing_ratio)q.set("polishing",r.polishing_ratio);
+    if(r?.classification)q.set("classification",r.classification);
+    if(r?.alcohol)q.set("alcohol",r.alcohol);
+    if(r?.prefecture)q.set("prefecture",r.prefecture);
     return "knowledge-entry.html?"+q.toString();
   }
   function injectMemoryStrip(r){
@@ -199,7 +205,7 @@
   }
   function injectKnowledgeLink(r){
     const body=document.getElementById("detailBody");if(!body||!r||body.querySelector(".knowledge-entry-card"))return;const actions=body.querySelector(".detail-actions");if(!actions)return;
-    const card=document.createElement("a");card.className="knowledge-entry-card";card.href=buildKnowledgeUrl(r);card.innerHTML=`<span class="knowledge-entry-kicker">この一本から、もう少し奥へ</span><strong>この一本を、もっと知る</strong><span class="knowledge-entry-copy">米、精米歩合、造り方など、この酒に関係するところだけを知識の蔵から案内します。</span><span class="knowledge-entry-arrow">知識の蔵へ →</span>`;actions.parentNode.insertBefore(card,actions);
+    const card=document.createElement("a");card.className="knowledge-entry-card";card.href=buildKnowledgeUrl(r);card.innerHTML=`<span class="knowledge-entry-kicker">この一本から、もう少し奥へ</span><strong>この一本を、もっと知る</strong><span class="knowledge-entry-copy">米、精米歩合、造り方、土地など、この酒に関係するところだけを知識の蔵から案内します。</span><span class="knowledge-entry-arrow">知識の蔵へ →</span>`;actions.parentNode.insertBefore(card,actions);
   }
   async function getOfficialMaster(r){
     if(!r?.brand_name||typeof authFetch!=="function")return null;
