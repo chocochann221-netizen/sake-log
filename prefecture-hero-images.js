@@ -21,6 +21,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
     position: "52% center"
   },
+  "大阪府": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",
+    title: "Osaka Dotonbori yoru 00.jpg",
+    author: "Sakai Yayoi",
+    license: "CC0 1.0",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    credit: "Photo: Sakai Yayoi / Wikimedia Commons / CC0",
+    position: "50% center"
+  },
   "長崎県": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hashima%2C%20Nagasaki%2C%20Japan%2C%2020240814%201421%203385.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Hashima,_Nagasaki,_Japan,_20240814_1421_3385.jpg",
