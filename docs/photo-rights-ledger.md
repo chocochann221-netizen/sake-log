@@ -1,6 +1,6 @@
 # 和酒ログ「知識の蔵」写真権利台帳
 
-最終更新: 2026-08-25
+最終更新: 2026-09-06
 
 ## 運用ルール
 
@@ -21,6 +21,20 @@
 | 酒母 | 酒造工程28-3「暖気樽を取る」（本野田酒造） | 1960 | 西宮市 | CC BY（表示） | 0100002668 | https://adeac.jp/nishinomiya-city/catalog/0100002668 | 採用候補 |
 | 搾り | 酒造工程48（酒揚げ・上槽） | 1960頃 | 西宮市 | CC BY（表示） | 0100002697 | https://adeac.jp/nishinomiya-city/catalog/0100002697 | 採用候補 |
 | 火入れ | 酒造工程55-2「火入れ 蛇管の据え付け」（辰馬本家酒造） | 1960-01 | 西宮市 | CC BY（表示） | 0100002716 | https://adeac.jp/nishinomiya-city/catalog/0100002716 | 採用候補 |
+
+## 都道府県ヒーロー写真
+
+| 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
+|---|---|---|---|---|---|---|---|
+| 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+
+### 奈良ヒーロー利用メモ
+
+- 原画像は 2023-10-01 05:58 撮影。奈良公園の鹿と石灯籠が写り、今回の「早朝の奈良公園・鹿 × 古都」というヒーロー方針に合致する。
+- 原典は Wikimedia Commons。撮影者 Ian G Shingler、CC BY-SA 4.0。
+- 画面上に `Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- CSS の `background-size: cover` による見え方の調整を含め、加工・再利用時は CC BY-SA 4.0 の条件を再確認する。
+- 将来、同等以上の品質で CC0 / CC BY または正式許諾済みの独自写真が得られた場合は差し替え候補とする。
 
 ## 米比較ページ候補
 
