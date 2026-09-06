@@ -11,6 +11,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: kkawamura / FIND/47 / Wikimedia Commons / CC BY 4.0",
     position: "50% center"
   },
+  "滋賀県": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tanuki%20Mura%2C%20Shigaraki%20T%C5%8Den%2002.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tanuki_Mura,_Shigaraki_T%C5%8Den_02.jpg",
+    title: "Tanuki Mura, Shigaraki Tōen 02.jpg",
+    author: "Motokoka",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    credit: "Photo: Motokoka / Wikimedia Commons / CC BY-SA 4.0",
+    position: "50% center"
+  },
   "奈良県": {
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Deer_at_nara_park_1.jpg/1280px-Deer_at_nara_park_1.jpg",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg",
