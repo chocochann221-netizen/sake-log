@@ -33,7 +33,7 @@
     <section class="nara-opening">
       <p class="nara-eyebrow">A WALK INTO NARA</p>
       <h2>鹿と古都から、<br>酒の記憶へ。</h2>
-      <p>奈良は、大仏だけを見て終わる土地ではない。朝の鹿から歩き始め、門をくぐり、祈りの時間をたどる。その先に、日本酒の源流へつながる物語がある。</p>
+      <p>朝の奈良を、ゆっくり歩く。鹿のいる景色を抜け、古い門をくぐる。町の時間をたどるうちに、一本の酒につながる奈良が見えてくる。</p>
       <div class="nara-cue">SCROLL TO WALK ↓</div>
     </section>
 
@@ -41,37 +41,34 @@
       ${photo(photos.nandaimon,'full')}
       <div class="nara-copy overlay-copy">
         <span>01 / 南大門</span>
-        <h2>まだ、<br>大仏は見せない。</h2>
-        <p>巨大な門と仁王像。そのスケールをくぐって初めて、奈良の時間に入っていく。</p>
+        <h2>門を、<br>くぐる。</h2>
+        <p>見上げるほど大きな門と仁王像。ここから、街の音が少しずつ遠くなる。</p>
       </div>
     </section>
 
-    <section class="nara-pause">
-      <p>門の向こうへ。</p>
-      <div class="line"></div>
-    </section>
+    <section class="nara-pause" aria-hidden="true"><div class="line"></div></section>
 
     <section class="nara-chapter buddha">
       ${photo(photos.daibutsu,'portrait')}
       <div class="nara-copy">
-        <span>02 / 東大寺・大仏</span>
-        <h2>歩いた先で、<br>ようやく出会う。</h2>
-        <p>最初から全部を見せない。奈良の大仏は、スクロールの途中で初めて大きく現れる。観光写真ではなく「辿り着いた」という感覚をつくる。</p>
+        <span>02 / 東大寺</span>
+        <h2>見上げる。</h2>
+        <p>長い時間、この場所で人を迎えてきた大仏。写真で知っていたはずの姿も、ここまで歩いてくると少し違って見える。</p>
       </div>
     </section>
 
     <section class="nara-transition">
       <p class="nara-eyebrow">FROM PRAYER TO SAKE</p>
-      <h2>そして物語は、<br>酒へ向かう。</h2>
-      <p>寺院と酒造りの歴史をたどると、奈良は「古都」だけではなく、日本酒文化を考えるための入口になる。</p>
+      <h2>祈りの土地を、<br>もう少し歩く。</h2>
+      <p>寺院の歴史をたどっていくと、奈良のもう一つの顔が見えてくる。酒造りの記憶もまた、この土地に積み重なっている。</p>
     </section>
 
     <section class="nara-chapter sake-origin">
       ${photo(photos.shoryakuji,'full')}
       <div class="nara-copy overlay-copy dark-copy">
         <span>03 / 正暦寺・菩提酛</span>
-        <h2>日本酒の源流へ。</h2>
-        <p>飲んだ一本から奈良へ。奈良を歩いた記憶から、酒造りの歴史へ。和酒ログらしい旅がここで一本につながる。</p>
+        <h2>酒の記憶へ。</h2>
+        <p>寺院で育まれた酒造りの歴史。その続きを、いま奈良で造られる一本からたどっていく。</p>
       </div>
     </section>
   `;
@@ -97,9 +94,8 @@
     .nara-copy>span{font-size:10px;letter-spacing:.16em;font-weight:800;opacity:.72}
     .nara-copy h2{font-size:38px;line-height:1.28;margin:12px 0 16px}
     .nara-copy p{font-size:13px;line-height:1.9;color:rgba(255,255,255,.86);margin:0}
-    .nara-pause{height:38svh;display:grid;place-content:center;background:#172019;color:#dce2dc;text-align:center}
-    .nara-pause p{font-family:serif;font-size:17px;letter-spacing:.14em;margin:0 0 18px}
-    .nara-pause .line{height:58px;width:1px;background:rgba(255,255,255,.28);margin:auto}
+    .nara-pause{height:46svh;display:grid;place-content:center;background:#172019;color:#dce2dc;text-align:center}
+    .nara-pause .line{height:74px;width:1px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.3),rgba(255,255,255,0));margin:auto}
     .nara-chapter.buddha{min-height:100svh;background:#0d100e;align-items:center}
     .nara-chapter.buddha .nara-photo{inset:0 0 34% 0}
     .nara-chapter.buddha .nara-photo:after{background:linear-gradient(180deg,rgba(9,12,10,.02),rgba(9,12,10,.45))}
