@@ -20,6 +20,7 @@
   const image = images[prefecture];
   if (image && image.src) {
     heroSection.style.backgroundImage = `linear-gradient(180deg,rgba(9,20,16,.08),rgba(9,20,16,.76)),url("${String(image.src).replace(/"/g, '%22')}")`;
+    heroSection.style.backgroundPosition = image.position || 'center';
     heroSection.classList.add('has-real-photo');
   }
 
@@ -37,6 +38,17 @@
   journey.textContent = hero.flow || '';
   wrap.appendChild(journey);
 
+  if (image && image.credit && image.sourcePage) {
+    const credit = document.createElement('a');
+    credit.className = 'hero-credit';
+    credit.href = image.sourcePage;
+    credit.target = '_blank';
+    credit.rel = 'noopener noreferrer';
+    credit.textContent = image.credit;
+    credit.setAttribute('aria-label', '写真の出典とライセンスを確認する');
+    wrap.appendChild(credit);
+  }
+
   if (hero.note) {
     const note = document.createElement('div');
     note.className = 'hero-design-note';
@@ -53,6 +65,8 @@
     .prefecture-hero-v2 .visual-label{margin-top:18px;color:#fff}
     .hero-subject{display:inline-block;padding-top:8px;border-top:1px solid rgba(255,255,255,.48);font-size:13px;font-weight:800;letter-spacing:.06em}
     .hero-journey{margin-top:20px;font-family:serif;font-size:13px;line-height:1.9;color:rgba(255,255,255,.88);max-width:36em}
+    .hero-credit{display:inline-block;margin-top:12px;color:rgba(255,255,255,.7);font-size:10px;line-height:1.5;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.22)}
+    .hero-credit:focus,.hero-credit:hover{color:#fff;border-bottom-color:rgba(255,255,255,.75)}
     .hero-design-note{display:none}
     @media (min-width:681px){.prefecture-hero-v2{min-height:520px}.prefecture-hero-v2>.wrap{padding-bottom:42px}}
   `;
