@@ -26,7 +26,16 @@
 
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
+| 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
 | 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+
+### 北海道ストーリー利用メモ
+
+- ヒーローは知床半島と流氷の実写。撮影者 kkawamura、FIND/47由来、Wikimedia Commons 上で CC BY 4.0。
+- 美瑛の章は `Biei Hokkaido.jpg`。撮影者 Jialiang Gao、CC BY-SA 3.0。原典: https://commons.wikimedia.org/wiki/File:Biei_Hokkaido.jpg
+- 函館の章は `Night view of Hakodate.jpg`。撮影者 Lombroso、Public Domain。原典: https://commons.wikimedia.org/wiki/File:Night_view_of_Hakodate.jpg
+- アイヌ文化の章は現時点で写真を置かず、装飾利用を避ける。将来写真・資料を採用する場合は、権利だけでなく当事者・施設・資料の文脈を確認する。
+- 北海道ページは「広さ」をスクロール距離で表現し、流氷 → 美瑛 → 札幌 → アイヌ文化 → 函館 → 食・米・酒へ接続する。
 
 ### 奈良ヒーロー利用メモ
 
