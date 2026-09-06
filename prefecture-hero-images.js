@@ -20,5 +20,15 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
     credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
     position: "52% center"
+  },
+  "長崎県": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hashima%2C%20Nagasaki%2C%20Japan%2C%2020240814%201421%203385.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Hashima,_Nagasaki,_Japan,_20240814_1421_3385.jpg",
+    title: "Hashima, Nagasaki, Japan, 20240814 1421 3385.jpg",
+    author: "Jakub Hałun",
+    license: "CC BY 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    credit: "Photo: Jakub Hałun / Wikimedia Commons / CC BY 4.0",
+    position: "50% center"
   }
 };
