@@ -71,4 +71,17 @@
     @media (min-width:681px){.prefecture-hero-v2{min-height:520px}.prefecture-hero-v2>.wrap{padding-bottom:42px}}
   `;
   document.head.appendChild(style);
+
+  // 特殊な物語構成は別ファイルで読み込む。共通ページを肥大化させない。
+  const storyModules = {
+    '北海道': 'prefecture-hokkaido-story.js?v=1'
+  };
+  const moduleSrc = storyModules[prefecture];
+  if (moduleSrc && !document.querySelector(`script[data-prefecture-story="${prefecture}"]`)) {
+    const script = document.createElement('script');
+    script.src = moduleSrc;
+    script.defer = true;
+    script.dataset.prefectureStory = prefecture;
+    document.body.appendChild(script);
+  }
 })();
