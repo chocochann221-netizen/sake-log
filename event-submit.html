@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#238464">
 <title>イベントチラシを送る｜和酒ログ</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f6f8f6;color:#17211c}header{position:sticky;top:0;background:#fff;border-bottom:1px solid #dfe4e0;padding:14px 18px}.brand{font-size:21px;font-weight:850}main{max-width:680px;margin:auto;padding:18px}.card{background:#fff;border:1px solid #dfe4e0;border-radius:22px;padding:18px;margin-bottom:14px}h1{font-size:25px;margin:0 0 8px}h2{font-size:18px;margin:0 0 10px}.small{font-size:12px;color:#6f7773;line-height:1.7}.btn{width:100%;padding:14px;border:0;border-radius:14px;font-weight:800;margin-top:10px;font-size:16px}.primary{background:#238464;color:#fff}.outline{background:#fff;border:1px solid #dfe4e0;color:#17211c}.hidden{display:none!important}input,textarea{width:100%;padding:13px;border:1px solid #d5dcd8;border-radius:13px;font:inherit}textarea{min-height:88px}label{display:block;font-size:13px;color:#707874;margin:12px 0 6px}.preview{width:100%;max-height:420px;object-fit:contain;border-radius:16px;background:#eef1ef;margin-top:12px}.msg{margin-top:12px;padding:12px;border-radius:12px;white-space:pre-wrap}.ok{background:#e8f7ef;color:#17683f}.err{background:#fff0ee;color:#a32c22}.info{background:#eef5ff;color:#235a90}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}.step{padding:9px 6px;text-align:center;border-radius:12px;background:#f2f5f3;font-size:11px}.step.on{background:#edf5f1;color:#238464;font-weight:800}.status{padding:12px;border:1px solid #e1e7e3;border-radius:14px;margin-top:10px}.status b{display:block;margin-bottom:3px}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f6f8f6;color:#17211c}header{position:sticky;top:0;background:#fff;border-bottom:1px solid #dfe4e0;padding:14px 18px}.brand{font-size:21px;font-weight:850}main{max-width:680px;margin:auto;padding:18px}.card{background:#fff;border:1px solid #dfe4e0;border-radius:22px;padding:18px;margin-bottom:14px}h1{font-size:25px;margin:0 0 8px}h2{font-size:18px;margin:0 0 10px}.small{font-size:12px;color:#6f7773;line-height:1.7}.btn{width:100%;padding:14px;border:0;border-radius:14px;font-weight:800;margin-top:10px;font-size:16px}.primary{background:#238464;color:#fff}.secondary{background:#edf5f1;color:#238464}.outline{background:#fff;border:1px solid #dfe4e0;color:#17211c}.hidden{display:none!important}input,textarea,select{width:100%;padding:13px;border:1px solid #d5dcd8;border-radius:13px;font:inherit;background:#fff}textarea{min-height:88px}label{display:block;font-size:13px;color:#707874;margin:12px 0 6px}.preview{width:100%;max-height:420px;object-fit:contain;border-radius:16px;background:#eef1ef;margin-top:12px}.msg{margin-top:12px;padding:12px;border-radius:12px;white-space:pre-wrap}.ok{background:#e8f7ef;color:#17683f}.err{background:#fff0ee;color:#a32c22}.info{background:#eef5ff;color:#235a90}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}.step{padding:9px 6px;text-align:center;border-radius:12px;background:#f2f5f3;font-size:11px}.step.on{background:#edf5f1;color:#238464;font-weight:800}.status{padding:12px;border:1px solid #e1e7e3;border-radius:14px;margin-top:10px}.status b{display:block;margin-bottom:3px}.confirm{margin-top:16px;padding:14px;border:1px solid #dfe4e0;border-radius:16px;background:#fbfcfb}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{font-size:12px;padding:5px 8px;border-radius:999px;background:#edf5f1;color:#238464}@media(max-width:520px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -15,24 +15,41 @@
 <div class="card">
 <a href="./" class="small">← 和酒ログへ戻る</a>
 <h1 style="margin-top:12px">イベントチラシを送る</h1>
-<p class="small">見つけた日本酒イベントのチラシを1枚送るだけ。和酒ログで内容を確認して、公開イベント候補として受け付けます。</p>
-<div class="steps"><div class="step on">1 チラシ</div><div class="step">2 確認</div><div class="step">3 公開審査</div></div>
+<p class="small">チラシを1枚選ぶと、和酒ログがイベント名・日時・場所・料金などを読み取ります。最後にあなたが確認してから掲載候補として送ります。</p>
+<div class="steps"><div id="step1" class="step on">1 チラシ</div><div id="step2" class="step">2 内容確認</div><div id="step3" class="step">3 公開審査</div></div>
 <div id="eligibilityMsg" class="msg info">利用資格を確認しています…</div>
 <div id="formBox" class="hidden">
 <label>イベントチラシ</label>
 <input id="flyer" type="file" accept="image/jpeg,image/png,image/webp" capture="environment">
 <img id="preview" class="preview hidden" alt="選択したイベントチラシ">
-<label>補足（任意）</label>
-<textarea id="note" maxlength="500" placeholder="例：酒屋さんでもらいました／大阪のイベントです"></textarea>
-<button id="submitBtn" class="btn primary" disabled>このチラシを和酒ログに送る</button>
-<div class="small" style="margin-top:9px">送信した時点では一般公開されません。重複・開催日・主催者情報などを確認してから掲載します。</div>
+<button id="analyzeBtn" class="btn secondary" disabled>チラシの内容を読み取る</button>
 <div id="msg"></div>
+
+<div id="confirmBox" class="confirm hidden">
+<h2>読み取った内容を確認</h2>
+<div class="small">違っているところだけ直せばOKです。読めなかった項目は空欄のまま送れます。</div>
+<label>イベント名</label><input id="title">
+<label>ひとこと説明</label><input id="subtitle">
+<div class="grid"><div><label>開始日</label><input id="startDate" type="date"></div><div><label>終了日</label><input id="endDate" type="date"></div></div>
+<div class="grid"><div><label>開始時間</label><input id="startTime" type="time"></div><div><label>終了時間</label><input id="endTime" type="time"></div></div>
+<div class="grid"><div><label>都道府県</label><input id="prefecture"></div><div><label>市区町村</label><input id="city"></div></div>
+<label>会場・開催店舗</label><input id="venueName">
+<label>住所</label><input id="address">
+<label>開催形式</label><select id="venueType"><option value="unknown">不明</option><option value="single">1会場</option><option value="roaming">複数店舗を巡る</option></select>
+<label>料金</label><textarea id="feeNote"></textarea>
+<label>主催者</label><input id="organizer">
+<label>予約・申込</label><select id="reservation"><option value="unknown">不明</option><option value="required">必要</option><option value="not_required">不要</option></select>
+<label>申込・参加について</label><textarea id="applicationNote"></textarea>
+<label>問い合わせ</label><input id="contact">
+<label>公式URL</label><input id="officialUrl" type="url">
+<div id="foundLists" class="small" style="margin-top:12px"></div>
+<label>補足（任意）</label><textarea id="note" maxlength="500" placeholder="例：酒屋さんでもらいました／大阪のイベントです"></textarea>
+<button id="submitBtn" class="btn primary">この内容で掲載候補として送る</button>
+<div class="small" style="margin-top:9px">この時点では一般公開されません。重複・開催日・主催者情報などを確認してから掲載します。</div>
 </div>
 </div>
-<div class="card">
-<h2>送ったチラシ</h2>
-<div id="history" class="small">読み込み中…</div>
 </div>
+<div class="card"><h2>送ったチラシ</h2><div id="history" class="small">読み込み中…</div></div>
 </main>
 <script>
 const BASE='https://mtshsijgfmottgkbgnir.supabase.co';
@@ -42,35 +59,57 @@ const user=(()=>{try{return JSON.parse(localStorage.getItem('sakelog_user')||'nu
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const authHeaders=extra=>({apikey:KEY,Authorization:'Bearer '+token,...(extra||{})});
-let selected=null;
-function message(text,type='info'){ $('msg').innerHTML=text?'<div class="msg '+type+'">'+esc(text)+'</div>':''; }
+let selected=null, extracted=null, imageDataUrl='';
+function message(text,type='info'){$('msg').innerHTML=text?'<div class="msg '+type+'">'+esc(text)+'</div>':'';}
+function setStep(n){[1,2,3].forEach(x=>$('step'+x).classList.toggle('on',x===n));}
 async function jsonFetch(url,opt={}){const r=await fetch(url,{...opt,headers:{...authHeaders(),...(opt.headers||{})}});const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||d?.msg||d?.error||('HTTP '+r.status));return d;}
+function fileToDataUrl(file){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=()=>reject(new Error('画像を読み込めませんでした'));fr.readAsDataURL(file);});}
 async function init(){
  if(!token||!user?.id){$('eligibilityMsg').className='msg err';$('eligibilityMsg').textContent='和酒ログにログインしてから利用してください。';$('history').textContent='';return;}
  try{
   const rows=await jsonFetch(BASE+'/rest/v1/profiles?select=plan,role&id=eq.'+encodeURIComponent(user.id)+'&limit=1');
-  const p=rows?.[0]; const allowed=p&&(p.plan==='premium'||p.plan==='admin'||p.role==='admin');
+  const p=rows?.[0],allowed=p&&(p.plan==='premium'||p.plan==='admin'||p.role==='admin');
   if(!allowed){$('eligibilityMsg').className='msg info';$('eligibilityMsg').textContent='イベントチラシ投稿は課金ユーザー向け機能です。';$('history').textContent='';return;}
-  $('eligibilityMsg').className='msg ok';$('eligibilityMsg').textContent='✓ チラシを投稿できます';$('formBox').classList.remove('hidden'); await loadHistory();
+  $('eligibilityMsg').className='msg ok';$('eligibilityMsg').textContent='✓ チラシを投稿できます';$('formBox').classList.remove('hidden');await loadHistory();
  }catch(e){$('eligibilityMsg').className='msg err';$('eligibilityMsg').textContent='確認できませんでした：'+e.message;}
 }
-$('flyer').onchange=e=>{selected=e.target.files?.[0]||null;if(!selected)return;if(selected.size>10*1024*1024){message('画像は10MB以下にしてください。','err');selected=null;return;}const u=URL.createObjectURL(selected);$('preview').src=u;$('preview').classList.remove('hidden');$('submitBtn').disabled=false;message('');};
-$('submitBtn').onclick=async()=>{
- if(!selected||!user?.id)return; $('submitBtn').disabled=true; message('チラシを送信しています…','info');
+$('flyer').onchange=async e=>{
+ selected=e.target.files?.[0]||null; extracted=null; imageDataUrl=''; $('confirmBox').classList.add('hidden');setStep(1);
+ if(!selected)return;if(selected.size>10*1024*1024){message('画像は10MB以下にしてください。','err');selected=null;return;}
+ $('preview').src=URL.createObjectURL(selected);$('preview').classList.remove('hidden');$('analyzeBtn').disabled=false;message('');
+};
+$('analyzeBtn').onclick=async()=>{
+ if(!selected)return;$('analyzeBtn').disabled=true;message('チラシからイベント情報を読み取っています…','info');
  try{
-  const ext=(selected.type.split('/')[1]||'jpg').replace('jpeg','jpg'); const id=crypto.randomUUID(); const path=user.id+'/'+id+'.'+ext;
+  imageDataUrl=await fileToDataUrl(selected);
+  const d=await jsonFetch('/.netlify/functions/extract-event-flyer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:imageDataUrl})});
+  extracted=d.extracted||{};fillForm(extracted);$('confirmBox').classList.remove('hidden');setStep(2);message('読み取りました。内容を確認して、違うところだけ直してください。','ok');
+ }catch(e){message(e.message,'err');}
+ finally{$('analyzeBtn').disabled=false;}
+};
+function fillForm(x){
+ $('title').value=x.title||'';$('subtitle').value=x.subtitle||'';$('startDate').value=x.start_date||'';$('endDate').value=x.end_date||'';$('startTime').value=x.start_time||'';$('endTime').value=x.end_time||'';$('prefecture').value=x.prefecture||'';$('city').value=x.city||'';$('venueName').value=x.venue_name||'';$('address').value=x.address||'';$('venueType').value=['single','roaming'].includes(x.venue_type)?x.venue_type:'unknown';$('feeNote').value=x.fee_note||'';$('organizer').value=x.organizer||'';$('reservation').value=x.reservation_required===true?'required':x.reservation_required===false?'not_required':'unknown';$('applicationNote').value=x.application_note||'';$('contact').value=x.contact||'';$('officialUrl').value=x.official_url||'';
+ const blocks=[];if(x.participating_breweries?.length)blocks.push('参加蔵：'+x.participating_breweries.map(esc).join('、'));if(x.participating_shops?.length)blocks.push('参加店：'+x.participating_shops.map(esc).join('、'));if(x.sake_names?.length)blocks.push('出品酒：'+x.sake_names.map(esc).join('、'));if(x.needs_confirmation?.length)blocks.push('要確認：'+x.needs_confirmation.map(esc).join('、'));$('foundLists').innerHTML=blocks.map(t=>'<div style="margin-top:6px">'+t+'</div>').join('');
+}
+function collectEdits(){return {title:$('title').value.trim(),subtitle:$('subtitle').value.trim(),start_date:$('startDate').value,end_date:$('endDate').value,start_time:$('startTime').value,end_time:$('endTime').value,prefecture:$('prefecture').value.trim(),city:$('city').value.trim(),venue_name:$('venueName').value.trim(),address:$('address').value.trim(),venue_type:$('venueType').value,fee_note:$('feeNote').value.trim(),organizer:$('organizer').value.trim(),reservation_required:$('reservation').value==='required'?true:$('reservation').value==='not_required'?false:null,application_note:$('applicationNote').value.trim(),contact:$('contact').value.trim(),official_url:$('officialUrl').value.trim(),submitter_note:$('note').value.trim()};}
+$('submitBtn').onclick=async()=>{
+ if(!selected||!user?.id||!extracted)return;$('submitBtn').disabled=true;message('掲載候補として送信しています…','info');
+ try{
+  const ext=(selected.type.split('/')[1]||'jpg').replace('jpeg','jpg'),id=crypto.randomUUID(),path=user.id+'/'+id+'.'+ext;
   const up=await fetch(BASE+'/storage/v1/object/event-flyers/'+path,{method:'POST',headers:authHeaders({'Content-Type':selected.type,'x-upsert':'false'}),body:selected});
   if(!up.ok){const d=await up.json().catch(()=>null);throw new Error(d?.message||'画像を保存できませんでした');}
-  const payload={user_id:user.id,image_path:path,extracted:{submitter_note:$('note').value.trim()},submitter_edits:{},source_urls:[],status:'pending'};
+  const edits=collectEdits();const sourceUrls=edits.official_url?[edits.official_url]:[];
+  const payload={user_id:user.id,image_path:path,extracted,submitter_edits:edits,source_urls:sourceUrls,status:'pending'};
   const r=await fetch(BASE+'/rest/v1/event_flyer_submissions',{method:'POST',headers:authHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(payload)});
-  const d=await r.json().catch(()=>null); if(!r.ok)throw new Error(d?.message||'受付できませんでした');
-  message('✓ 受け付けました。和酒ログ側で内容と重複を確認してから掲載します。','ok'); selected=null;$('flyer').value='';$('preview').classList.add('hidden');$('note').value=''; await loadHistory();
- }catch(e){message(e.message,'err');$('submitBtn').disabled=false;}
+  const d=await r.json().catch(()=>null);if(!r.ok)throw new Error(d?.message||'受付できませんでした');
+  setStep(3);message('✓ 受け付けました。和酒ログ側で重複と公式情報を確認してから掲載します。','ok');selected=null;extracted=null;imageDataUrl='';$('flyer').value='';$('preview').classList.add('hidden');$('confirmBox').classList.add('hidden');$('analyzeBtn').disabled=true;await loadHistory();
+ }catch(e){message(e.message,'err');}
+ finally{$('submitBtn').disabled=false;}
 };
 async function loadHistory(){
- try{const rows=await jsonFetch(BASE+'/rest/v1/event_flyer_submissions?select=id,status,review_note,confirmed_event_id,created_at&user_id=eq.'+encodeURIComponent(user.id)+'&order=created_at.desc&limit=20');
+ try{const rows=await jsonFetch(BASE+'/rest/v1/event_flyer_submissions?select=id,status,review_note,confirmed_event_id,created_at,submitter_edits&user_id=eq.'+encodeURIComponent(user.id)+'&order=created_at.desc&limit=20');
  const labels={pending:'確認待ち',reviewing:'確認中',approved:'掲載済み',rejected:'掲載見送り',duplicate:'登録済みイベント',draft:'下書き'};
- $('history').innerHTML=rows.length?rows.map(x=>'<div class="status"><b>'+esc(labels[x.status]||x.status)+'</b>'+new Date(x.created_at).toLocaleString('ja-JP')+(x.review_note?'<br>'+esc(x.review_note):'')+'</div>').join(''):'まだ送ったチラシはありません。';
+ $('history').innerHTML=rows.length?rows.map(x=>'<div class="status"><b>'+esc(labels[x.status]||x.status)+'</b>'+(x.submitter_edits?.title?esc(x.submitter_edits.title)+'<br>':'')+new Date(x.created_at).toLocaleString('ja-JP')+(x.review_note?'<br>'+esc(x.review_note):'')+'</div>').join(''):'まだ送ったチラシはありません。';
  }catch(e){$('history').textContent='履歴を読み込めませんでした。';}
 }
 init();
