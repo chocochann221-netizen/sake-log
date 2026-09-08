@@ -922,6 +922,15 @@
           <div class="searching-progress" aria-hidden="true"><span></span></div>
         </div>
       </section>
+      <section id="candidateView" class="page hidden" aria-labelledby="candidateTitle">
+        <div class="candidate-screen">
+          <div class="candidate-heading"><span>見つかりました</span><h2 id="candidateTitle">このお酒ですか？</h2><p>近いものを選んでください</p></div>
+          <div class="candidate-photo-pair"><img id="candidateFrontPreview" alt="撮影した表ラベル" /><img id="candidateBackPreview" class="hidden" alt="撮影した裏ラベル" /></div>
+          <div id="candidateBox" class="hidden"></div>
+          <button id="candidateManualBtn" class="confirm-text-button" type="button">候補にない・自分で入力する</button>
+          <button id="candidateRetakeBtn" class="confirm-text-button" type="button">写真を撮り直す</button>
+        </div>
+      </section>
       <section id="recordView" class="page hidden">
         <div class="card">
           <h2>ラベル確認・AI候補</h2>
@@ -955,7 +964,6 @@
             🔎 AIで銘柄候補を探す
           </button>
           <div id="analysisMsg"></div>
-          <div id="candidateBox" class="hidden"></div>
           <h3 style="margin-top: 18px">確定して記録</h3>
           <label>銘柄</label><input id="brand" placeholder="例：今西" />
           <label>商品名</label

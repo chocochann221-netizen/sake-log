@@ -114,6 +114,7 @@ function show(id) {
     "backCaptureView",
     "backConfirmView",
     "searchingView",
+    "candidateView",
     "recordView",
     "completeView",
     "historyView",
@@ -848,6 +849,8 @@ $("backConfirmDiscardBtn").onclick = () => {
   saveRecordDraft();
   $("analyzeBtn").click();
 };
+$("candidateManualBtn").onclick = () => show("recordView");
+$("candidateRetakeBtn").onclick = () => show("captureView");
 $("galleryBtn").onclick = () => {
   if (confirmStartFreshRecord()) {
     freshPhotoPickerConfirmed = true;
@@ -1065,7 +1068,7 @@ function renderCandidates(items) {
     return;
   }
   $("candidateBox").innerHTML =
-    '<div class="msg info"><b>AI・Web照合結果</b><br>' +
+    '<div class="candidate-list"><b>候補を見比べる</b>' +
     uniqueItems
       .map((c, i) => {
         const pct = Math.round(
@@ -1102,13 +1105,13 @@ function renderCandidates(items) {
    </button>`;
       })
       .join("") +
-    renderSources(S.recognition?.web_sources || []) +
-    '<div class="small" style="margin-top:10px">※Web情報は本人確認用です。度数・容量などは現物ラベルを優先します。</div></div>';
+    '<div class="candidate-note">度数などの詳しい情報は、次の画面で現物ラベルと確認できます。</div></div>';
   document.querySelectorAll(".candidate").forEach(
     (b) =>
       (b.onclick = () => {
         const c = uniqueItems[Number(b.dataset.i)];
         applyCandidate(c);
+        show("recordView");
         msg(
           $("analysisMsg"),
           "この候補を入力欄へ反映しました。度数・容量などは現物ラベルを確認して保存してください。",
@@ -2816,6 +2819,9 @@ wireEventPhotoInputs();
 $("analyzeBtn").onclick = async () => {
   $("searchingFrontPreview").src = $("preview").src || "";
   $("searchingBackPreview").src = $("backPreview").src || "";
+  $("candidateFrontPreview").src = $("preview").src || "";
+  $("candidateBackPreview").src = $("backPreview").src || "";
+  $("candidateBackPreview").classList.toggle("hidden", !S.backPhoto);
   $("searchingBackFigure").classList.toggle("hidden", !S.backPhoto);
   show("searchingView");
   syncActiveNav("recordView");
@@ -3035,7 +3041,7 @@ $("analyzeBtn").onclick = async () => {
     }
   } finally {
     $("analyzeBtn").disabled = false;
-    show("recordView");
+    show($("candidateBox").classList.contains("hidden") ? "recordView" : "candidateView");
   }
 };
 
