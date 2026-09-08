@@ -805,6 +805,71 @@
           />
         </div>
       </section>
+      <section
+        id="captureView"
+        class="page hidden"
+        aria-labelledby="captureTitle"
+      >
+        <div class="capture-screen">
+          <div class="capture-topbar">
+            <button
+              id="captureBackBtn"
+              class="capture-icon-btn"
+              type="button"
+              aria-label="ホームへ戻る"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m15 5-7 7 7 7" />
+              </svg>
+            </button>
+            <div>
+              <span>1 / 2</span>
+              <h2 id="captureTitle">表ラベルを撮る</h2>
+            </div>
+            <span class="capture-top-spacer" aria-hidden="true"></span>
+          </div>
+          <div class="capture-copy">
+            ラベルが枠に入るように、<br />瓶を縦に撮ってください
+          </div>
+          <div class="label-viewfinder" aria-hidden="true">
+            <span class="viewfinder-corner corner-tl"></span
+            ><span class="viewfinder-corner corner-tr"></span>
+            <span class="viewfinder-corner corner-bl"></span
+            ><span class="viewfinder-corner corner-br"></span>
+            <div class="bottle-guide"><span></span></div>
+          </div>
+          <p class="capture-note">
+            撮った縦写真は、あの日の一枚としてMY LOGにも残ります。
+          </p>
+          <div class="capture-controls">
+            <button
+              id="captureGalleryBtn"
+              class="capture-side-action"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16v14H4zM7 15l3-3 3 3 2-2 3 3M8 9h.01" /></svg
+              ><span>写真から</span>
+            </button>
+            <button
+              id="captureShutterBtn"
+              class="capture-shutter"
+              type="button"
+              aria-label="カメラを開いて撮影する"
+            >
+              <span></span>
+            </button>
+            <div class="capture-side-action capture-help" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path
+                  d="M9.8 9a2.3 2.3 0 0 1 4.4 1c0 2-2.2 2-2.2 4M12 17h.01"
+                /></svg
+              ><span>撮り方</span>
+            </div>
+          </div>
+        </div>
+      </section>
       <section id="recordView" class="page hidden">
         <div class="card">
           <h2>ラベル確認・AI候補</h2>
