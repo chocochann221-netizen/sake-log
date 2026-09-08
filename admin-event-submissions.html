@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>イベントチラシ審査｜和酒ログ 管理</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f5f3ee;color:#292722}header{background:#24211c;color:white;padding:18px}.brand{font-size:20px;font-weight:850}main{max-width:900px;margin:auto;padding:18px}.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #0000000d}.small{font-size:12px;color:#777;line-height:1.7}.msg{padding:12px;border-radius:12px;margin:10px 0}.ok{background:#e8f7ef;color:#17683f}.err{background:#fff0ee;color:#a32c22}.info{background:#eef5ff;color:#235a90}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}label{display:block;font-size:12px;color:#777;margin:9px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:11px;font:inherit}textarea{min-height:78px}.btn{padding:11px 13px;border-radius:11px;border:0;font-weight:800;cursor:pointer}.primary{background:#238464;color:white}.outline{background:white;border:1px solid #d8d4cc}.danger{background:#fff0ee;color:#a32c22;border:1px solid #efc7c2}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.flyer{width:100%;max-height:480px;object-fit:contain;background:#f0f0ee;border-radius:14px}.submission{border-top:1px solid #eee;padding-top:14px;margin-top:14px}.submission:first-child{border-top:0;margin-top:0;padding-top:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f3f2;font-size:11px;font-weight:800;margin-left:6px}.hidden{display:none!important}.warn{background:#fff8e8;color:#795a16;border:1px solid #ead9aa;padding:10px;border-radius:11px;margin:10px 0}.source{font-size:12px;word-break:break-all}.summary{background:#f7f7f4;border-radius:12px;padding:10px;line-height:1.7;font-size:13px;margin:10px 0}@media(max-width:620px){.row{grid-template-columns:1fr}.full{grid-column:auto}.actions{display:grid}.actions .btn{width:100%}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:#f5f3ee;color:#292722}header{background:#24211c;color:white;padding:18px}.brand{font-size:20px;font-weight:850}main{max-width:900px;margin:auto;padding:18px}.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #0000000d}.small{font-size:12px;color:#777;line-height:1.7}.msg{padding:12px;border-radius:12px;margin:10px 0}.ok{background:#e8f7ef;color:#17683f}.err{background:#fff0ee;color:#a32c22}.info{background:#eef5ff;color:#235a90}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}label{display:block;font-size:12px;color:#777;margin:9px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:11px;font:inherit}textarea{min-height:78px}.btn{padding:11px 13px;border-radius:11px;border:0;font-weight:800;cursor:pointer}.primary{background:#238464;color:white}.outline{background:white;border:1px solid #d8d4cc}.danger{background:#fff0ee;color:#a32c22;border:1px solid #efc7c2}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.flyer{width:100%;max-height:480px;object-fit:contain;background:#f0f0ee;border-radius:14px}.submission{border-top:1px solid #eee;padding-top:14px;margin-top:14px}.submission:first-child{border-top:0;margin-top:0;padding-top:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f3f2;font-size:11px;font-weight:800;margin-left:6px}.hidden{display:none!important}.warn{background:#fff8e8;color:#795a16;border:1px solid #ead9aa;padding:10px;border-radius:11px;margin:10px 0}.source{font-size:12px;word-break:break-all}.summary{background:#f7f7f4;border-radius:12px;padding:10px;line-height:1.7;font-size:13px;margin:10px 0}.participant-box{margin:12px 0;padding:12px;background:#f7f9f7;border-radius:13px}.participant-box h3{font-size:15px;margin:0 0 5px}.participant-box textarea{min-height:105px;background:#fff}.hint{font-size:11px;color:#7a827e;margin-top:4px}@media(max-width:620px){.row{grid-template-columns:1fr}.full{grid-column:auto}.actions{display:grid}.actions .btn{width:100%}}
 </style>
 </head>
 <body>
@@ -30,8 +30,11 @@ const H=extra=>({apikey:KEY,Authorization:'Bearer '+token,...(extra||{})});
 async function jfetch(url,opt={}){const r=await fetch(url,{...opt,headers:{...H(),...(opt.headers||{})}});const t=await r.text();let d=null;try{d=JSON.parse(t)}catch{}if(!r.ok)throw new Error(d?.message||d?.error||t||('HTTP '+r.status));return d;}
 function field(id,label,val,type='text',full=false){return `<div class="${full?'full':''}"><label>${esc(label)}</label>${type==='textarea'?`<textarea id="${id}">${esc(val||'')}</textarea>`:`<input id="${id}" type="${type}" value="${esc(val||'')}">`}</div>`}
 function boolSelect(id,label,val){return `<div><label>${esc(label)}</label><select id="${id}"><option value="" ${val==null?'selected':''}>要確認</option><option value="true" ${val===true?'selected':''}>必要</option><option value="false" ${val===false?'selected':''}>不要</option></select></div>`}
+function venueSelect(id,val){return `<div><label>会場形式</label><select id="${id}"><option value="unknown" ${!val||val==='unknown'?'selected':''}>要確認</option><option value="single" ${val==='single'?'selected':''}>単一会場</option><option value="roaming" ${val==='roaming'?'selected':''}>回遊型・複数店舗</option></select></div>`}
 function merged(s){return {...(s.extracted||{}),...(s.submitter_edits||{})};}
 function fmtArray(v){return Array.isArray(v)?v.join(' / '):'';}
+function lines(v){return Array.isArray(v)?v.join('\n'):'';}
+function parseLines(v){return String(v||'').split(/\r?\n|、|,(?!\s*\d)/).map(x=>x.trim()).filter(Boolean);}
 async function signedUrl(path){try{const d=await jfetch(BASE+'/storage/v1/object/sign/event-flyers/'+encodeURIComponent(path).replace(/%2F/g,'/'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expiresIn:900})});return d?.signedURL?BASE+'/storage/v1'+d.signedURL:'';}catch{return '';}}
 async function isAdmin(){if(!token)return false;try{return !!(await jfetch(BASE+'/rest/v1/rpc/is_admin',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}));}catch{return false;}}
 async function load(){
@@ -51,7 +54,7 @@ async function load(){
       <div class="small">投稿: ${new Date(s.created_at).toLocaleString('ja-JP')} / 投稿者 ${esc(s.user_id)}</div>
       ${img?`<img class="flyer" src="${esc(img)}" alt="投稿チラシ">`:'<div class="warn">チラシ画像を表示できませんでした。</div>'}
       ${needs.length?`<div class="warn">AI要確認: ${esc(needs.join(' / '))}</div>`:''}
-      <div class="summary">参加蔵: ${esc(fmtArray(e.participating_breweries)||'—')}<br>参加店舗: ${esc(fmtArray(e.participating_shops)||'—')}<br>出品酒: ${esc(fmtArray(e.sake_names)||'—')}</div>
+      <div class="summary">AI読取: 参加蔵 ${Array.isArray(e.participating_breweries)?e.participating_breweries.length:0}件 / 参加店舗 ${Array.isArray(e.participating_shops)?e.participating_shops.length:0}件 / 出品酒 ${Array.isArray(e.sake_names)?e.sake_names.length:0}件</div>
       <div class="row">
         ${field('title_'+s.id,'イベント名',e.title,'text',true)}
         ${field('subtitle_'+s.id,'サブタイトル',e.subtitle,'text',true)}
@@ -61,6 +64,7 @@ async function load(){
         ${field('end_time_'+s.id,'終了時間',e.end_time,'time')}
         ${field('prefecture_'+s.id,'都道府県',e.prefecture)}
         ${field('city_'+s.id,'市区町村',e.city)}
+        ${venueSelect('venue_type_'+s.id,e.venue_type)}
         ${field('venue_name_'+s.id,'会場名',e.venue_name,'text',true)}
         ${field('address_'+s.id,'住所',e.address,'text',true)}
         ${field('organizer_'+s.id,'主催者',e.organizer,'text',true)}
@@ -70,8 +74,11 @@ async function load(){
         ${field('application_note_'+s.id,'申込・購入案内',e.application_note,'textarea',true)}
         ${field('contact_'+s.id,'問い合わせ',e.contact,'text',true)}
         ${field('notes_'+s.id,'説明・補足',e.notes,'textarea',true)}
-        ${field('review_note_'+s.id,'審査メモ（投稿者にも表示）',s.review_note,'textarea',true)}
       </div>
+      <div class="participant-box"><h3>🍶 参加蔵</h3><textarea id="breweries_${s.id}">${esc(lines(e.participating_breweries))}</textarea><div class="hint">1行に1蔵。公式情報と照合して、誤読や重複を直してから掲載してください。</div></div>
+      <div class="participant-box"><h3>🏮 参加店舗・回遊先</h3><textarea id="shops_${s.id}">${esc(lines(e.participating_shops))}</textarea><div class="hint">1行に1店舗。掲載時にイベントの回遊先として登録します。</div></div>
+      <div class="participant-box"><h3>🍶 出品酒</h3><textarea id="sakes_${s.id}">${esc(lines(e.sake_names))}</textarea><div class="hint">1行に1商品。チラシ記載名として登録し、日本酒マスターには自動昇格させません。</div></div>
+      <div class="row">${field('review_note_'+s.id,'審査メモ（投稿者にも表示）',s.review_note,'textarea',true)}</div>
       <div class="actions">
         <button class="btn outline" onclick="markReviewing('${s.id}')">確認中にする</button>
         <button class="btn primary" onclick="approve('${s.id}')">公式確認済みとして掲載</button>
@@ -84,10 +91,10 @@ async function load(){
  }catch(e){$('status').className='msg err';$('status').textContent='読み込みエラー: '+e.message;}
 }
 function val(id){return ($(id)?.value||'').trim();}
-function eventPayload(id){const rv=val('reservation_'+id);return {title:val('title_'+id),subtitle:val('subtitle_'+id),start_date:val('start_date_'+id),end_date:val('end_date_'+id),start_time:val('start_time_'+id),end_time:val('end_time_'+id),prefecture:val('prefecture_'+id),city:val('city_'+id),venue_name:val('venue_name_'+id),address:val('address_'+id),organizer:val('organizer_'+id),fee_note:val('fee_note_'+id),reservation_required:rv===''?null:rv==='true',official_url:val('official_url_'+id),application_note:val('application_note_'+id),contact:val('contact_'+id),notes:val('notes_'+id)};}
+function eventPayload(id){const rv=val('reservation_'+id);return {title:val('title_'+id),subtitle:val('subtitle_'+id),start_date:val('start_date_'+id),end_date:val('end_date_'+id),start_time:val('start_time_'+id),end_time:val('end_time_'+id),prefecture:val('prefecture_'+id),city:val('city_'+id),venue_type:val('venue_type_'+id)||'unknown',venue_name:val('venue_name_'+id),address:val('address_'+id),organizer:val('organizer_'+id),fee_note:val('fee_note_'+id),reservation_required:rv===''?null:rv==='true',official_url:val('official_url_'+id),application_note:val('application_note_'+id),contact:val('contact_'+id),notes:val('notes_'+id),participating_breweries:parseLines(val('breweries_'+id)),participating_shops:parseLines(val('shops_'+id)),sake_names:parseLines(val('sakes_'+id))};}
 async function rpc(id,action,event={},dup=null){const body={p_submission_id:id,p_action:action,p_event:event,p_review_note:val('review_note_'+id)||null,p_duplicate_event_id:dup};return jfetch(BASE+'/rest/v1/rpc/admin_review_event_flyer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
 async function markReviewing(id){try{await rpc(id,'reviewing');await load();}catch(e){alert(e.message)}}
-async function approve(id){const p=eventPayload(id);if(!p.title||!p.start_date){alert('イベント名と開始日は必須です。');return;}if(!confirm('公式情報との確認は完了していますか？\n「OK」で公開イベントとして掲載します。'))return;try{const d=await rpc(id,'approve',p);alert('掲載しました。イベントID: '+d.event_id);await load();}catch(e){alert(e.message)}}
+async function approve(id){const p=eventPayload(id);if(!p.title||!p.start_date){alert('イベント名と開始日は必須です。');return;}const detail=`参加蔵 ${p.participating_breweries.length}件 / 参加店舗 ${p.participating_shops.length}件 / 出品酒 ${p.sake_names.length}件`;if(!confirm('公式情報との確認は完了していますか？\n'+detail+'\n\n「OK」でイベントと関連情報をまとめて掲載します。'))return;try{const d=await rpc(id,'approve',p);alert(`掲載しました。\nイベントID: ${d.event_id}\n参加蔵 ${d.breweries_added||0}件 / 参加店舗 ${d.shops_added||0}件 / 出品酒 ${d.sakes_added||0}件`);await load();}catch(e){alert(e.message)}}
 async function duplicate(id){const x=prompt('重複している既存イベントのIDを入力してください');if(!x)return;try{await rpc(id,'duplicate',{},x.trim());await load();}catch(e){alert(e.message)}}
 async function rejectSubmission(id){if(!confirm('掲載見送りにしますか？'))return;try{await rpc(id,'reject');await load();}catch(e){alert(e.message)}}
 $('reload').onclick=load;$('filter').onchange=load;load();
