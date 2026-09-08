@@ -691,6 +691,32 @@
       .memory-detail-action { padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
       .memory-detail-action.danger { color: #9a4139; }
       @media (max-width: 400px) { .memory-spec-list { grid-template-columns: 1fr; } }
+      .memory-edit { padding-bottom: 20px; }
+      .memory-edit-heading { padding-bottom: 18px; border-bottom: 1px solid rgba(74,50,35,.24); }
+      .memory-edit-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .memory-edit-heading h2 { margin: 6px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; }
+      .memory-edit-section { padding: 24px 0; border-bottom: 1px solid rgba(74,50,35,.2); }
+      .memory-edit-section h3 { margin: 0 0 15px; font-size: 20px; }
+      .memory-edit-field { margin-top: 16px; }
+      .memory-edit-field label { display: flex; justify-content: space-between; }
+      .memory-edit-field label small { color: #88796e; font-weight: 500; }
+      .memory-edit-field input, .memory-edit-field textarea, .memory-edit-details input { background: rgba(255,252,246,.78); border-color: #cbbcac; border-radius: 6px; }
+      .edit-rating-choices { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .edit-rating-choice { aspect-ratio: 1; min-width: 0; border: 1px solid #b89c83; border-radius: 50%; background: #f8f0e4; color: #60432f; font-size: 17px; font-weight: 800; }
+      .edit-rating-choice.is-selected { background: #9b6037; border-color: #9b6037; color: #fffaf1; box-shadow: 0 3px 10px rgba(72,42,25,.22); }
+      #eRating { position: absolute; opacity: 0; pointer-events: none; }
+      .memory-edit-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
+      .memory-edit-photo { min-width: 0; }
+      .memory-edit-photo-preview { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 3/4; overflow: hidden; border: 1px solid #c7b29d; border-radius: 5px; background: #e6d9ca; color: #7c6d61; font-size: 12px; }
+      .memory-edit-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+      .memory-edit-photo strong { display: block; margin-top: 8px; font-size: 13px; }
+      .memory-edit-photo-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 7px; color: #79543a; font-size: 12px; }
+      .memory-edit-photo-actions label { cursor: pointer; }
+      .memory-edit-photo-actions input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+      .memory-edit-photo-actions .delete-photo { color: #9a4139; }
+      .memory-edit-details { margin-top: 24px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
+      .memory-edit-details summary { padding: 18px 0; font-weight: 800; cursor: pointer; }
+      .memory-edit-actions { display: grid; gap: 4px; margin-top: 28px; }
     </style>
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
@@ -1189,7 +1215,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=528"></script>
+    <script src="app.js?v=529"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
