@@ -680,23 +680,36 @@
       </section>
       <section id="homeView" class="page hidden">
         <div id="recoveryNotice" class="hidden"></div>
-        <div class="card hero">
-          <h2>日本酒を記録する</h2>
-          <div class="small" id="userEmail"></div>
-          <div class="grid">
-            <button id="cameraBtn" class="btn primary">📷 表ラベル撮影</button>
-            <button id="galleryBtn" class="btn secondary">
-              🖼 表ラベル選択
-            </button>
+        <div class="autumn-home-hero">
+          <div class="home-intro">
+            <div class="home-logo" aria-label="和酒ログ">
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <path
+                  d="M9 47V21L32 8l23 13v26M17 47V25l15-9 15 9v22M25 47V30l7-4 7 4v17M6 49h52"
+                />
+              </svg>
+              <span>和酒ログ</span>
+            </div>
+            <p>こんばんは。今夜は、どんな一杯？</p>
+            <div class="small hidden" id="userEmail"></div>
           </div>
-          <div class="grid">
-            <button id="backCameraBtn" class="btn outline">
-              📷 裏ラベル撮影
-            </button>
-            <button id="backGalleryBtn" class="btn outline">
-              🖼 裏ラベル選択
-            </button>
-          </div>
+          <h1>今夜の一杯を、<br />残しておこう。</h1>
+          <button id="cameraBtn" class="coaster-camera">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <path d="M8 15h8l3-5h10l3 5h8v25H8z" />
+              <circle cx="24" cy="27" r="8" />
+            </svg>
+            <span>ラベルを撮る</span>
+          </button>
+          <button id="galleryBtn" class="home-photo-choice">
+            写真から選ぶ
+          </button>
+          <button id="backCameraBtn" class="hidden" tabindex="-1">
+            裏ラベル撮影
+          </button>
+          <button id="backGalleryBtn" class="hidden" tabindex="-1">
+            裏ラベル選択
+          </button>
           <input
             id="cameraInput"
             type="file"
@@ -749,9 +762,7 @@
             accept="image/*"
             class="hidden"
           />
-          <button id="manualBtn" class="btn outline">
-            ✍️ 写真なしで手入力
-          </button>
+          <button id="manualBtn" class="home-manual">写真なしで記録する</button>
           <button id="eventsBtn" class="btn outline v2-deferred">
             日本酒イベントを見る
           </button>
@@ -760,9 +771,17 @@
           <h3>参加予定のイベント</h3>
           <div id="upcomingEventList">読み込み中…</div>
         </div>
-        <div class="card">
-          <h3>最近の記録</h3>
+        <div class="home-lower">
+          <h3>前に飲んだ一本</h3>
           <div id="recentList">読み込み中…</div>
+          <a class="home-knowledge" href="knowledge.html">
+            <span class="home-knowledge-mark" aria-hidden="true">蔵</span>
+            <span
+              ><strong>知識の蔵</strong
+              ><small>お酒のことを、やさしく知る</small></span
+            >
+            <span aria-hidden="true">›</span>
+          </a>
         </div>
       </section>
       <section id="eventView" class="page hidden">
