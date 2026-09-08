@@ -530,45 +530,48 @@
         color: #238464;
       }
 
-      .complete-card {
-        text-align: center;
-        padding: 30px 22px;
-      }
+      .complete-card { max-width: 560px; margin: 0 auto; padding: 34px 22px 110px; text-align: center; background: #f7efe3; color: #2b211a; border: 0; border-radius: 0; box-shadow: none; }
       .complete-kicker {
         font-size: 11px;
         font-weight: 900;
         letter-spacing: 0.14em;
-        color: #8a5f3c;
+        color: #94613e;
         margin-bottom: 12px;
       }
       .complete-mark {
-        width: 56px;
-        height: 56px;
-        margin: 0 auto 16px;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 18px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #edf5f1;
-        color: #238464;
-        font-size: 28px;
+        background: #9b6037;
+        color: #fffaf1;
+        font-size: 23px;
         font-weight: 900;
       }
       .complete-card h2 {
-        font-size: 28px;
-        line-height: 1.35;
-        margin-bottom: 18px;
+        font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        font-size: 29px;
+        font-weight: 500;
+        line-height: 1.5;
+        margin-bottom: 22px;
       }
+      .complete-photo { width: min(100%, 330px); margin: 0 auto 22px; padding: 8px; border: 1px solid #b89c83; background: #e7d5bd; box-shadow: 0 8px 24px rgba(61,38,23,.15); }
+      .complete-photo img { display: block; width: 100%; max-height: 430px; object-fit: cover; }
       .complete-sake {
-        padding: 18px;
-        border: 1px solid #e2ddd4;
-        border-radius: 18px;
-        background: #fffaf4;
-        margin-bottom: 14px;
+        padding: 0 0 20px;
+        border: 0;
+        border-bottom: 1px solid rgba(74,50,35,.22);
+        border-radius: 0;
+        background: transparent;
+        margin-bottom: 18px;
       }
       .complete-sake strong {
         display: block;
-        font-size: 21px;
+        font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        font-size: 23px;
         line-height: 1.45;
       }
       .complete-sake span {
@@ -576,19 +579,16 @@
         color: #6f655d;
         margin-top: 4px;
       }
-      .complete-rating {
-        margin-top: 10px;
-        font-weight: 900;
-      }
-      .complete-rating small {
-        font-size: 12px;
-        color: #6f655d;
-      }
+      .complete-rating { display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-top: 12px; color: #9b6037; }
+      .complete-rating strong { font-family: inherit; font-size: 28px; line-height: 1; }
+      .complete-rating small { font-size: 13px; color: #796b60; }
       .complete-copy {
         color: #6f655d;
         line-height: 1.8;
-        margin: 14px 0 18px;
+        margin: 14px auto 24px;
+        max-width: 340px;
       }
+      .complete-actions { display: grid; gap: 4px; }
       .record-screen { max-width: 560px; margin: 0 auto; padding: 22px 18px 110px; color: #2b211a; }
       .record-heading span, .record-section-kicker { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
       .record-heading h2 { margin: 6px 0 22px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; }
