@@ -589,6 +589,34 @@
         line-height: 1.8;
         margin: 14px 0 18px;
       }
+      .record-screen { max-width: 560px; margin: 0 auto; padding: 22px 18px 110px; color: #2b211a; }
+      .record-heading span, .record-section-kicker { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .record-heading h2 { margin: 6px 0 22px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; }
+      .record-sake-summary { display: grid; grid-template-columns: 104px 1fr; gap: 18px; align-items: center; padding: 0 0 22px; border-bottom: 1px solid rgba(74,50,35,.25); }
+      .record-sake-summary img { width: 104px; height: 142px; object-fit: cover; border-radius: 4px; background: #ddd1c2; }
+      .record-sake-summary strong { display: block; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 21px; line-height: 1.45; }
+      .record-sake-summary p { margin: 7px 0 12px; color: #74665c; }
+      .record-edit-link { padding: 0; border: 0; background: none; color: #865534; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+      .record-section { padding: 25px 0; border-bottom: 1px solid rgba(74,50,35,.2); }
+      .record-section h3 { margin: 5px 0 16px; font-size: 21px; }
+      .record-field { margin-top: 17px; }
+      .record-field label { display: flex; justify-content: space-between; }
+      .record-field label small { color: #88796e; font-weight: 500; }
+      .record-field input, .record-field textarea { background: rgba(255,252,246,.78); border-color: #cbbcac; border-radius: 6px; }
+      .rating-choices { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .rating-choice { aspect-ratio: 1; min-width: 0; border: 1px solid #b89c83; border-radius: 50%; background: #f8f0e4; color: #60432f; font-size: 17px; font-weight: 800; }
+      .rating-choice.is-selected { background: #9b6037; border-color: #9b6037; color: #fffaf1; box-shadow: 0 3px 10px rgba(72,42,25,.22); }
+      #rating { position: absolute; opacity: 0; pointer-events: none; }
+      .memory-photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .memory-photo-slot { min-height: 148px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px dashed #b9a38e; border-radius: 6px; background: rgba(255,250,242,.58); color: #604b3d; font-weight: 700; overflow: hidden; }
+      .memory-photo-slot small { display: block; margin-top: 6px; color: #88796e; }
+      .memory-photo-slot img { width: 100%; height: 148px; object-fit: cover; border-radius: 5px; }
+      .memory-photo-slot.has-photo { padding: 0; border-style: solid; }
+      .memory-photo-slot.has-photo > span,
+      .memory-photo-slot.has-photo > small { display: none; }
+      .record-details { margin-top: 22px; border-top: 1px solid rgba(74,50,35,.2); }
+      .record-details summary { padding: 18px 0; font-weight: 800; cursor: pointer; }
+      .record-save { margin-top: 26px; }
     </style>
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
@@ -932,98 +960,58 @@
         </div>
       </section>
       <section id="recordView" class="page hidden">
-        <div class="card">
-          <h2>ラベル確認・AI候補</h2>
-          <div class="grid">
-            <div>
-              <div class="small">表ラベル</div>
-              <img id="preview" class="preview hidden" />
-            </div>
-            <div>
-              <div class="small">裏ラベル</div>
-              <img id="backPreview" class="preview hidden" />
-            </div>
+        <div class="record-screen">
+          <div class="record-heading"><span>MY LOG</span><h2>この一杯を残す</h2></div>
+          <div class="record-sake-summary">
+            <img id="preview" class="preview hidden" alt="撮影した日本酒" />
+            <div><strong id="recordSakeName">銘柄を入力してください</strong><p id="recordBreweryName">蔵元は未入力です</p><button id="recordEditSakeBtn" class="record-edit-link" type="button">銘柄情報を確認・修正</button></div>
           </div>
-          <div class="grid">
-            <button id="recordFrontGalleryBtn" class="btn outline">
-              🖼 表ラベルを変更
-            </button>
-            <button id="recordBackGalleryBtn" class="btn outline">
-              🖼 裏ラベルを追加
-            </button>
-          </div>
-          <div class="grid">
-            <button id="recordFrontCameraBtn" class="btn outline">
-              📷 表を撮り直す
-            </button>
-            <button id="recordBackCameraBtn" class="btn outline">
-              📷 裏を撮影
-            </button>
-          </div>
+          <img id="backPreview" class="preview hidden" alt="裏ラベル" />
+          <button id="recordFrontGalleryBtn" class="hidden" type="button">表ラベルを変更</button>
+          <button id="recordBackGalleryBtn" class="hidden" type="button">裏ラベルを追加</button>
+          <button id="recordFrontCameraBtn" class="hidden" type="button">表を撮り直す</button>
+          <button id="recordBackCameraBtn" class="hidden" type="button">裏を撮影</button>
           <button id="analyzeBtn" class="btn secondary hidden">
             🔎 AIで銘柄候補を探す
           </button>
           <div id="analysisMsg"></div>
-          <h3 style="margin-top: 18px">確定して記録</h3>
-          <label>銘柄</label><input id="brand" placeholder="例：今西" />
-          <label>商品名</label
-          ><input id="product" placeholder="例：純米吟醸 朝日" />
-          <label>蔵元</label
-          ><input id="brewery" placeholder="例：今西酒造株式会社" />
-          <label>都道府県</label
-          ><input id="prefecture" placeholder="例：奈良県" />
-          <label>特定名称・酒類区分</label
-          ><input id="classification" placeholder="例：純米吟醸" />
-          <label>原材料名</label
-          ><input id="rice" placeholder="例：米（国産）" />
-          <label>使用米・原料米</label
-          ><input id="riceVariety" placeholder="例：朝日米100%" />
-          <label>精米歩合</label
-          ><input id="polishing" inputmode="decimal" placeholder="例：60%" />
-          <label>アルコール度数</label
-          ><input id="alcohol" inputmode="decimal" placeholder="例：14%" />
-          <label>容量</label
-          ><input id="volume" inputmode="decimal" placeholder="例：720ml" />
-          <label>評価（1〜5）</label
-          ><input
-            id="rating"
-            type="range"
-            min="1"
-            max="5"
-            step=".5"
-            value="4"
-          />
-          <div><span id="ratingVal">4.0</span> ★</div>
-          <label>飲んだ店</label><input id="restaurant" />
-          <label>価格（円・任意）</label
-          ><input id="price" inputmode="numeric" min="0" />
-          <label>コメント</label
-          ><textarea id="comment" maxlength="1000"></textarea>
-          <div class="memory-photo-section">
-            <h3 style="margin-top: 18px">この日の思い出</h3>
-            <div class="grid">
-              <button id="foodCameraBtn" class="btn outline" type="button">
-                🍽️ 料理を撮影
-              </button>
-              <button id="foodGalleryBtn" class="btn outline" type="button">
-                🖼️ 料理写真を選ぶ
-              </button>
+          <section class="record-section">
+            <span class="record-section-kicker">01</span><h3>今日の一杯は？</h3>
+            <div class="rating-choices" role="group" aria-label="評価"><button class="rating-choice" type="button" data-rating="1">1</button><button class="rating-choice" type="button" data-rating="2">2</button><button class="rating-choice" type="button" data-rating="3">3</button><button class="rating-choice is-selected" type="button" data-rating="4">4</button><button class="rating-choice" type="button" data-rating="5">5</button></div>
+            <input id="rating" type="range" min="1" max="5" step="1" value="4" /><span id="ratingVal" class="hidden">4.0</span>
+          </section>
+          <section class="record-section">
+            <span class="record-section-kicker">02</span><h3>あの日のこと</h3>
+            <div class="record-field"><label for="drankDate">日付</label><input id="drankDate" type="date" /></div>
+            <div class="record-field"><label for="companion">誰と <small>任意</small></label><input id="companion" placeholder="家族と、友人と、ひとりで など" /></div>
+            <div class="record-field"><label for="restaurant">どこで <small>任意</small></label><input id="restaurant" placeholder="自宅、お店の名前、旅先 など" /></div>
+            <button id="locateBtn" class="record-edit-link" type="button">現在地を記録する</button><div id="locMsg" class="small"></div>
+            <div class="record-field"><label for="comment">ひとこと <small>任意</small></label><textarea id="comment" maxlength="1000" placeholder="香り、料理、その日の出来事など"></textarea></div>
+          </section>
+          <section class="record-section memory-photo-section">
+            <span class="record-section-kicker">03</span><h3>写真を添える <small>任意</small></h3>
+            <div class="memory-photo-grid">
+              <button id="foodCameraBtn" class="memory-photo-slot" type="button"><span>料理の写真</span><small>タップして追加</small><img id="foodPreview" class="hidden" alt="料理写真" /></button>
+              <button id="memoryCameraBtn" class="memory-photo-slot" type="button"><span>思い出の写真</span><small>タップして追加</small><img id="memoryPreview" class="hidden" alt="思い出写真" /></button>
             </div>
-            <img id="foodPreview" class="hidden" alt="料理写真" />
-            <div class="grid" style="margin-top: 10px">
-              <button id="memoryCameraBtn" class="btn outline" type="button">
-                📷 思い出を撮影
-              </button>
-              <button id="memoryGalleryBtn" class="btn outline" type="button">
-                🖼️ 思い出写真を選ぶ
-              </button>
-            </div>
-            <img id="memoryPreview" class="hidden" alt="思い出写真" />
-          </div>
-          <button id="locateBtn" class="btn outline">📍 現在地を記録</button>
-          <div id="locMsg" class="small"></div>
+            <button id="foodGalleryBtn" class="hidden" type="button">料理写真を選ぶ</button><button id="memoryGalleryBtn" class="hidden" type="button">思い出写真を選ぶ</button>
+          </section>
+          <details id="recordSakeDetails" class="record-details">
+            <summary>銘柄情報を確認・修正</summary>
+            <label>銘柄</label><input id="brand" placeholder="例：今西" />
+            <label>商品名</label><input id="product" placeholder="例：純米吟醸 朝日" />
+            <label>蔵元</label><input id="brewery" placeholder="例：今西酒造株式会社" />
+            <label>都道府県</label><input id="prefecture" placeholder="例：奈良県" />
+            <label>特定名称・酒類区分</label><input id="classification" placeholder="例：純米吟醸" />
+            <label>原材料名</label><input id="rice" placeholder="例：米（国産）" />
+            <label>使用米・原料米</label><input id="riceVariety" placeholder="例：朝日米100%" />
+            <label>精米歩合</label><input id="polishing" inputmode="decimal" placeholder="例：60%" />
+            <label>アルコール度数</label><input id="alcohol" inputmode="decimal" placeholder="例：14%" />
+            <label>容量</label><input id="volume" inputmode="decimal" placeholder="例：720ml" />
+            <label>価格（円・任意）</label><input id="price" inputmode="numeric" min="0" />
+          </details>
           <div id="recordValidationMsg"></div>
-          <button id="saveRecordBtn" class="btn primary">記録を保存</button>
+          <button id="saveRecordBtn" class="btn primary record-save">MY LOGに残す</button>
           <div id="recordMsg"></div>
         </div>
       </section>
