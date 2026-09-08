@@ -113,6 +113,7 @@ function show(id) {
     "frontConfirmView",
     "backCaptureView",
     "backConfirmView",
+    "searchingView",
     "recordView",
     "completeView",
     "historyView",
@@ -832,20 +833,20 @@ $("frontConfirmBackLabelBtn").onclick = () => {
   freshPhotoPickerConfirmed = false;
   show("backCaptureView");
 };
-$("frontConfirmWithoutBackBtn").onclick = () => show("recordView");
+$("frontConfirmWithoutBackBtn").onclick = () => $("analyzeBtn").click();
 $("backCaptureBackBtn").onclick = () => show("frontConfirmView");
 $("backCaptureShutterBtn").onclick = () => $("backCameraInput").click();
 $("backCaptureGalleryBtn").onclick = () => $("backGalleryInput").click();
-$("backCaptureSkipBtn").onclick = () => show("recordView");
+$("backCaptureSkipBtn").onclick = () => $("analyzeBtn").click();
 $("backRetakeBtn").onclick = () => $("backCameraInput").click();
-$("backConfirmUseBtn").onclick = () => show("recordView");
+$("backConfirmUseBtn").onclick = () => $("analyzeBtn").click();
 $("backConfirmDiscardBtn").onclick = () => {
   S.backPhoto = null;
   $("backPreview").removeAttribute("src");
   $("backPreview").classList.add("hidden");
   updateAnalyzeButton();
   saveRecordDraft();
-  show("recordView");
+  $("analyzeBtn").click();
 };
 $("galleryBtn").onclick = () => {
   if (confirmStartFreshRecord()) {
@@ -2813,6 +2814,10 @@ if ($("eventBackBtn"))
 wireEventPhotoInputs();
 
 $("analyzeBtn").onclick = async () => {
+  $("searchingFrontPreview").src = $("preview").src || "";
+  $("searchingBackPreview").src = $("backPreview").src || "";
+  $("searchingBackFigure").classList.toggle("hidden", !S.backPhoto);
+  show("searchingView");
   syncActiveNav("recordView");
   $("analyzeBtn").disabled = true;
   msg(
@@ -3030,6 +3035,7 @@ $("analyzeBtn").onclick = async () => {
     }
   } finally {
     $("analyzeBtn").disabled = false;
+    show("recordView");
   }
 };
 

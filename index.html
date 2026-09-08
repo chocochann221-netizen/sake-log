@@ -911,6 +911,17 @@
           <button id="backConfirmDiscardBtn" class="confirm-text-button" type="button">裏ラベルを使わずに探す</button>
         </div>
       </section>
+      <section id="searchingView" class="page hidden" aria-labelledby="searchingTitle">
+        <div class="searching-screen">
+          <div class="searching-copy"><span>和酒ログ</span><h2 id="searchingTitle">銘柄を見つけています</h2><p>少しだけお待ちください</p></div>
+          <div class="searching-photos">
+            <figure><img id="searchingFrontPreview" alt="表ラベル" /><figcaption>表</figcaption></figure>
+            <span class="searching-light" aria-hidden="true"></span>
+            <figure id="searchingBackFigure"><img id="searchingBackPreview" alt="裏ラベル" /><figcaption>裏</figcaption></figure>
+          </div>
+          <div class="searching-progress" aria-hidden="true"><span></span></div>
+        </div>
+      </section>
       <section id="recordView" class="page hidden">
         <div class="card">
           <h2>ラベル確認・AI候補</h2>
