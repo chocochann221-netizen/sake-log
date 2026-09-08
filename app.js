@@ -111,6 +111,8 @@ function show(id) {
     "eventView",
     "captureView",
     "frontConfirmView",
+    "backCaptureView",
+    "backConfirmView",
     "recordView",
     "completeView",
     "historyView",
@@ -773,9 +775,10 @@ function attachPhoto(file) {
 }
 function attachBackPhoto(file) {
   if (!file) return;
-  if (!$('frontConfirmView')?.classList.contains('hidden') && S.photo) {
+  if (S.photo && ["frontConfirmView", "backCaptureView", "backConfirmView"].some((id) => !$(id)?.classList.contains("hidden"))) {
     replaceBackPhotoWithoutReset(file);
-    show('recordView');
+    $("backConfirmPreview").src = $("backPreview").src;
+    show("backConfirmView");
     return;
   }
   if (recordViewIsVisible() && hasCurrentRecordWork()) {
@@ -827,9 +830,23 @@ $("frontRetakeBtn").onclick = () => {
 };
 $("frontConfirmBackLabelBtn").onclick = () => {
   freshPhotoPickerConfirmed = false;
-  $("backCameraInput").click();
+  show("backCaptureView");
 };
 $("frontConfirmWithoutBackBtn").onclick = () => show("recordView");
+$("backCaptureBackBtn").onclick = () => show("frontConfirmView");
+$("backCaptureShutterBtn").onclick = () => $("backCameraInput").click();
+$("backCaptureGalleryBtn").onclick = () => $("backGalleryInput").click();
+$("backCaptureSkipBtn").onclick = () => show("recordView");
+$("backRetakeBtn").onclick = () => $("backCameraInput").click();
+$("backConfirmUseBtn").onclick = () => show("recordView");
+$("backConfirmDiscardBtn").onclick = () => {
+  S.backPhoto = null;
+  $("backPreview").removeAttribute("src");
+  $("backPreview").classList.add("hidden");
+  updateAnalyzeButton();
+  saveRecordDraft();
+  show("recordView");
+};
 $("galleryBtn").onclick = () => {
   if (confirmStartFreshRecord()) {
     freshPhotoPickerConfirmed = true;
