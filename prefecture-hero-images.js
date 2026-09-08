@@ -31,6 +31,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
     position: "52% center"
   },
+  "石川県": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/131109%20Kenrokuen%20Kanazawa%20Ishikawa%20pref%20Japan07s3.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:131109_Kenrokuen_Kanazawa_Ishikawa_pref_Japan07s3.jpg",
+    title: "131109 Kenrokuen Kanazawa Ishikawa pref Japan07s3.jpg",
+    author: "663highland",
+    license: "CC BY 2.5",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.5/",
+    credit: "Photo: 663highland / Wikimedia Commons / CC BY 2.5",
+    position: "50% center"
+  },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",
