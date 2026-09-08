@@ -110,6 +110,7 @@ function show(id) {
     "homeView",
     "eventView",
     "captureView",
+    "frontConfirmView",
     "recordView",
     "completeView",
     "historyView",
@@ -668,7 +669,7 @@ function replaceBackPhotoWithoutReset(file) {
   );
 }
 
-function resetRecord() {
+function resetRecord(openView = true) {
   S.currentImageCacheKey = null;
   S.currentFrontHash = null;
   S.currentBackHash = null;
@@ -734,7 +735,7 @@ function resetRecord() {
   $("ratingVal").textContent = "4.0";
   $("locMsg").textContent = "";
   msg($("recordMsg"), "");
-  show("recordView");
+  if (openView) show("recordView");
 }
 $("manualBtn").onclick = () => {
   startFreshRecord();
@@ -754,10 +755,12 @@ function attachPhoto(file) {
   if (freshPhotoPickerConfirmed) {
     freshPhotoPickerConfirmed = false;
     clearRecordDraft();
-    resetRecord();
+    resetRecord(false);
   } else if (!startFreshRecord()) return;
   S.photo = file;
-  $("preview").src = URL.createObjectURL(file);
+  const frontUrl = URL.createObjectURL(file);
+  $("preview").src = frontUrl;
+  $("frontConfirmPreview").src = frontUrl;
   $("preview").classList.remove("hidden");
   updateAnalyzeButton();
   saveRecordDraft();
@@ -766,9 +769,15 @@ function attachPhoto(file) {
     "表ラベルを選択しました。裏ラベルも追加すると識別精度を上げやすくなります。",
     "info",
   );
+  show("frontConfirmView");
 }
 function attachBackPhoto(file) {
   if (!file) return;
+  if (!$('frontConfirmView')?.classList.contains('hidden') && S.photo) {
+    replaceBackPhotoWithoutReset(file);
+    show('recordView');
+    return;
+  }
   if (recordViewIsVisible() && hasCurrentRecordWork()) {
     replaceBackPhotoWithoutReset(file);
     return;
@@ -812,6 +821,15 @@ $("captureGalleryBtn").onclick = () => {
   freshPhotoPickerConfirmed = true;
   $("galleryInput").click();
 };
+$("frontRetakeBtn").onclick = () => {
+  freshPhotoPickerConfirmed = true;
+  $("cameraInput").click();
+};
+$("frontConfirmBackLabelBtn").onclick = () => {
+  freshPhotoPickerConfirmed = false;
+  $("backCameraInput").click();
+};
+$("frontConfirmWithoutBackBtn").onclick = () => show("recordView");
 $("galleryBtn").onclick = () => {
   if (confirmStartFreshRecord()) {
     freshPhotoPickerConfirmed = true;

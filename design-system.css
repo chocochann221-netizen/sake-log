@@ -436,6 +436,8 @@ body:has(#captureView:not(.hidden)) > nav {
 body:has(#captureView:not(.hidden)) main {
   padding-top: 22px;
 }
+.photo-confirm-screen{min-height:calc(100dvh - 95px);max-width:520px;margin:0 auto;padding:4px 0 32px}.confirm-heading{text-align:center;margin-bottom:18px}.confirm-heading span{font-size:11px;color:var(--wood);letter-spacing:.14em}.confirm-heading h2{font-size:22px;margin:4px 0 0}.confirm-photo-wrap{width:min(72vw,330px);aspect-ratio:3/4;margin:0 auto;padding:8px;background:#322116;border:1px solid var(--wood-light);box-shadow:var(--shadow)}.confirm-photo-wrap img{display:block;width:100%;height:100%;object-fit:cover}.photo-confirm-screen>p{max-width:330px;margin:18px auto;text-align:center;color:var(--muted);font-size:13px;line-height:1.75}.photo-confirm-screen>.btn{max-width:390px;display:block;margin:10px auto 0}.confirm-text-button{display:block;min-height:44px;margin:10px auto 0;padding:8px 18px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--wood);font-weight:600}
+body:has(#frontConfirmView:not(.hidden))>nav{display:none}
 .autumn-home-hero {
   min-height: 930px;
   margin: -22px -18px 0;
