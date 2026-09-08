@@ -633,6 +633,27 @@
       .record-confirm-memories { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
       .record-confirm-memories img { width: 100%; height: 150px; object-fit: cover; border-radius: 5px; }
       .record-confirm-actions { margin-top: 28px; }
+      .my-log-screen { max-width: 620px; margin: 0 auto; padding: 28px 18px 110px; color: #2b211a; }
+      .my-log-heading { display: flex; justify-content: space-between; align-items: end; gap: 18px; padding-bottom: 21px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .my-log-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .my-log-heading h2 { margin: 5px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 31px; font-weight: 500; }
+      .my-log-heading p { max-width: 180px; margin: 0; color: #796b60; font-size: 12px; line-height: 1.65; text-align: right; }
+      .my-log-month { margin: 28px 0 10px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 18px; font-weight: 500; color: #6d4a33; }
+      .my-log-entry { position: relative; display: grid; grid-template-columns: 106px 1fr; gap: 17px; padding: 14px 0 20px 14px; border-left: 1px solid #bda48d; border-bottom: 1px solid rgba(74,50,35,.16); cursor: pointer; }
+      .my-log-entry::before { content: ""; position: absolute; top: 22px; left: -4px; width: 7px; height: 7px; border-radius: 50%; background: #9b6037; box-shadow: 0 0 0 4px #f7efe3; }
+      .my-log-entry .sake-thumb { width: 106px; height: 144px; border-radius: 4px; object-fit: cover; background: #dfd2c2; }
+      .my-log-entry .sake-thumb.placeholder { font-size: 11px; color: #87786c; }
+      .my-log-date { margin-bottom: 7px; color: #8c725f; font-size: 12px; }
+      .my-log-title { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 19px; font-weight: 600; line-height: 1.42; }
+      .my-log-brewery { margin-top: 3px; color: #74665c; font-size: 12px; }
+      .my-log-rating { display: flex; align-items: baseline; gap: 4px; margin-top: 10px; color: #9b6037; }
+      .my-log-rating strong { font-size: 21px; line-height: 1; }
+      .my-log-rating span { color: #88796e; font-size: 11px; }
+      .my-log-meta { margin-top: 8px; color: #67584e; font-size: 12px; line-height: 1.55; }
+      .my-log-comment { display: -webkit-box; overflow: hidden; margin-top: 8px; color: #493d35; font-size: 12px; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .my-log-arrow { position: absolute; right: 2px; bottom: 19px; color: #9b6037; font-size: 18px; }
+      .my-log-empty { padding: 58px 20px; text-align: center; color: #74665c; line-height: 1.8; }
+      @media (max-width: 380px) { .my-log-entry { grid-template-columns: 92px 1fr; gap: 13px; } .my-log-entry .sake-thumb { width: 92px; height: 126px; } }
     </style>
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
@@ -1048,11 +1069,8 @@
         </div>
       </section>
       <section id="historyView" class="page hidden">
-        <div class="card">
-          <h2>🍶 飲んだ記録</h2>
-          <div class="small" style="margin-bottom: 12px">
-            これまで飲んだ一本を、写真・評価・場所と一緒に残します。
-          </div>
+        <div class="my-log-screen">
+          <div class="my-log-heading"><div><span>MY LOG</span><h2>わたしの酒ログ</h2></div><p>あの日の一杯を、ゆっくり振り返る場所。</p></div>
           <div id="historyList">読み込み中…</div>
         </div>
       </section>
@@ -1136,7 +1154,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=526"></script>
+    <script src="app.js?v=527"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
