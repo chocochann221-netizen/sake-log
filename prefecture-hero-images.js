@@ -41,6 +41,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Daderot / Wikimedia Commons / CC0",
     position: "50% center"
   },
+  "福井県": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tojinbo%20cliffs%2C%20Fukui%20Prefecture%3B%20September%202019%20%2801%29.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg",
+    title: "Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg",
+    author: "雷太（Raita Futo）",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    credit: "Photo: 雷太 (Raita Futo) / Wikimedia Commons / CC BY 2.0",
+    position: "50% center"
+  },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",
