@@ -751,6 +751,26 @@
       .profile-link-area .btn { border-radius: 5px; }
       .profile-danger { margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(74,50,35,.2); }
       .profile-danger .btn { border-radius: 5px; }
+      .settings-screen { max-width: 620px; margin: 0 auto; padding: 24px 18px 110px; color: #2b211a; }
+      .settings-back { padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 800; }
+      .settings-heading { margin-top: 15px; padding-bottom: 19px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .settings-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .settings-heading h2 { margin: 5px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 30px; font-weight: 500; }
+      .settings-group { margin-top: 30px; }
+      .settings-group h3 { margin: 0 0 8px; color: #806f63; font-size: 11px; letter-spacing: .12em; }
+      .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 68px; padding: 13px 2px; border-top: 1px solid rgba(74,50,35,.18); }
+      .settings-row:last-child { border-bottom: 1px solid rgba(74,50,35,.18); }
+      .settings-row strong { display: block; font-size: 15px; }
+      .settings-row small { display: block; margin-top: 4px; color: #806f63; font-size: 11px; line-height: 1.5; }
+      .settings-select { max-width: 145px; min-height: 42px; padding: 8px 30px 8px 9px; border: 1px solid #bda48d; border-radius: 5px; background: #fffaf1; color: #44352b; }
+      .settings-switch { position: relative; flex: 0 0 48px; width: 48px; height: 28px; }
+      .settings-switch input { position: absolute; opacity: 0; }
+      .settings-switch span { position: absolute; inset: 0; border: 1px solid #b6a18e; border-radius: 20px; background: #d9cbbb; transition: .2s ease; }
+      .settings-switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fffaf1; box-shadow: 0 1px 4px rgba(57,36,23,.22); transition: .2s ease; }
+      .settings-switch input:checked + span { border-color: #8d5433; background: #9b6037; }
+      .settings-switch input:checked + span::after { transform: translateX(20px); }
+      .settings-note { margin-top: 14px; color: #806f63; font-size: 11px; line-height: 1.7; }
+      .settings-saved { min-height: 24px; margin-top: 18px; color: #8d5433; font-size: 12px; text-align: center; }
     </style>
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
@@ -1220,6 +1240,22 @@
         </div>
         </div>
       </section>
+      <section id="settingsView" class="page hidden">
+        <div class="settings-screen">
+          <button id="settingsBackBtn" class="settings-back" type="button">← マイページへ戻る</button>
+          <div class="settings-heading"><span>SETTINGS</span><h2>設定</h2></div>
+          <div class="settings-group">
+            <h3>写真</h3>
+            <div class="settings-row"><span><strong>ラベル写真を端末にも残す</strong><small>記録の保存後、対応端末のダウンロードへ保存します</small></span><label class="settings-switch"><input id="settingSavePhoto" type="checkbox" /><span aria-hidden="true"></span></label></div>
+          </div>
+          <div class="settings-group">
+            <h3>表示</h3>
+            <div class="settings-row"><span><strong>表示言語</strong><small id="settingLanguageHelp">端末の設定に合わせます</small></span><select id="settingLanguage" class="settings-select"><option value="device">端末に合わせる</option><option value="ja">日本語</option><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文</option><option value="ko">한국어</option></select></div>
+          </div>
+          <p class="settings-note">端末の言語が対応外の場合は、日本語で表示します。日本語以外の画面表示は公開版に向けて順次反映します。</p>
+          <div id="settingsSaved" class="settings-saved" role="status"></div>
+        </div>
+      </section>
       <div class="small" style="text-align: center; margin: 14px 8px 76px">
         銘柄・蔵元・地域の照合に
         <a href="https://sakenowa.com" target="_blank" rel="noopener"
@@ -1249,7 +1285,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=531"></script>
+    <script src="app.js?v=532"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

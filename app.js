@@ -124,6 +124,7 @@ function show(id) {
     "detailView",
     "analysisView",
     "profileView",
+    "settingsView",
   ]);
   if (protectedViews.has(id) && !S.user) {
     id = "authView";
@@ -162,6 +163,7 @@ function show(id) {
   if (id === "profileView") {
     loadProfile();
   }
+  if (id === "settingsView") loadSettings();
   if (id === "analysisView") loadAnalysis();
 }
 function headers(auth = false) {
@@ -4254,6 +4256,7 @@ $("commitRecordBtn").onclick = async () => {
       });
     }
     await saveToSharedDictionary();
+    saveFrontPhotoToDevice();
 
     msg($("recordConfirmMsg"), "✓ 保存しました。", "ok");
     clearLocalOperation(PENDING_SAVE_STATE_KEY);
@@ -5129,6 +5132,7 @@ async function loadProfile() {
    <div class="profile-menu">
      <button id="profileLogBtn" class="profile-menu-item" type="button"><span><strong>MY LOGを見る</strong><small>これまでに残した一杯を振り返る</small></span><span aria-hidden="true">›</span></button>
      <button id="profileAnalysisBtn" class="profile-menu-item" type="button"><span><strong>わたしの傾向</strong><small>記録から見える好みを確かめる</small></span><span aria-hidden="true">›</span></button>
+     <button id="profileSettingsBtn" class="profile-menu-item" type="button"><span><strong>設定</strong><small>写真の保存と表示言語</small></span><span aria-hidden="true">›</span></button>
      <a class="profile-menu-item" href="knowledge.html"><span><strong>知識の蔵</strong><small>次の一杯を、もう少し楽しむ</small></span><span aria-hidden="true">›</span></a>
      <a class="profile-menu-item" href="terms.html"><span><strong>利用規約</strong><small>和酒ログとの約束</small></span><span aria-hidden="true">›</span></a>
      <a class="profile-menu-item" href="privacy.html"><span><strong>プライバシー</strong><small>写真と記録の取り扱い</small></span><span aria-hidden="true">›</span></a>
@@ -5143,11 +5147,58 @@ async function loadProfile() {
    </div>`;
   $("profileLogBtn").onclick = () => show("historyView");
   $("profileAnalysisBtn").onclick = () => show("analysisView");
+  $("profileSettingsBtn").onclick = () => show("settingsView");
   $("profileLogoutBtn").onclick = logout;
   const btn = $("deleteAccountBtn");
   if (btn) btn.onclick = deleteMyAccount;
   const lineBtn = $("linkLineBtn");
   if (lineBtn) lineBtn.onclick = startLineLink;
+}
+
+const PHOTO_DEVICE_SETTING = "sakelog_save_photo_to_device";
+const LANGUAGE_SETTING = "sakelog_language";
+
+function saveFrontPhotoToDevice() {
+  if (localStorage.getItem(PHOTO_DEVICE_SETTING) !== "1" || !S.photo) return;
+  try {
+    const url = URL.createObjectURL(S.photo);
+    const link = document.createElement("a");
+    const extension = S.photo.type === "image/png" ? "png" : "jpg";
+    link.href = url;
+    link.download = `washu-log-${todayDateValue()}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) {
+    console.warn("device photo save failed", e);
+  }
+}
+
+function effectiveLanguageLabel(value) {
+  const labels = { ja: "日本語", en: "English", "zh-CN": "简体中文", "zh-TW": "繁體中文", ko: "한국어" };
+  if (value !== "device") return labels[value] || "日本語";
+  const locale = String(navigator.language || "ja");
+  const matched = locale.startsWith("zh-TW") || locale.startsWith("zh-HK") ? "zh-TW" :
+    locale.startsWith("zh") ? "zh-CN" : Object.keys(labels).find((key) => locale.startsWith(key)) || "ja";
+  return `端末の設定（${labels[matched]}）`;
+}
+
+function loadSettings() {
+  const savePhoto = localStorage.getItem(PHOTO_DEVICE_SETTING) === "1";
+  const language = localStorage.getItem(LANGUAGE_SETTING) || "device";
+  $("settingSavePhoto").checked = savePhoto;
+  $("settingLanguage").value = language;
+  $("settingLanguageHelp").textContent = effectiveLanguageLabel(language);
+  $("settingsSaved").textContent = "";
+}
+
+function announceSettingSaved() {
+  $("settingsSaved").textContent = "設定を保存しました";
+  clearTimeout(S.settingsSavedTimer);
+  S.settingsSavedTimer = setTimeout(() => {
+    if ($("settingsSaved")) $("settingsSaved").textContent = "";
+  }, 1800);
 }
 function clearAllLocalUserData() {
   try {
@@ -5258,5 +5309,20 @@ if ($("historyFilterReset")) {
     $("historyYearMonth").value = "";
     $("historyMinRating").value = "";
     applyHistoryFilters();
+  };
+}
+if ($("settingsBackBtn")) $("settingsBackBtn").onclick = () => show("profileView");
+if ($("settingSavePhoto")) {
+  $("settingSavePhoto").onchange = () => {
+    localStorage.setItem(PHOTO_DEVICE_SETTING, $("settingSavePhoto").checked ? "1" : "0");
+    announceSettingSaved();
+  };
+}
+if ($("settingLanguage")) {
+  $("settingLanguage").onchange = () => {
+    const value = $("settingLanguage").value;
+    localStorage.setItem(LANGUAGE_SETTING, value);
+    $("settingLanguageHelp").textContent = effectiveLanguageLabel(value);
+    announceSettingSaved();
   };
 }
