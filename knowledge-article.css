@@ -1,0 +1,55 @@
+:root {
+  color-scheme: light;
+  --knowledge-ink: #2b211a;
+  --knowledge-muted: #74665c;
+  --knowledge-wood: #79543a;
+  --knowledge-accent: #9b6037;
+  --knowledge-paper: #f7efe3;
+  --knowledge-line: rgba(74, 50, 35, 0.2);
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--knowledge-paper) !important; color: var(--knowledge-ink) !important; }
+header { position: sticky; top: 0; z-index: 10; padding: 13px 18px !important; border-bottom: 1px solid var(--knowledge-line) !important; background: rgba(247, 239, 227, 0.95) !important; backdrop-filter: blur(12px); }
+.head, .wrap, main { max-width: 620px !important; }
+.back { padding: 8px 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--knowledge-wood) !important; font-size: 13px; font-weight: 800; }
+.brand { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-weight: 600 !important; }
+
+.hero { margin: 0 !important; padding: 44px max(20px, calc((100vw - 620px) / 2 + 18px)) 38px !important; border: 0 !important; border-radius: 0 !important; background: #4b3022 !important; color: #fffaf1 !important; box-shadow: none !important; }
+.hero h1 { margin: 8px 0 10px !important; color: #fffaf1; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif !important; font-size: clamp(28px, 8vw, 34px) !important; font-weight: 500; line-height: 1.42 !important; }
+.hero p { max-width: 580px; margin: 0 !important; color: #eadfd2 !important; font-size: 14px; line-height: 1.85 !important; }
+.hero small, .eyebrow { color: #e4b17d !important; font-size: 11px !important; font-weight: 800; letter-spacing: 0.14em !important; opacity: 1 !important; }
+
+main, .body { padding: 25px 18px 60px !important; }
+.intro, .lead { margin: 0 0 26px !important; padding: 0 0 22px !important; border-bottom: 1px solid var(--knowledge-line); color: var(--knowledge-muted) !important; font-size: 13px; line-height: 1.8 !important; }
+.section, .card, .answer, .hiya, .try, .why, .core, .question { margin: 0 !important; padding: 24px 2px !important; border: 0 !important; border-bottom: 1px solid var(--knowledge-line) !important; border-radius: 0 !important; background: transparent !important; color: var(--knowledge-ink) !important; box-shadow: none !important; }
+.section h2, .card h2, .answer h2, .hiya h2, .try h2, .why h2, .core h2, .section-title { margin: 0 0 10px !important; color: var(--knowledge-ink) !important; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif !important; font-size: 22px !important; font-weight: 600; line-height: 1.5; }
+.section p, .card p, .answer p, .hiya p, .try p, .why p, .core p { color: #554940 !important; line-height: 1.9 !important; }
+.answer, .hiya, .try, .why, .core, .question { padding-left: 15px !important; border-left: 3px solid var(--knowledge-accent) !important; }
+.answer b, .hiya strong, .try b, .why b, .core b, .question h2 { color: var(--knowledge-accent) !important; }
+
+.cards { display: block !important; }
+.cards .card, a.card { position: relative; display: block; padding-right: 34px !important; color: inherit !important; text-decoration: none; }
+.cards .card strong, a.card strong { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 18px !important; }
+.cards .card span, a.card span { color: var(--knowledge-muted) !important; line-height: 1.65; }
+.arrow { color: var(--knowledge-accent) !important; }
+.pill, .keyword, .type { border: 1px solid #b99f87 !important; border-radius: 999px !important; background: transparent !important; color: var(--knowledge-wood) !important; }
+
+.box, .temp, .rice, .level, .mini div, .deep { border: 1px solid #c8b5a2 !important; border-radius: 5px !important; background: rgba(255, 252, 246, 0.65) !important; box-shadow: none !important; }
+.box b, .rice b, .level b, .body b { color: var(--knowledge-accent) !important; }
+.link, .links a, .route, .all, .top { border-color: #b99f87 !important; border-radius: 5px !important; background: rgba(255, 252, 246, 0.65) !important; color: var(--knowledge-wood) !important; }
+.note, .mini, .caption, .source { color: var(--knowledge-muted) !important; }
+.source a { color: var(--knowledge-wood) !important; }
+.photo { border-color: #b99f87 !important; border-radius: 5px !important; background: #eee1d0 !important; color: var(--knowledge-muted) !important; }
+.process-photo img { border-radius: 5px !important; }
+.history { border-radius: 5px !important; background: #4b3022 !important; box-shadow: none !important; }
+.thermo::before { background: #b99f87 !important; }
+.term, .chapter .box { border-color: var(--knowledge-line) !important; border-radius: 0 !important; background: transparent !important; }
+.term summary, .box summary { padding: 16px 2px !important; }
+.term-body, .box .body { padding: 14px 2px 18px !important; border-color: rgba(74, 50, 35, 0.12) !important; }
+.facts { gap: 6px !important; }
+
+@media (max-width: 430px) {
+  .compare, .mini { grid-template-columns: 1fr !important; }
+  .meter, .scale { grid-template-columns: 1fr 1fr !important; }
+}
