@@ -677,6 +677,7 @@
       .loading-dots span:nth-child(2) { animation-delay: .16s; }
       .loading-dots span:nth-child(3) { animation-delay: .32s; }
       .loading-label { font-size: 12px; letter-spacing: .08em; }
+      .capture-issue { margin: 12px 18px 0; padding: 11px 2px 11px 13px; border-left: 3px solid #9b6037; background: rgba(248,233,226,.92); color: #743c30; font-size: 12px; line-height: 1.65; }
       @keyframes loading-pulse { 0%, 80%, 100% { opacity: .28; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
       @media (prefers-reduced-motion: reduce) { .loading-dots span { animation: none; opacity: .65; } }
       @media (max-width: 380px) { .my-log-entry { grid-template-columns: 92px 1fr; gap: 13px; } .my-log-entry .sake-thumb { width: 92px; height: 126px; } }
@@ -1055,6 +1056,7 @@
           <p class="capture-note">
             撮った縦写真は、あの日の一枚としてMY LOGにも残ります。
           </p>
+          <div id="captureIssue" class="capture-issue hidden" role="alert"></div>
           <div class="capture-controls">
             <button
               id="captureGalleryBtn"
@@ -1108,6 +1110,7 @@
             <div class="back-text-guide"><span></span><span></span><span></span><span></span></div>
           </div>
           <p class="capture-note">原材料や精米歩合などを見つける手がかりにします。</p>
+          <div id="backCaptureIssue" class="capture-issue hidden" role="alert"></div>
           <div class="capture-controls">
             <button id="backCaptureGalleryBtn" class="capture-side-action" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 15l3-3 3 3 2-2 3 3M8 9h.01" /></svg><span>写真から</span></button>
             <button id="backCaptureShutterBtn" class="capture-shutter" type="button" aria-label="カメラを開いて裏ラベルを撮影する"><span></span></button>
@@ -1318,7 +1321,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=535"></script>
+    <script src="app.js?v=536"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

@@ -894,14 +894,17 @@ function attachMemoryPhoto(file) {
   $("memoryCameraBtn")?.classList.add("has-photo");
 }
 $("cameraBtn").onclick = () => {
+  $("captureIssue")?.classList.add("hidden");
   if (confirmStartFreshRecord()) show("captureView");
 };
 $("captureBackBtn").onclick = () => show("homeView");
 $("captureShutterBtn").onclick = () => {
+  $("captureIssue")?.classList.add("hidden");
   freshPhotoPickerConfirmed = true;
   $("cameraInput").click();
 };
 $("captureGalleryBtn").onclick = () => {
+  $("captureIssue")?.classList.add("hidden");
   freshPhotoPickerConfirmed = true;
   $("galleryInput").click();
 };
@@ -915,8 +918,14 @@ $("frontConfirmBackLabelBtn").onclick = () => {
 };
 $("frontConfirmWithoutBackBtn").onclick = () => $("analyzeBtn").click();
 $("backCaptureBackBtn").onclick = () => show("frontConfirmView");
-$("backCaptureShutterBtn").onclick = () => $("backCameraInput").click();
-$("backCaptureGalleryBtn").onclick = () => $("backGalleryInput").click();
+$("backCaptureShutterBtn").onclick = () => {
+  $("backCaptureIssue")?.classList.add("hidden");
+  $("backCameraInput").click();
+};
+$("backCaptureGalleryBtn").onclick = () => {
+  $("backCaptureIssue")?.classList.add("hidden");
+  $("backGalleryInput").click();
+};
 $("backCaptureSkipBtn").onclick = () => $("analyzeBtn").click();
 $("backRetakeBtn").onclick = () => $("backCameraInput").click();
 $("backConfirmUseBtn").onclick = () => $("analyzeBtn").click();
@@ -953,44 +962,109 @@ function clearFreshPhotoPickerConfirmationSoon() {
     freshPhotoPickerConfirmed = false;
   }, 500);
 }
+async function validateSelectedPhoto(file) {
+  if (!file) throw new Error("写真が選ばれていません。");
+  if (file.size === 0)
+    throw new Error("この写真は読み込めませんでした。別の写真を選んでください。");
+  if (file.size > 40 * 1024 * 1024)
+    throw new Error("写真の容量が大きすぎます。別の写真を選んでください。");
+  if (file.type && !file.type.startsWith("image/"))
+    throw new Error("画像ファイルを選んでください。");
+  const url = URL.createObjectURL(file);
+  try {
+    await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = resolve;
+      image.onerror = () =>
+        reject(
+          new Error(
+            "この写真は読み込めませんでした。別の写真を選んでください。",
+          ),
+        );
+      image.src = url;
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+async function handleSelectedPhoto(file, attach, captureView, issueId) {
+  if (!file) {
+    clearFreshPhotoPickerConfirmationSoon();
+    return;
+  }
+  try {
+    await validateSelectedPhoto(file);
+    const issue = $(issueId);
+    if (issue) issue.classList.add("hidden");
+    attach(file);
+  } catch (error) {
+    freshPhotoPickerConfirmed = false;
+    if (recordViewIsVisible()) {
+      msg($("recordMsg"), error.message, "err");
+      return;
+    }
+    show(captureView);
+    const issue = $(issueId);
+    if (issue) {
+      issue.textContent = `${error.message} 「写真から」選ぶこともできます。`;
+      issue.classList.remove("hidden");
+    }
+  }
+}
 $("cameraInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachPhoto(f);
-  else clearFreshPhotoPickerConfirmationSoon();
+  handleSelectedPhoto(f, attachPhoto, "captureView", "captureIssue");
 };
 $("galleryInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachPhoto(f);
-  else clearFreshPhotoPickerConfirmationSoon();
+  handleSelectedPhoto(f, attachPhoto, "captureView", "captureIssue");
 };
 $("backCameraInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachBackPhoto(f);
-  else clearFreshPhotoPickerConfirmationSoon();
+  handleSelectedPhoto(
+    f,
+    attachBackPhoto,
+    "backCaptureView",
+    "backCaptureIssue",
+  );
 };
 $("backGalleryInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachBackPhoto(f);
-  else clearFreshPhotoPickerConfirmationSoon();
+  handleSelectedPhoto(
+    f,
+    attachBackPhoto,
+    "backCaptureView",
+    "backCaptureIssue",
+  );
 };
 $("foodCameraInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachFoodPhoto(f);
+  handleSelectedPhoto(f, attachFoodPhoto, "recordView", "recordValidationMsg");
 };
 
 $("foodGalleryInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachFoodPhoto(f);
+  handleSelectedPhoto(f, attachFoodPhoto, "recordView", "recordValidationMsg");
 };
 
 $("memoryCameraInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachMemoryPhoto(f);
+  handleSelectedPhoto(
+    f,
+    attachMemoryPhoto,
+    "recordView",
+    "recordValidationMsg",
+  );
 };
 
 $("memoryGalleryInput").onchange = (e) => {
   const f = e.target.files?.[0];
-  if (f) attachMemoryPhoto(f);
+  handleSelectedPhoto(
+    f,
+    attachMemoryPhoto,
+    "recordView",
+    "recordValidationMsg",
+  );
 };
 $("recordFrontGalleryBtn").onclick = () => $("galleryInput").click();
 $("recordBackGalleryBtn").onclick = () => $("backGalleryInput").click();
