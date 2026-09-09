@@ -32,13 +32,13 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "52% center"
   },
   "石川県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/131109%20Kenrokuen%20Kanazawa%20Ishikawa%20pref%20Japan07s3.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:131109_Kenrokuen_Kanazawa_Ishikawa_pref_Japan07s3.jpg",
-    title: "131109 Kenrokuen Kanazawa Ishikawa pref Japan07s3.jpg",
-    author: "663highland",
-    license: "CC BY 2.5",
-    licenseUrl: "https://creativecommons.org/licenses/by/2.5/",
-    credit: "Photo: 663highland / Wikimedia Commons / CC BY 2.5",
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tsuzumi-mon%2C%20Kanazawa%20Station%20-%20Kanazawa%2C%20Japan%20-%20DSC09640.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg",
+    title: "Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg",
+    author: "Daderot",
+    license: "CC0 1.0",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    credit: "Photo: Daderot / Wikimedia Commons / CC0",
     position: "50% center"
   },
   "大阪府": {
