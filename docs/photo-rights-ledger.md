@@ -28,7 +28,7 @@
 |---|---|---|---|---|---|---|---|
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
 | 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
-| 奈良県 | 東大寺二月堂周辺・寺院と鹿 | Temple building, shrine, Rōben Sugi and deer below Nigatsu-dō, Tōdai-ji, Nara, 2016.jpg | DimiTalen | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Temple_building,_shrine,_R%C5%8Dben_Sugi_and_deer_below_Nigatsu-d%C5%8D,_T%C5%8Ddai-ji,_Nara,_2016.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
+| 奈良県 | 早朝の奈良公園・鹿と石灯籠 | Deer at nara park 2.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
 | 石川県 | 夕景の金沢駅・鼓門 | Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg | Daderot | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg | `prefecture-hero-images.js` | 採用・実装済み |
 | 福井県 | 東尋坊の断崖・太古の地層 | Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg | 雷太（Raita Futo） | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg | `prefecture-hero-images.js` | 採用・実装済み |
 
@@ -64,11 +64,11 @@
 
 ### 奈良ヒーロー利用メモ
 
-- 採用確定写真は、東大寺二月堂下の寺院建築・良弁杉・鹿を写した実写。2016-04-05撮影。
-- 原典は Wikimedia Commons。撮影者 DimiTalen、CC0 1.0。商用利用・加工が可能。
-- 画面上には出典管理の透明性を保つため、任意クレジットとして `Photo: DimiTalen / Wikimedia Commons / CC0` を表示し、原典ページへリンクする。
-- 原画像は 6,016 × 4,000px。横長ヒーローでは寺院建築と鹿が残る中央配置を基本とする。
-- この写真を奈良県ヒーローの確定素材とし、変更する場合は利用者確認後に権利台帳と実装を同時更新する。
+- 採用確定写真は、早朝の奈良公園で鹿と石灯籠を写した実写。2023-10-01 05:58撮影。
+- 原典は Wikimedia Commons。撮影者 Ian G Shingler、CC BY-SA 4.0。
+- 画面上に `Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 原画像は 5,041 × 3,361px。横長ヒーローでも鹿・石灯籠・森の奥行きが伝わる中央配置を基本とする。
+- 実表示で被写体が判別しやすいことを確認して候補3から変更。この写真を奈良県ヒーローの確定素材とする。
 
 ## 都道府県「食」写真
 
