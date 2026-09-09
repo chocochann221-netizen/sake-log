@@ -767,7 +767,8 @@ function resetRecord(openView = true) {
   if ($("drankDate")) $("drankDate").value = todayDateValue();
   syncRatingChoices();
   syncRecordSummary();
-  $("locMsg").textContent = "";
+  setLocationState("");
+  setLocationBusy(false);
   msg($("recordMsg"), "");
   if (openView) show("recordView");
 }
@@ -3198,20 +3199,51 @@ $("analyzeBtn").onclick = async () => {
   }
 };
 
+function setLocationState(text, type = "") {
+  const status = $("locMsg");
+  if (!status) return;
+  status.textContent = text;
+  status.classList.toggle("is-success", type === "success");
+  status.classList.toggle("is-error", type === "error");
+}
+function locationErrorMessage(error) {
+  if (error?.code === 1)
+    return "位置情報が許可されていません。端末の設定を確認してください。";
+  if (error?.code === 2)
+    return "現在地を確認できませんでした。場所を入力して記録できます。";
+  if (error?.code === 3)
+    return "現在地の取得に時間がかかっています。もう一度お試しください。";
+  return "現在地を記録できませんでした。場所を入力して記録できます。";
+}
+function setLocationBusy(busy) {
+  const button = $("locateBtn");
+  if (!button) return;
+  button.disabled = busy;
+  button.setAttribute("aria-busy", String(busy));
+  button.textContent = busy ? "現在地を確認しています…" : "現在地を記録する";
+}
 $("locateBtn").onclick = () => {
   if (!navigator.geolocation) {
-    $("locMsg").textContent = "位置情報を利用できません";
+    setLocationState(
+      "この端末では位置情報を利用できません。場所を入力して記録できます。",
+      "error",
+    );
     return;
   }
-  $("locMsg").textContent = "現在地を取得中…";
+  setLocationBusy(true);
+  setLocationState("現在地を確認しています…");
   navigator.geolocation.getCurrentPosition(
     (p) => {
       S.lat = p.coords.latitude;
       S.lng = p.coords.longitude;
-      $("locMsg").textContent =
-        `現在地取得済み (${S.lat.toFixed(5)}, ${S.lng.toFixed(5)})`;
+      saveRecordDraft();
+      setLocationState("現在地を記録しました。", "success");
+      setLocationBusy(false);
     },
-    (e) => ($("locMsg").textContent = e.message),
+    (error) => {
+      setLocationState(locationErrorMessage(error), "error");
+      setLocationBusy(false);
+    },
     { enableHighAccuracy: true, timeout: 15000 },
   );
 };
@@ -3391,6 +3423,8 @@ function restoreRecordDraftToForm() {
   S.currentSakeId = d.currentSakeId || null;
   S.lat = d.lat ?? null;
   S.lng = d.lng ?? null;
+  if (S.lat != null && S.lng != null)
+    setLocationState("現在地は記録済みです。", "success");
 
   show("recordView");
   const photoNote =

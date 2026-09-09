@@ -613,6 +613,10 @@
       .record-sake-summary p { margin: 7px 0 12px; color: #74665c; }
       .record-edit-link { padding: 0; border: 0; background: none; color: #865534; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
       .record-edit-link, .confirm-text-button, .memory-detail-back, .settings-back, .history-filter-reset { min-height: 44px; }
+      .location-status { min-height: 22px; margin-top: 3px; line-height: 1.6; }
+      .location-status.is-success { color: #49603e; }
+      .location-status.is-error { color: #8a3f31; }
+      #locateBtn:disabled { cursor: wait; opacity: .65; }
       .record-section { padding: 25px 0; border-bottom: 1px solid rgba(74,50,35,.2); }
       .record-section h3 { margin: 5px 0 16px; font-size: 21px; }
       .record-field { margin-top: 17px; }
@@ -1191,7 +1195,7 @@
             <div class="record-field"><label for="drankDate">日付</label><input id="drankDate" type="date" /></div>
             <div class="record-field"><label for="companion">誰と <small>任意</small></label><input id="companion" placeholder="家族と、友人と、ひとりで など" /></div>
             <div class="record-field"><label for="restaurant">どこで <small>任意</small></label><input id="restaurant" placeholder="自宅、お店の名前、旅先 など" /></div>
-            <button id="locateBtn" class="record-edit-link" type="button">現在地を記録する</button><div id="locMsg" class="small"></div>
+            <button id="locateBtn" class="record-edit-link" type="button">現在地を記録する</button><div id="locMsg" class="small location-status" role="status" aria-live="polite"></div>
             <div class="record-field"><label for="comment">ひとこと <small>任意</small></label><textarea id="comment" maxlength="1000" placeholder="香り、料理、その日の出来事など"></textarea></div>
           </section>
           <section class="record-section memory-photo-section">
@@ -1338,7 +1342,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=538"></script>
+    <script src="app.js?v=539"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
