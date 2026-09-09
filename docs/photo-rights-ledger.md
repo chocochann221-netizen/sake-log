@@ -29,6 +29,14 @@
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
 | 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
 | 石川県 | 夕景の金沢駅・鼓門 | Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg | Daderot | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg | `prefecture-hero-images.js` | 採用・実装済み |
+| 福井県 | 東尋坊の断崖・太古の地層 | Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg | 雷太（Raita Futo） | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg | `prefecture-hero-images.js` | 採用・実装済み |
+
+### 福井ヒーロー利用メモ
+
+- 原画像は2019-09-18撮影。東尋坊の柱状節理と日本海を写した自然景観で、「太古の地層から恐竜・化石文化へ」という構成に用いる。
+- 原典はFlickrからWikimedia Commonsへ収録され、FlickreviewR 2によりCC BY 2.0であることが確認済み。
+- 撮影者は雷太（Raita Futo）。画面上に `Photo: 雷太 (Raita Futo) / Wikimedia Commons / CC BY 2.0` を表示し、原典ページへリンクする。
+- 原画像は5,842 × 3,895px。横長ヒーローでは断崖と海の双方が残る中央配置を基本とする。
 
 ### 石川ヒーロー利用メモ
 
