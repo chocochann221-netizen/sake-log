@@ -21,6 +21,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Motokoka / Wikimedia Commons / CC BY-SA 4.0",
     position: "50% center"
   },
+  "東京都": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tokyo-STA%20Marunouchi-Entrance%202023.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tokyo-STA_Marunouchi-Entrance_2023.jpg",
+    title: "Tokyo-STA Marunouchi-Entrance 2023.jpg",
+    author: "MaedaAkihiko",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    credit: "Photo: MaedaAkihiko / Wikimedia Commons / CC BY-SA 4.0",
+    position: "50% center"
+  },
   "奈良県": {
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Deer_at_nara_park_1.jpg/1280px-Deer_at_nara_park_1.jpg",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg",
