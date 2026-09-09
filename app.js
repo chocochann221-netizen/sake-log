@@ -149,7 +149,7 @@ function show(id) {
     "hidden",
     !S.user || focusedRecordViews.has(id),
   );
-  if ($("logoutTop")) $("logoutTop").classList.toggle("hidden", !S.user);
+  if ($("profileTop")) $("profileTop").classList.toggle("hidden", !S.user);
   syncActiveNav(id);
   if (id === "homeView") loadRecent();
   if (id === "recordView") {
@@ -161,11 +161,6 @@ function show(id) {
   if (id === "historyView") loadHistory();
   if (id === "profileView") {
     loadProfile();
-    loadProfileEventHistory().catch(() => {});
-    loadProfileEventStats().catch(() => {});
-    loadProfileEventYearReview().catch(() => {});
-    loadProfileEventDiscoveries().catch(() => {});
-    loadProfileEventPhotos().catch(() => {});
   }
   if (id === "analysisView") loadAnalysis();
 }
@@ -626,7 +621,7 @@ async function logout() {
   clearSession();
   show("authView");
 }
-$("logoutTop").onclick = logout;
+$("profileTop").onclick = () => show("profileView");
 
 function hasCurrentRecordWork() {
   const fieldValue = RECORD_DRAFT_FIELDS.some((id) =>
@@ -5099,31 +5094,56 @@ async function loadAnalysis() {
 }
 
 async function loadProfile() {
+  let records = [];
+  try {
+    records = await select(
+      "drinking_records",
+      "select=id,brand_name,product_name,brewery_name,prefecture,rating,drank_at&order=drank_at.desc&limit=500",
+    );
+  } catch (e) {
+    console.warn("profile record summary failed", e);
+  }
+  const uniqueBreweries = new Set(records.map((r) => r.brewery_name).filter(Boolean)).size;
+  const uniquePrefectures = new Set(records.map((r) => r.prefecture).filter(Boolean)).size;
   const isLineOnly = String(S.user?.email || "").endsWith(
     "@line.washulog.invalid",
   );
   const lineArea = isLineOnly
-    ? `<div style="margin-top:18px;padding:14px;background:#f7f9f7;border-radius:12px">
+    ? `<div class="profile-link-area">
         <b>LINEでログイン中</b>
         <div class="small" style="margin-top:5px">このLINEアカウントは単独の和酒ログアカウントとして利用中です。</div>
       </div>`
-    : `<div style="margin-top:18px;padding:14px;background:#f7f9f7;border-radius:12px">
+    : `<div class="profile-link-area">
         <b>LINE連携</b>
         <div class="small" style="margin-top:5px">このアカウントにLINEを連携すると、次回からLINEでも同じ記録を開けます。別ユーザーのデータと自動統合することはありません。</div>
         <button id="linkLineBtn" class="btn outline" style="margin-top:10px">LINEをこのアカウントに連携</button>
       </div>`;
 
   $("profileBody").innerHTML = `
-   <p><b>${escapeHtml(S.user?.email || "")}</b></p>
-   <div class="small">和酒ログにログイン中です。</div>
-   <button class="btn outline" onclick="logout()">ログアウト</button>
+   <div class="profile-stats">
+     <div class="profile-stat"><strong>${records.length}</strong><span>残した一杯</span></div>
+     <div class="profile-stat"><strong>${uniqueBreweries}</strong><span>出会った酒蔵</span></div>
+     <div class="profile-stat"><strong>${uniquePrefectures}</strong><span>出会った地域</span></div>
+   </div>
+   <div class="profile-account"><div class="profile-account-label">ログイン中のアカウント</div><div class="profile-account-value">${escapeHtml(isLineOnly ? "LINEアカウント" : S.user?.email || "")}</div></div>
+   <div class="profile-menu">
+     <button id="profileLogBtn" class="profile-menu-item" type="button"><span><strong>MY LOGを見る</strong><small>これまでに残した一杯を振り返る</small></span><span aria-hidden="true">›</span></button>
+     <button id="profileAnalysisBtn" class="profile-menu-item" type="button"><span><strong>わたしの傾向</strong><small>記録から見える好みを確かめる</small></span><span aria-hidden="true">›</span></button>
+     <a class="profile-menu-item" href="knowledge.html"><span><strong>知識の蔵</strong><small>次の一杯を、もう少し楽しむ</small></span><span aria-hidden="true">›</span></a>
+     <a class="profile-menu-item" href="terms.html"><span><strong>利用規約</strong><small>和酒ログとの約束</small></span><span aria-hidden="true">›</span></a>
+     <a class="profile-menu-item" href="privacy.html"><span><strong>プライバシー</strong><small>写真と記録の取り扱い</small></span><span aria-hidden="true">›</span></a>
+   </div>
    ${lineArea}
-   <div style="margin-top:28px;padding-top:18px;border-top:1px solid #e3ded4">
+   <button id="profileLogoutBtn" class="btn outline" style="margin-top:24px;border-radius:5px">ログアウト</button>
+   <div class="profile-danger">
      <div style="font-weight:700;margin-bottom:6px">アカウント</div>
      <div class="small" style="margin-bottom:10px">アカウントを削除すると、飲酒記録・写真・参加情報など本人に紐づくデータは削除され、元に戻せません。</div>
-     <button id="deleteAccountBtn" class="btn outline" style="border-color:#b64b4b;color:#a33131">アカウントを削除</button>
+     <button id="deleteAccountBtn" class="btn outline" style="border-color:#b64b4b;color:#a33131;border-radius:5px">アカウントを削除</button>
      <div id="deleteAccountMsg"></div>
    </div>`;
+  $("profileLogBtn").onclick = () => show("historyView");
+  $("profileAnalysisBtn").onclick = () => show("analysisView");
+  $("profileLogoutBtn").onclick = logout;
   const btn = $("deleteAccountBtn");
   if (btn) btn.onclick = deleteMyAccount;
   const lineBtn = $("linkLineBtn");

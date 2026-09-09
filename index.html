@@ -728,6 +728,29 @@
       .memory-edit-details { margin-top: 24px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
       .memory-edit-details summary { padding: 18px 0; font-weight: 800; cursor: pointer; }
       .memory-edit-actions { display: grid; gap: 4px; margin-top: 28px; }
+      .top-profile { padding: 8px 0 !important; border: 0 !important; border-bottom: 1px solid rgba(74,50,35,.42) !important; border-radius: 0 !important; background: transparent !important; color: #684832 !important; font-size: 12px; font-weight: 800; }
+      .profile-screen { max-width: 620px; margin: 0 auto; padding: 28px 18px 110px; color: #2b211a; }
+      .profile-heading { padding-bottom: 20px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .profile-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .profile-heading h2 { margin: 5px 0 6px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 30px; font-weight: 500; }
+      .profile-heading p { margin: 0; color: #796b60; font-size: 13px; line-height: 1.7; }
+      .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 24px 0 28px; border-top: 1px solid rgba(74,50,35,.2); border-bottom: 1px solid rgba(74,50,35,.2); }
+      .profile-stat { padding: 17px 5px; text-align: center; }
+      .profile-stat + .profile-stat { border-left: 1px solid rgba(74,50,35,.18); }
+      .profile-stat strong { display: block; color: #8d5433; font-family: "Yu Mincho", serif; font-size: 26px; font-weight: 600; }
+      .profile-stat span { display: block; margin-top: 3px; color: #806f63; font-size: 10px; }
+      .profile-account { padding: 0 2px 22px; border-bottom: 1px solid rgba(74,50,35,.2); }
+      .profile-account-label { color: #88796e; font-size: 11px; }
+      .profile-account-value { margin-top: 5px; overflow-wrap: anywhere; font-size: 14px; font-weight: 700; }
+      .profile-menu { margin-top: 12px; border-top: 1px solid rgba(74,50,35,.22); }
+      .profile-menu-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 17px 2px; border: 0; border-bottom: 1px solid rgba(74,50,35,.18); background: transparent; color: #2b211a; text-align: left; text-decoration: none; }
+      .profile-menu-item strong { display: block; font-family: "Yu Mincho", serif; font-size: 17px; }
+      .profile-menu-item small { display: block; margin-top: 4px; color: #806f63; font-size: 11px; }
+      .profile-menu-item > span:last-child { color: #9b6037; font-size: 19px; }
+      .profile-link-area { margin-top: 25px; padding: 18px 2px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
+      .profile-link-area .btn { border-radius: 5px; }
+      .profile-danger { margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(74,50,35,.2); }
+      .profile-danger .btn { border-radius: 5px; }
     </style>
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
@@ -738,11 +761,10 @@
         ><span>和酒ログ</span>
       </div>
       <button
-        id="logoutTop"
-        class="outline"
-        style="padding: 8px 11px; border-radius: 10px"
+        id="profileTop"
+        class="outline top-profile"
       >
-        ログアウト
+        マイページ
       </button>
     </header>
     <div id="networkBanner" class="network-banner hidden">
@@ -1173,37 +1195,29 @@
         </div>
       </section>
       <section id="profileView" class="page hidden">
-        <div class="card">
-          <h2>マイページ</h2>
+        <div class="profile-screen">
+          <div class="profile-heading"><span>MY PAGE</span><h2>わたしの場所</h2><p>残してきた一杯と、和酒ログの設定。</p></div>
           <div id="profileBody"></div>
-        </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>📅 イベントの記録</h3>
           <div id="profileEventStats">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>✨ イベントでの出会い</h3>
           <div id="profileEventDiscoveries">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>🏮 今年のイベント振り返り</h3>
           <div id="profileEventYearReview">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>📷 自分のイベント写真</h3>
           <div id="profileEventPhotos">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>📅 イベント履歴</h3>
           <div id="profileEventHistory">読み込み中…</div>
         </div>
-        <div class="card">
-          <a
-            href="knowledge.html"
-            class="btn secondary"
-            style="display: block; text-align: center; text-decoration: none"
-            >📚 知識の蔵</a
-          >
         </div>
       </section>
       <div class="small" style="text-align: center; margin: 14px 8px 76px">
@@ -1235,7 +1249,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=530"></script>
+    <script src="app.js?v=531"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
