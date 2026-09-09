@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8f6f1">
+<title>酒蔵一覧 | 和酒ログ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f8f6f1;color:#27231f;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}.wrap{max-width:760px;margin:auto}header{padding:13px 18px;background:#fff;border-bottom:1px solid #e7e0d6}.back{color:#27231f;text-decoration:none;font-size:14px}.hero{padding:40px 20px 28px;border-bottom:1px solid #d9d0c4}.kicker{font-size:12px;font-weight:700;letter-spacing:.14em;color:#8a552f}.hero h1{margin:7px 0 8px;font-family:serif;font-size:34px;font-weight:500}.hero p{margin:0;color:#625b52;line-height:1.75}.body{padding:22px 20px 60px}.tools{position:sticky;top:0;z-index:2;padding:12px 0;background:rgba(248,246,241,.96)}.search{width:100%;padding:13px 14px;border:1px solid #cfc3b3;border-radius:4px;background:#fff;color:#27231f;font:inherit}.search:focus{outline:2px solid #8a5a2f;outline-offset:2px}.count{margin:11px 0 2px;font-size:13px;color:#776e64}.list{margin-top:8px;border-top:1px solid #d9d0c4}.brewery{display:grid;grid-template-columns:42px minmax(0,1fr);gap:13px;padding:21px 0;border-bottom:1px solid #d9d0c4}.seal{width:35px;height:35px;margin-top:2px;border:2px solid #76502e;border-radius:50%;display:grid;place-items:center;color:#654527;font-family:serif;font-size:12px;font-weight:700}.brewery h2{margin:0;font-family:serif;font-size:21px;font-weight:600}.brands{margin-top:4px;font-size:14px;font-weight:700;color:#55483c}.place{margin-top:7px;font-size:13px;color:#776e64}.note{margin:8px 0 0;color:#625b52;font-size:14px;line-height:1.7}.official{display:inline-block;margin-top:10px;color:#8a4f29;font-size:13px;font-weight:700;text-decoration:none}.empty{padding:35px 0;color:#776e64}.source{margin-top:24px;color:#776e64;font-size:11px;line-height:1.7}.source a{color:inherit}.timber-line{height:7px;margin:0 20px;background:#cda978;border:1px solid #b58d5e;border-radius:4px;box-shadow:inset 0 1px rgba(255,255,255,.45),0 2px 5px rgba(68,45,25,.1)}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="back" id="back" href="prefecture-guide.html">← 都道府県ページ</a></div></header>
+<div class="wrap"><section class="hero"><div class="kicker">酒蔵を知る</div><h1 id="title">酒蔵一覧</h1><p>土地に根ざして酒を醸す蔵と、代表銘柄をたどります。</p></section><div class="timber-line" aria-hidden="true"></div>
+<main class="body"><div class="tools"><label><span style="position:absolute;clip:rect(0 0 0 0)">酒蔵を検索</span><input class="search" id="search" type="search" placeholder="酒蔵名・銘柄・地域から検索"></label><div class="count" id="count"></div></div><div class="list" id="list"></div><div class="source" id="source"></div></main></div>
+<script src="prefecture-brewery-data.js?v=1"></script>
+<script>
+const esc=s=>String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const p=new URLSearchParams(location.search);const prefecture=p.get("prefecture")||p.get("name")||"奈良県";const data=(window.WASHULOG_PREFECTURE_BREWERIES||{})[prefecture];
+document.title=prefecture+"の酒蔵 | 和酒ログ";document.getElementById("title").textContent=prefecture+"の酒蔵";document.getElementById("back").href="prefecture-guide.html?name="+encodeURIComponent(prefecture);
+const input=document.getElementById("search"),list=document.getElementById("list"),count=document.getElementById("count"),source=document.getElementById("source");
+function render(){const term=input.value.trim().toLowerCase();const all=data?.breweries||[];const rows=all.filter(b=>[b.name,b.brands,b.place,b.note].join(" ").toLowerCase().includes(term));count.textContent=rows.length+"蔵を掲載";list.innerHTML=rows.length?rows.map((b,i)=>`<article class="brewery"><div class="seal">${String(i+1).padStart(2,"0")}</div><div><h2>${esc(b.name)}</h2><div class="brands">${esc(b.brands)}</div><div class="place">${esc(b.place)}</div><p class="note">${esc(b.note)}</p>${b.url?`<a class="official" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">公式サイト →</a>`:""}</div></article>`).join(""):`<div class="empty">${data?"該当する酒蔵がありません。":"この地域の酒蔵情報は準備中です。"}</div>`;source.innerHTML=data?.source?`掲載情報の確認先：<a href="${esc(data.source)}" target="_blank" rel="noopener noreferrer">${esc(data.sourceLabel)}</a>`:"";}
+input.addEventListener("input",render);render();
+</script>
+</body></html>
