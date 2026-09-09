@@ -670,6 +670,8 @@
       .state-copy { margin: 0 auto; max-width: 290px; font-size: 13px; line-height: 1.75; }
       .state-action { min-width: 190px; margin-top: 22px; padding: 12px 22px; border: 1px solid #9b6037; border-radius: 4px; background: #9b6037; color: #fffaf3; font: inherit; font-size: 14px; font-weight: 800; box-shadow: 0 3px 0 #68442d; }
       .state-action.secondary-action { background: transparent; color: #805234; box-shadow: none; }
+      .record-confirm-actions button:disabled { cursor: wait; opacity: .72; }
+      #commitRecordBtn[aria-busy="true"] { background: #775039; color: #fff8ef; }
       .loading-state { padding: 42px 12px; color: #79685b; text-align: center; }
       .loading-state.compact { padding: 22px 8px; }
       .loading-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 12px; }
@@ -1321,7 +1323,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=536"></script>
+    <script src="app.js?v=537"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

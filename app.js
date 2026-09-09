@@ -4168,6 +4168,17 @@ $("saveRecordBtn").onclick = () => {
 };
 $("recordConfirmBackBtn").onclick = () => show("recordView");
 
+function setRecordSaveBusy(busy) {
+  const commitButton = $("commitRecordBtn");
+  const backButton = $("recordConfirmBackBtn");
+  if (commitButton) {
+    commitButton.disabled = busy;
+    commitButton.setAttribute("aria-busy", String(busy));
+    commitButton.textContent = busy ? "MY LOGに残しています…" : "MY LOGに残す";
+  }
+  if (backButton) backButton.disabled = busy;
+}
+
 $("commitRecordBtn").onclick = async () => {
   syncActiveNav("recordView");
   if (
@@ -4203,10 +4214,15 @@ $("commitRecordBtn").onclick = async () => {
       return;
     }
   }
-  $("commitRecordBtn").disabled = true;
-  msg($("recordConfirmMsg"), "保存中…", "info");
+  setRecordSaveBusy(true);
+  msg(
+    $("recordConfirmMsg"),
+    "写真と記録を安全に保存しています。このままお待ちください。",
+    "info",
+  );
 
   let rec = null;
+  let saveSucceeded = false;
   const uploadedPaths = [];
   try {
     // 前回、通信断などで巻き戻せなかった保存があれば先に掃除する。
@@ -4339,7 +4355,11 @@ $("commitRecordBtn").onclick = async () => {
     clearLocalOperation(PENDING_SAVE_STATE_KEY);
     clearRecordDraft();
     S.currentSaveRequestId = null;
-    setTimeout(() => showRecordComplete(rec), 350);
+    saveSucceeded = true;
+    setTimeout(() => {
+      setRecordSaveBusy(false);
+      showRecordComplete(rec);
+    }, 350);
   } catch (e) {
     let rollbackClean = true;
     if (rec?.id) {
@@ -4370,7 +4390,7 @@ $("commitRecordBtn").onclick = async () => {
     );
   } finally {
     S.savingRecord = false;
-    $("commitRecordBtn").disabled = false;
+    if (!saveSucceeded) setRecordSaveBusy(false);
   }
 };
 function showRecordComplete(rec) {
