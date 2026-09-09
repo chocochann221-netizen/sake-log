@@ -1,6 +1,6 @@
 # Design QA
 
-- Target: 和酒ログ Ver.1 初回案内・認証導線まで
+- Target: 和酒ログ Ver.1 空表示・検索結果なし・通信失敗・オフライン表示
 - Viewport: mobile
 - Static checks: passed (`node --check app.js`, HTML duplicate ID check, `git diff --check`)
 - Data contract: passed (`drinking_records.companion_name` and `drank_at` confirmed in Supabase)

@@ -4348,10 +4348,24 @@ function stars(v) {
   const n = Math.max(0, Math.min(5, Number(v) || 0));
   return "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
 }
+function stateMarkup({ kicker = "和酒ログ", title, copy, action = "", actionClass = "", onclick = "" }) {
+  return `<div class="my-log-empty">
+    <div class="state-kicker">${escapeHtml(kicker)}</div>
+    <h3 class="state-title">${escapeHtml(title)}</h3>
+    <p class="state-copy">${escapeHtml(copy)}</p>
+    ${action ? `<button class="state-action ${escapeHtml(actionClass)}" type="button" onclick="${escapeHtml(onclick)}">${escapeHtml(action)}</button>` : ""}
+  </div>`;
+}
 function renderRows(rows, variant = "history") {
   if (!rows.length)
     return variant === "history"
-      ? '<div class="my-log-empty">まだ記録はありません。<br>最初の一杯を残してみましょう。</div>'
+      ? stateMarkup({
+          kicker: "MY LOG",
+          title: "最初の一杯を残しましょう",
+          copy: "ラベルを撮ると、今日の一杯がここに積み重なっていきます。",
+          action: "ホームでラベルを撮る",
+          onclick: "show('homeView')",
+        })
       : '<div class="small">まだ記録がありません。</div>';
   if (variant === "history") {
     let currentMonth = "";
@@ -4917,8 +4931,14 @@ async function loadRecent() {
     $("recentList").innerHTML = renderRows(rows, "compact");
     hydrateHistoryPhotos(rows, "recentList");
   } catch (e) {
-    $("recentList").innerHTML =
-      `<div class="msg err">${escapeHtml(e.message)}</div>`;
+    $("recentList").innerHTML = stateMarkup({
+      kicker: "読み込みエラー",
+      title: "記録を読み込めませんでした",
+      copy: "通信状況を確認して、もう一度お試しください。",
+      action: "もう一度読み込む",
+      actionClass: "secondary-action",
+      onclick: "loadRecent()",
+    });
   }
 }
 async function loadHistory() {
@@ -4931,8 +4951,14 @@ async function loadHistory() {
     populateHistoryMonths(rows);
     applyHistoryFilters();
   } catch (e) {
-    $("historyList").innerHTML =
-      `<div class="msg err">${escapeHtml(e.message)}</div>`;
+    $("historyList").innerHTML = stateMarkup({
+      kicker: "読み込みエラー",
+      title: "MY LOGを読み込めませんでした",
+      copy: "入力した記録は消えていません。通信状況を確認してください。",
+      action: "もう一度読み込む",
+      actionClass: "secondary-action",
+      onclick: "loadHistory()",
+    });
   }
 }
 
@@ -4968,11 +4994,25 @@ function applyHistoryFilters() {
   const filtered = Boolean(keyword || month || minRating);
   if ($("historyResultCount")) $("historyResultCount").textContent = `${rows.length}件の記録`;
   if (!rows.length && filtered) {
-    $("historyList").innerHTML = '<div class="my-log-empty">条件に合う記録がありません。<br>言葉や条件を変えてみてください。</div>';
+    $("historyList").innerHTML = stateMarkup({
+      kicker: "検索結果",
+      title: "見つかりませんでした",
+      copy: "言葉や年月、評価の条件を変えると見つかるかもしれません。",
+      action: "条件をクリア",
+      actionClass: "secondary-action",
+      onclick: "resetHistoryFilters()",
+    });
     return;
   }
   $("historyList").innerHTML = renderRows(rows);
   hydrateHistoryPhotos(rows, "historyList");
+}
+
+function resetHistoryFilters() {
+  if ($("historyKeyword")) $("historyKeyword").value = "";
+  if ($("historyYearMonth")) $("historyYearMonth").value = "";
+  if ($("historyMinRating")) $("historyMinRating").value = "";
+  applyHistoryFilters();
 }
 
 function avg(nums) {
@@ -5306,12 +5346,7 @@ if ($("historyFilterToggle")) {
   $(id)?.addEventListener(id === "historyKeyword" ? "input" : "change", applyHistoryFilters);
 });
 if ($("historyFilterReset")) {
-  $("historyFilterReset").onclick = () => {
-    $("historyKeyword").value = "";
-    $("historyYearMonth").value = "";
-    $("historyMinRating").value = "";
-    applyHistoryFilters();
-  };
+  $("historyFilterReset").onclick = resetHistoryFilters;
 }
 if ($("settingsBackBtn")) $("settingsBackBtn").onclick = () => show("profileView");
 if ($("settingSavePhoto")) {

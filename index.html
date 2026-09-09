@@ -38,13 +38,13 @@
         position: sticky;
         top: 57px;
         z-index: 19;
-        padding: 9px 14px;
+        padding: 10px 18px;
         text-align: center;
         font-size: 12px;
         font-weight: 700;
-        background: #fff4d8;
-        color: #7b5a14;
-        border-bottom: 1px solid #ead7a4;
+        background: #f3e5cf;
+        color: #6c472d;
+        border-bottom: 1px solid #c9aa88;
       }
       .brand {
         font-size: 22px;
@@ -134,22 +134,23 @@
       }
       .msg {
         margin-top: 12px;
-        padding: 11px;
-        border-radius: 12px;
+        padding: 12px 2px 12px 13px;
+        border-left: 3px solid currentColor;
+        border-radius: 0;
         white-space: pre-wrap;
         word-break: break-word;
       }
       .ok {
-        background: #e8f7ef;
-        color: #17683f;
+        background: #eef1e7;
+        color: #49603e;
       }
       .err {
-        background: #fff0ee;
-        color: #a32c22;
+        background: #f8e9e2;
+        color: #8a3f31;
       }
       .info {
-        background: #eef5ff;
-        color: #235a90;
+        background: #f3e9da;
+        color: #765136;
       }
       .preview {
         width: 100%;
@@ -663,7 +664,12 @@
       .my-log-meta { margin-top: 8px; color: #67584e; font-size: 12px; line-height: 1.55; }
       .my-log-comment { display: -webkit-box; overflow: hidden; margin-top: 8px; color: #493d35; font-size: 12px; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
       .my-log-arrow { position: absolute; right: 2px; bottom: 19px; color: #9b6037; font-size: 18px; }
-      .my-log-empty { padding: 58px 20px; text-align: center; color: #74665c; line-height: 1.8; }
+      .my-log-empty { padding: 58px 12px; text-align: center; color: #74665c; line-height: 1.8; }
+      .state-kicker { color: #9b6037; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .state-title { margin: 7px 0 8px; color: #3e3027; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 22px; font-weight: 500; }
+      .state-copy { margin: 0 auto; max-width: 290px; font-size: 13px; line-height: 1.75; }
+      .state-action { min-width: 190px; margin-top: 22px; padding: 12px 22px; border: 1px solid #9b6037; border-radius: 4px; background: #9b6037; color: #fffaf3; font: inherit; font-size: 14px; font-weight: 800; box-shadow: 0 3px 0 #68442d; }
+      .state-action.secondary-action { background: transparent; color: #805234; box-shadow: none; }
       @media (max-width: 380px) { .my-log-entry { grid-template-columns: 92px 1fr; gap: 13px; } .my-log-entry .sake-thumb { width: 92px; height: 126px; } }
       .memory-detail-screen { max-width: 620px; margin: 0 auto; padding: 18px 18px 110px; color: #2b211a; }
       .memory-detail-back { margin: 0 0 18px; padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 700; }
@@ -811,8 +817,7 @@
       </button>
     </header>
     <div id="networkBanner" class="network-banner hidden">
-      📡
-      オフラインです。入力内容はそのまま残ります。通信が戻ってから保存してください。
+      オフラインです。入力内容は残っています。通信が戻ってから保存してください。
     </div>
     <main>
       <section id="setupView" class="hidden">
@@ -1304,7 +1309,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=533"></script>
+    <script src="app.js?v=534"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
