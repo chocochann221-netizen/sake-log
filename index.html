@@ -771,6 +771,29 @@
       .settings-switch input:checked + span::after { transform: translateX(20px); }
       .settings-note { margin-top: 14px; color: #806f63; font-size: 11px; line-height: 1.7; }
       .settings-saved { min-height: 24px; margin-top: 18px; color: #8d5433; font-size: 12px; text-align: center; }
+      #authView { margin: -18px -18px 0; min-height: calc(100vh - 58px); padding: 0 18px 60px; background: #f7efe3; }
+      #authView .card { max-width: 520px; margin: 0 auto; padding: 40px 4px 20px; border: 0; border-radius: 0; background: transparent; }
+      .auth-mark { width: 54px; height: 54px; margin: 0 auto 17px; border: 1px solid #9b7659; color: #6c4630; font-family: "Yu Mincho", serif; font-size: 25px; line-height: 52px; text-align: center; transform: rotate(45deg); }
+      .auth-mark span { display: block; transform: rotate(-45deg); }
+      .auth-intro { margin-bottom: 28px; text-align: center; }
+      .auth-intro h1 { margin: 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; line-height: 1.5; }
+      .auth-intro p { margin: 9px auto 0; color: #74665c; font-size: 13px; line-height: 1.75; }
+      .auth-steps { display: flex; justify-content: center; gap: 0; margin: 20px 0 28px; color: #806f63; font-size: 11px; }
+      .auth-steps span { display: flex; align-items: center; }
+      .auth-steps span + span::before { content: "—"; margin: 0 8px; color: #b79b84; }
+      .auth-heading { padding-top: 21px; border-top: 1px solid rgba(74,50,35,.24); text-align: center; }
+      .auth-heading h2 { margin: 0 0 5px; font-family: "Yu Mincho", serif; font-size: 22px; font-weight: 600; }
+      .auth-heading p { margin: 0; color: #806f63; font-size: 12px; }
+      .auth-social { margin: 17px 0 22px !important; }
+      .auth-social .btn { min-height: 50px; border: 1px solid #bda48d; border-radius: 5px; background: rgba(255,252,246,.72); color: #3f3027; font-size: 14px; }
+      .auth-social .btn:disabled { opacity: .48; }
+      .auth-separator { display: flex; align-items: center; gap: 12px; margin: 19px 0 15px !important; color: #8b7a6d; font-size: 11px; }
+      .auth-separator::before, .auth-separator::after { content: ""; flex: 1; height: 1px; background: rgba(74,50,35,.18); }
+      .auth-email label { margin-top: 13px; color: #6e5d51; font-size: 12px; font-weight: 700; }
+      .auth-email input { border-color: #c8b5a2; border-radius: 5px; background: rgba(255,252,246,.8); }
+      .auth-email .primary { margin-top: 18px; border-radius: 5px; background: #8d5433; color: #fffaf1; }
+      .auth-mode-toggle { padding: 13px 0 !important; border: 0 !important; background: transparent !important; color: #79543a !important; font-size: 13px !important; text-decoration: underline; text-underline-offset: 4px; }
+      .auth-consent { margin-top: 17px; color: #806f63 !important; font-size: 10px !important; }
     </style>
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
@@ -816,39 +839,35 @@
       </section>
       <section id="authView" class="hidden">
         <div class="card">
-          <h2 id="authTitle">ログイン</h2>
+          <div class="auth-intro">
+            <div class="auth-mark" aria-hidden="true"><span>和</span></div>
+            <h1>一杯の記憶を、<br>自分のために残す。</h1>
+            <p>人に見せるためではなく、<br>あの日の味と時間を忘れないための酒ログです。</p>
+          </div>
+          <div class="auth-steps" aria-label="使い方"><span>撮る</span><span>見つける</span><span>残す</span></div>
+          <div class="auth-heading"><h2 id="authTitle">ログイン</h2><p id="authModeLead">いつもの方法で中へどうぞ。</p></div>
 
-          <div id="socialLoginBox" class="hidden" style="margin-bottom: 18px">
+          <div id="socialLoginBox" class="auth-social hidden">
             <button id="googleLoginBtn" class="btn outline hidden">
               Googleで続ける
-            </button>
-            <button id="appleLoginBtn" class="btn outline hidden">
-              Appleで続ける
             </button>
             <button id="lineLoginBtn" class="btn outline hidden">
               LINEで続ける
             </button>
-            <div class="small" style="text-align: center; margin: 10px 0">
-              または
-            </div>
+            <button id="appleLoginBtn" class="btn outline" type="button" disabled aria-disabled="true">
+              Appleで続ける（準備中）
+            </button>
+            <div class="auth-separator">メールアドレスでも続けられます</div>
           </div>
 
-          <label>メールアドレス</label><input id="email" type="email" />
-          <label>パスワード</label
-          ><input
-            id="password"
-            type="password"
-            autocomplete="current-password"
-          />
-          <button id="authBtn" class="btn primary">ログイン</button>
-          <button id="toggleAuth" class="btn secondary">
-            初めて使う → 新規登録
-          </button>
+          <div class="auth-email">
+            <label for="email">メールアドレス</label><input id="email" type="email" autocomplete="email" />
+            <label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" />
+            <button id="authBtn" class="btn primary">ログイン</button>
+            <button id="toggleAuth" class="btn secondary auth-mode-toggle">初めて使う → 新規登録</button>
+          </div>
           <div id="authMsg"></div>
-          <div
-            class="small"
-            style="margin-top: 14px; text-align: center; line-height: 1.7"
-          >
+          <div class="small auth-consent" style="text-align: center; line-height: 1.7">
             新規登録すると
             <a href="./terms.html" target="_blank" rel="noopener">利用規約</a>
             と
@@ -1285,7 +1304,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=532"></script>
+    <script src="app.js?v=533"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

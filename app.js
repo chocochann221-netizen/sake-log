@@ -235,7 +235,6 @@ async function loadSocialProviders() {
 
     const map = [
       ["googleLoginBtn", "google"],
-      ["appleLoginBtn", "apple"],
       ["lineLoginBtn", "custom:line"],
     ];
     for (const [id, key] of map) {
@@ -457,7 +456,11 @@ $("saveSetup").onclick = async () => {
 $("toggleAuth").onclick = () => {
   S.signup = !S.signup;
   $("authTitle").textContent = S.signup ? "新規登録" : "ログイン";
+  $("authModeLead").textContent = S.signup
+    ? "記録を大切に保管する場所をつくります。"
+    : "いつもの方法で中へどうぞ。";
   $("authBtn").textContent = S.signup ? "新規登録" : "ログイン";
+  $("password").autocomplete = S.signup ? "new-password" : "current-password";
   $("toggleAuth").textContent = S.signup
     ? "登録済み → ログイン"
     : "初めて使う → 新規登録";
@@ -5275,7 +5278,6 @@ async function deleteMyAccount() {
 
 if ($("googleLoginBtn"))
   $("googleLoginBtn").onclick = () => startOAuth("google");
-if ($("appleLoginBtn")) $("appleLoginBtn").onclick = () => startOAuth("apple");
 if ($("lineLoginBtn")) $("lineLoginBtn").onclick = startLineLogin;
 
 document.querySelectorAll(".navbtn").forEach(
