@@ -638,6 +638,17 @@
       .my-log-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
       .my-log-heading h2 { margin: 5px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 31px; font-weight: 500; }
       .my-log-heading p { max-width: 180px; margin: 0; color: #796b60; font-size: 12px; line-height: 1.65; text-align: right; }
+      .history-filter-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 13px 0 0; padding: 12px 2px; border: 0; border-bottom: 1px solid rgba(74,50,35,.2); background: transparent; color: #684832; font-size: 14px; font-weight: 800; text-align: left; }
+      .history-filter-toggle span:last-child { font-size: 18px; font-weight: 400; transition: transform .2s ease; }
+      .history-filter-toggle[aria-expanded="true"] span:last-child { transform: rotate(45deg); }
+      .history-filter-panel { padding: 19px 2px 17px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .history-filter-field + .history-filter-field { margin-top: 14px; }
+      .history-filter-field label { display: block; margin-bottom: 7px; color: #6e5d51; font-size: 12px; font-weight: 700; }
+      .history-filter-field input, .history-filter-field select { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #c8b5a2; border-radius: 5px; background: rgba(255,252,246,.78); color: #2b211a; font: inherit; }
+      .history-filter-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .history-filter-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 17px; }
+      .history-result-count { color: #806e61; font-size: 12px; }
+      .history-filter-reset { padding: 6px 0; border: 0; background: transparent; color: #8d5433; font-size: 12px; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
       .my-log-month { margin: 28px 0 10px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 18px; font-weight: 500; color: #6d4a33; }
       .my-log-entry { position: relative; display: grid; grid-template-columns: 106px 1fr; gap: 17px; padding: 14px 0 20px 14px; border-left: 1px solid #bda48d; border-bottom: 1px solid rgba(74,50,35,.16); cursor: pointer; }
       .my-log-entry::before { content: ""; position: absolute; top: 22px; left: -4px; width: 7px; height: 7px; border-radius: 50%; background: #9b6037; box-shadow: 0 0 0 4px #f7efe3; }
@@ -1134,6 +1145,15 @@
       <section id="historyView" class="page hidden">
         <div class="my-log-screen">
           <div class="my-log-heading"><div><span>MY LOG</span><h2>わたしの酒ログ</h2></div><p>あの日の一杯を、ゆっくり振り返る場所。</p></div>
+          <button id="historyFilterToggle" class="history-filter-toggle" type="button" aria-expanded="false" aria-controls="historyFilterPanel"><span>記録を探す</span><span aria-hidden="true">＋</span></button>
+          <div id="historyFilterPanel" class="history-filter-panel hidden">
+            <div class="history-filter-field"><label for="historyKeyword">キーワード</label><input id="historyKeyword" type="search" placeholder="銘柄・蔵元・場所・誰と" autocomplete="off" /></div>
+            <div class="history-filter-pair">
+              <div class="history-filter-field"><label for="historyYearMonth">飲んだ年月</label><select id="historyYearMonth"><option value="">すべての年月</option></select></div>
+              <div class="history-filter-field"><label for="historyMinRating">評価</label><select id="historyMinRating"><option value="">すべて</option><option value="5">5</option><option value="4">4以上</option><option value="3">3以上</option><option value="2">2以上</option><option value="1">1以上</option></select></div>
+            </div>
+            <div class="history-filter-footer"><span id="historyResultCount" class="history-result-count"></span><button id="historyFilterReset" class="history-filter-reset" type="button">条件をクリア</button></div>
+          </div>
           <div id="historyList">読み込み中…</div>
         </div>
       </section>
@@ -1215,7 +1235,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=529"></script>
+    <script src="app.js?v=530"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

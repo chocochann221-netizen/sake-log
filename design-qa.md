@@ -1,6 +1,6 @@
 # Design QA
 
-- Target: 和酒ログ Ver.1 記録入力からMY LOG編集まで
+- Target: 和酒ログ Ver.1 MY LOG検索・絞り込みまで
 - Viewport: mobile
 - Static checks: passed (`node --check app.js`, HTML duplicate ID check, `git diff --check`)
 - Data contract: passed (`drinking_records.companion_name` and `drank_at` confirmed in Supabase)
