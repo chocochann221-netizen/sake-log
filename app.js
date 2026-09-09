@@ -4825,6 +4825,17 @@ function editPhotoMarkup(photoType, label, inputId, deleteId) {
     </div>
   </div>`;
 }
+function setRecordEditBusy(busy) {
+  const editor = document.querySelector(".memory-edit");
+  if (!editor) return;
+  editor.setAttribute("aria-busy", String(busy));
+  editor.querySelectorAll("input, textarea, select, button").forEach((control) => {
+    control.disabled = busy;
+  });
+  const saveButton = $("saveEditBtn");
+  if (saveButton)
+    saveButton.textContent = busy ? "変更を保存しています…" : "変更を保存";
+}
 function renderRecordEditor(r) {
   const rating = Number(r.rating ?? 4);
   $("detailBody").innerHTML = `
@@ -4872,9 +4883,17 @@ function renderRecordEditor(r) {
     ["editFoodPhoto", "deleteFoodPhoto"],
     ["editMemoryPhoto", "deleteMemoryPhoto"],
   ].forEach(([inputId, deleteId]) => {
-    $(inputId)?.addEventListener("change", () => {
+    $(inputId)?.addEventListener("change", async () => {
       const file = $(inputId).files?.[0];
       if (!file) return;
+      try {
+        await validateSelectedPhoto(file);
+      } catch (error) {
+        $(inputId).value = "";
+        msg($("editMsg"), error.message, "err");
+        return;
+      }
+      msg($("editMsg"), "");
       if ($(deleteId)) $(deleteId).checked = false;
       const preview = $(inputId)
         .closest(".memory-edit-photo")
@@ -4885,8 +4904,13 @@ function renderRecordEditor(r) {
   });
   $("cancelEditBtn").onclick = () => openRecordDetail(r.id);
   $("saveEditBtn").onclick = async () => {
-    $("saveEditBtn").disabled = true;
-    msg($("editMsg"), "保存中…", "info");
+    if (!requireOnline("現在オフラインです。変更内容は画面に残っています。通信が戻ってから保存してください。")) return;
+    setRecordEditBusy(true);
+    msg(
+      $("editMsg"),
+      "変更内容と写真を安全に保存しています。このままお待ちください。",
+      "info",
+    );
     const originalRecord = {
       brand_name: r.brand_name ?? null,
       product_name: r.product_name ?? null,
@@ -4906,6 +4930,7 @@ function renderRecordEditor(r) {
       comment: r.comment ?? null,
     };
     let recordTextUpdated = false;
+    let editSucceeded = false;
     try {
       await updateRow("drinking_records", r.id, {
         brand_name: $("eBrand").value.trim() || null,
@@ -5012,8 +5037,13 @@ function renderRecordEditor(r) {
         }
       }
       msg($("editMsg"), "✓ 更新しました", "ok");
-      setTimeout(() => openRecordDetail(r.id), 500);
+      editSucceeded = true;
+      setTimeout(() => {
+        setRecordEditBusy(false);
+        openRecordDetail(r.id);
+      }, 500);
     } catch (e) {
+      console.warn("record edit failed", e);
       if (recordTextUpdated) {
         try {
           await updateRow("drinking_records", r.id, originalRecord);
@@ -5023,13 +5053,11 @@ function renderRecordEditor(r) {
       }
       msg(
         $("editMsg"),
-        "更新できませんでした: " +
-          (e.message || e) +
-          "。変更前の内容を保持するよう復旧しました。",
+        "更新できませんでした。変更前の内容を保持しています。通信状況を確認して、もう一度お試しください。",
         "err",
       );
     } finally {
-      $("saveEditBtn").disabled = false;
+      if (!editSucceeded) setRecordEditBusy(false);
     }
   };
 }

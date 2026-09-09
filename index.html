@@ -775,6 +775,9 @@
       .memory-edit-details { margin-top: 24px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
       .memory-edit-details summary { padding: 18px 0; font-weight: 800; cursor: pointer; }
       .memory-edit-actions { display: grid; gap: 4px; margin-top: 28px; }
+      .memory-edit[aria-busy="true"] { opacity: .82; }
+      .memory-edit[aria-busy="true"] #saveEditBtn { background: #775039; color: #fff8ef; }
+      .memory-edit button:disabled, .memory-edit input:disabled, .memory-edit textarea:disabled { cursor: wait; }
       .top-profile { padding: 8px 0 !important; border: 0 !important; border-bottom: 1px solid rgba(74,50,35,.42) !important; border-radius: 0 !important; background: transparent !important; color: #684832 !important; font-size: 12px; font-weight: 800; }
       .profile-screen { max-width: 620px; margin: 0 auto; padding: 28px 18px 110px; color: #2b211a; }
       .profile-heading { padding-bottom: 20px; border-bottom: 1px solid rgba(74,50,35,.26); }
@@ -1366,7 +1369,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=540"></script>
+    <script src="app.js?v=541"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
