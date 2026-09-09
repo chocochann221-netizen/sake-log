@@ -27,7 +27,7 @@
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
-| 東京都 | 東京駅丸の内駅舎と都市景観 | Tokyo-STA Marunouchi-Entrance 2023.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Tokyo-STA_Marunouchi-Entrance_2023.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+| 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
 | 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
 | 石川県 | 夕景の金沢駅・鼓門 | Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg | Daderot | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg | `prefecture-hero-images.js` | 採用・実装済み |
 | 福井県 | 東尋坊の断崖・太古の地層 | Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg | 雷太（Raita Futo） | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg | `prefecture-hero-images.js` | 採用・実装済み |
@@ -56,10 +56,11 @@
 
 ### 東京ヒーロー利用メモ
 
-- 原画像は2023-06-29撮影。東京駅丸の内口の赤レンガ駅舎と高層ビル群を写した実写。
-- 原典は Wikimedia Commons。撮影者 MaedaAkihiko、CC BY-SA 4.0。
-- 画面上に `Photo: MaedaAkihiko / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
-- 原画像は5,395 × 3,597px。奈良と同じ横長比率・文字位置・暗幕処理で表示する。
+- 決定済みテーマは「雨の夜の渋谷スクランブル交差点」。東京駅案は不採用。
+- 原画像は雨の夕刻の渋谷スクランブル交差点で、傘・人の流れ・濡れた路面・都市の光が写る。
+- 原典は Flickr から Wikimedia Commons へ収録され、FlickreviewR により CC BY 2.0 を確認済み。
+- 撮影者は Moyan Brenn。画面上に `Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0` を表示する。
+- 原画像は3,840 × 2,239px。横長ヒーローでは交差点の密度を残して中央配置する。
 
 ### 奈良ヒーロー利用メモ
 
@@ -73,6 +74,7 @@
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
+| 東京都 | 江戸前の寿司 | Sushi food in Tokyo, Japan.jpg | Joli Rumi | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Sushi_food_in_Tokyo,_Japan.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 | 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 
 ### 福井「食」写真利用メモ
