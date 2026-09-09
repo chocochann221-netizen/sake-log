@@ -13,6 +13,10 @@
       * {
         box-sizing: border-box;
       }
+      :focus-visible {
+        outline: 3px solid #b87545;
+        outline-offset: 3px;
+      }
       body {
         margin: 0;
         font-family:
@@ -88,12 +92,14 @@
         margin: 10px 0 6px;
       }
       input,
-      textarea {
+      textarea,
+      select {
         width: 100%;
         padding: 13px;
         border: 1px solid #d5dcd8;
         border-radius: 13px;
         font: inherit;
+        font-size: 16px;
       }
       .field-error {
         border-color: #c94c43 !important;
@@ -177,28 +183,36 @@
         background: #fff;
         border-top: 1px solid #dfe4e0;
         z-index: 30;
+        padding-bottom: env(safe-area-inset-bottom, 0);
       }
       .navin {
         max-width: 680px;
         margin: auto;
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(3, 1fr);
       }
       .navbtn {
+        display: flex;
+        min-height: 56px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
         border: 0;
         background: transparent;
         padding: 10px 4px;
         font-size: 11px;
-        color: #6f7773;
+        color: #76685e;
+        text-decoration: none;
       }
       .navbtn span {
         display: block;
         font-size: 20px;
       }
       .navbtn.active {
-        color: #238464;
+        color: #8d5433;
         font-weight: 800;
       }
+      .navbtn svg { width: 21px; height: 21px; margin-bottom: 3px; fill: none; stroke: currentColor; stroke-width: 1.7; }
       .hero {
         background: linear-gradient(135deg, #eaf7f1, #fff);
       }
@@ -598,6 +612,7 @@
       .record-sake-summary strong { display: block; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 21px; line-height: 1.45; }
       .record-sake-summary p { margin: 7px 0 12px; color: #74665c; }
       .record-edit-link { padding: 0; border: 0; background: none; color: #865534; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+      .record-edit-link, .confirm-text-button, .memory-detail-back, .settings-back, .history-filter-reset { min-height: 44px; }
       .record-section { padding: 25px 0; border-bottom: 1px solid rgba(74,50,35,.2); }
       .record-section h3 { margin: 5px 0 16px; font-size: 21px; }
       .record-field { margin-top: 17px; }
@@ -813,7 +828,7 @@
       .auth-mode-toggle { padding: 13px 0 !important; border: 0 !important; background: transparent !important; color: #79543a !important; font-size: 13px !important; text-decoration: underline; text-underline-offset: 4px; }
       .auth-consent { margin-top: 17px; color: #806f63 !important; font-size: 10px !important; }
     </style>
-    <link rel="stylesheet" href="design-system.css?v=1" />
+    <link rel="stylesheet" href="design-system.css?v=2" />
   </head>
   <body>
     <header>
@@ -1323,7 +1338,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=537"></script>
+    <script src="app.js?v=538"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

@@ -54,8 +54,25 @@ a {
 }
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+}
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+:focus-visible {
+  outline: 3px solid var(--lantern);
+  outline-offset: 3px;
+}
+.settings-switch input:focus-visible {
+  outline: 0;
+}
+.settings-switch input:focus-visible + span {
+  outline: 3px solid var(--lantern);
+  outline-offset: 3px;
 }
 header {
   background: rgba(246, 240, 227, 0.94);

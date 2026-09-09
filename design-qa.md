@@ -1,6 +1,6 @@
 # Design QA
 
-- Target: 和酒ログ Ver.1 記録保存中の進行表示・重複操作防止
+- Target: 和酒ログ Ver.1 スマホ操作寸法・フォーカス・3項目ナビゲーション
 - Viewport: mobile
 - Static checks: passed (`node --check app.js`, HTML duplicate ID check, `git diff --check`)
 - Data contract: passed (`drinking_records.companion_name` and `drank_at` confirmed in Supabase)
