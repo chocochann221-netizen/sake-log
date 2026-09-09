@@ -22,13 +22,13 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "50% center"
   },
   "東京都": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tokyo-STA%20Marunouchi-Entrance%202023.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Tokyo-STA_Marunouchi-Entrance_2023.jpg",
-    title: "Tokyo-STA Marunouchi-Entrance 2023.jpg",
-    author: "MaedaAkihiko",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: MaedaAkihiko / Wikimedia Commons / CC BY-SA 4.0",
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tokyo%20%2816204487106%29.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg",
+    title: "Tokyo (16204487106).jpg",
+    author: "Moyan Brenn",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    credit: "Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0",
     position: "50% center"
   },
   "奈良県": {
