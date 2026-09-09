@@ -4356,6 +4356,12 @@ function stateMarkup({ kicker = "和酒ログ", title, copy, action = "", action
     ${action ? `<button class="state-action ${escapeHtml(actionClass)}" type="button" onclick="${escapeHtml(onclick)}">${escapeHtml(action)}</button>` : ""}
   </div>`;
 }
+function loadingMarkup(label = "記録を読み込んでいます", compact = false) {
+  return `<div class="loading-state${compact ? " compact" : ""}" role="status" aria-label="${escapeHtml(label)}">
+    <div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="loading-label">${escapeHtml(label)}</div>
+  </div>`;
+}
 function renderRows(rows, variant = "history") {
   if (!rows.length)
     return variant === "history"
@@ -4523,7 +4529,7 @@ async function renderPhotoForPath(path, alt) {
 async function openRecordDetail(recordId) {
   try {
     show("detailView");
-    $("detailBody").innerHTML = "読み込み中…";
+    $("detailBody").innerHTML = loadingMarkup("一杯の記憶を開いています");
     const rows = await select(
       "drinking_records",
       "select=*&id=eq." + encodeURIComponent(recordId) + "&limit=1",
@@ -4589,8 +4595,14 @@ ${
     $("editRecordBtn").onclick = () => renderRecordEditor(r);
     $("deleteRecordBtn").onclick = () => deleteCurrentRecord();
   } catch (e) {
-    $("detailBody").innerHTML =
-      `<div class="msg err">${escapeHtml(e.message)}</div>`;
+    $("detailBody").innerHTML = stateMarkup({
+      kicker: "読み込みエラー",
+      title: "記録を開けませんでした",
+      copy: "通信状況を確認して、もう一度お試しください。",
+      action: "もう一度開く",
+      actionClass: "secondary-action",
+      onclick: `openRecordDetail('${recordId}')`,
+    });
   }
 }
 function openRecordKnowledge(r) {
@@ -4923,6 +4935,11 @@ async function deleteCurrentRecord() {
 }
 
 async function loadRecent() {
+  if ($("recentList"))
+    $("recentList").innerHTML = loadingMarkup(
+      "前の一杯を読み込んでいます",
+      true,
+    );
   try {
     const rows = await select(
       "drinking_records",
@@ -4942,6 +4959,8 @@ async function loadRecent() {
   }
 }
 async function loadHistory() {
+  if ($("historyList"))
+    $("historyList").innerHTML = loadingMarkup("MY LOGを読み込んでいます");
   try {
     const rows = await select(
       "drinking_records",
@@ -5075,6 +5094,8 @@ function buildTasteInsight(rows) {
     : "まだはっきりした傾向は出ていません。";
 }
 async function loadAnalysis() {
+  if ($("analysisBody"))
+    $("analysisBody").innerHTML = loadingMarkup("酒ログを振り返っています");
   try {
     const rows = await select(
       "drinking_records",
@@ -5082,7 +5103,13 @@ async function loadAnalysis() {
     );
     const body = $("analysisBody");
     if (!rows.length) {
-      body.innerHTML = '<div class="small">まだ記録がありません。</div>';
+      body.innerHTML = stateMarkup({
+        kicker: "酒ログ分析",
+        title: "記録が増えると見えてきます",
+        copy: "飲んだ地域や酒蔵、好みの傾向を少しずつ振り返れます。",
+        action: "最初の一杯を残す",
+        onclick: "show('homeView')",
+      });
       return;
     }
     const ratings = rows.map((r) => Number(r.rating)).filter(Number.isFinite);
@@ -5134,8 +5161,14 @@ async function loadAnalysis() {
        <div class="small">${uniqueBrands}銘柄を記録しています。</div>
      </div>`;
   } catch (e) {
-    $("analysisBody").innerHTML =
-      `<div class="msg err">${escapeHtml(e.message)}</div>`;
+    $("analysisBody").innerHTML = stateMarkup({
+      kicker: "読み込みエラー",
+      title: "振り返りを表示できませんでした",
+      copy: "通信状況を確認して、もう一度お試しください。",
+      action: "もう一度読み込む",
+      actionClass: "secondary-action",
+      onclick: "loadAnalysis()",
+    });
   }
 }
 

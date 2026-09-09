@@ -670,6 +670,15 @@
       .state-copy { margin: 0 auto; max-width: 290px; font-size: 13px; line-height: 1.75; }
       .state-action { min-width: 190px; margin-top: 22px; padding: 12px 22px; border: 1px solid #9b6037; border-radius: 4px; background: #9b6037; color: #fffaf3; font: inherit; font-size: 14px; font-weight: 800; box-shadow: 0 3px 0 #68442d; }
       .state-action.secondary-action { background: transparent; color: #805234; box-shadow: none; }
+      .loading-state { padding: 42px 12px; color: #79685b; text-align: center; }
+      .loading-state.compact { padding: 22px 8px; }
+      .loading-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 12px; }
+      .loading-dots span { width: 6px; height: 6px; border-radius: 50%; background: #9b6037; animation: loading-pulse 1.2s ease-in-out infinite; }
+      .loading-dots span:nth-child(2) { animation-delay: .16s; }
+      .loading-dots span:nth-child(3) { animation-delay: .32s; }
+      .loading-label { font-size: 12px; letter-spacing: .08em; }
+      @keyframes loading-pulse { 0%, 80%, 100% { opacity: .28; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+      @media (prefers-reduced-motion: reduce) { .loading-dots span { animation: none; opacity: .65; } }
       @media (max-width: 380px) { .my-log-entry { grid-template-columns: 92px 1fr; gap: 13px; } .my-log-entry .sake-thumb { width: 92px; height: 126px; } }
       .memory-detail-screen { max-width: 620px; margin: 0 auto; padding: 18px 18px 110px; color: #2b211a; }
       .memory-detail-back { margin: 0 0 18px; padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 700; }
@@ -978,7 +987,7 @@
         </div>
         <div class="home-lower">
           <h3>前に飲んだ一本</h3>
-          <div id="recentList">読み込み中…</div>
+          <div id="recentList" aria-live="polite"></div>
           <a class="home-knowledge" href="knowledge.html">
             <span class="home-knowledge-mark" aria-hidden="true">蔵</span>
             <span
@@ -1220,13 +1229,13 @@
             </div>
             <div class="history-filter-footer"><span id="historyResultCount" class="history-result-count"></span><button id="historyFilterReset" class="history-filter-reset" type="button">条件をクリア</button></div>
           </div>
-          <div id="historyList">読み込み中…</div>
+          <div id="historyList" aria-live="polite"></div>
         </div>
       </section>
       <section id="detailView" class="page hidden">
         <div class="memory-detail-screen">
           <button id="detailBackBtn" class="memory-detail-back" type="button">← MY LOGへ戻る</button>
-          <div id="detailBody">読み込み中…</div>
+          <div id="detailBody" aria-live="polite"></div>
         </div>
       </section>
       <section id="analysisView" class="page hidden">
@@ -1235,7 +1244,7 @@
           <div class="small" style="margin-bottom: 12px">
             これまでの記録から、あなたの日本酒の好みを自動集計します。
           </div>
-          <div id="analysisBody">読み込み中…</div>
+          <div id="analysisBody" aria-live="polite"></div>
         </div>
       </section>
       <section id="profileView" class="page hidden">
@@ -1309,7 +1318,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=534"></script>
+    <script src="app.js?v=535"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
