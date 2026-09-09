@@ -32,14 +32,14 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "50% center"
   },
   "奈良県": {
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Deer_at_nara_park_1.jpg/1280px-Deer_at_nara_park_1.jpg",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg",
-    title: "Deer at nara park 1.jpg",
-    author: "Ian G Shingler",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
-    position: "52% center"
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Temple%20building%2C%20shrine%2C%20R%C5%8Dben%20Sugi%20and%20deer%20below%20Nigatsu-d%C5%8D%2C%20T%C5%8Ddai-ji%2C%20Nara%2C%202016.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Temple_building,_shrine,_R%C5%8Dben_Sugi_and_deer_below_Nigatsu-d%C5%8D,_T%C5%8Ddai-ji,_Nara,_2016.jpg",
+    title: "Temple building, shrine, Rōben Sugi and deer below Nigatsu-dō, Tōdai-ji, Nara, 2016.jpg",
+    author: "DimiTalen",
+    license: "CC0 1.0",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    credit: "Photo: DimiTalen / Wikimedia Commons / CC0",
+    position: "50% center"
   },
   "石川県": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tsuzumi-mon%2C%20Kanazawa%20Station%20-%20Kanazawa%2C%20Japan%20-%20DSC09640.jpg?width=1280",
