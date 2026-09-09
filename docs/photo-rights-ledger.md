@@ -1,6 +1,6 @@
 # 和酒ログ「知識の蔵」写真権利台帳
 
-最終更新: 2026-09-06
+最終更新: 2026-09-09
 
 ## 運用ルール
 
@@ -27,7 +27,15 @@
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
-| 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |\n| 石川県 | 秋の兼六園・水と手入れの庭 | 131109 Kenrokuen Kanazawa Ishikawa pref Japan07s3.jpg | 663highland | CC BY 2.5（表示） | https://commons.wikimedia.org/wiki/File:131109_Kenrokuen_Kanazawa_Ishikawa_pref_Japan07s3.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+| 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+| 石川県 | 夕景の金沢駅・鼓門 | Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg | Daderot | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg | `prefecture-hero-images.js` | 採用・実装済み |
+
+### 石川ヒーロー利用メモ
+
+- 原画像は 2018-04-15 撮影。夕景の金沢駅・鼓門が写り、伝統的な木組みと現代建築が重なる「石川への入口」というヒーロー方針に合致する。
+- 原典は Wikimedia Commons。撮影者 Daderot、CC0 1.0。商用利用・加工が可能。
+- 画面上には出典管理の透明性を保つため、任意クレジットとして `Photo: Daderot / Wikimedia Commons / CC0` を表示し、原典ページへリンクする。
+- 原画像は 5,472 × 3,648px。ヒーローでは横長にトリミングし、鼓門の木組みが中央に残るよう `background-position: 50% center` とする。
 
 ### 北海道ストーリー利用メモ
 
