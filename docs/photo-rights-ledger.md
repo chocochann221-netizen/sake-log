@@ -61,6 +61,19 @@
 - CSS の `background-size: cover` による見え方の調整を含め、加工・再利用時は CC BY-SA 4.0 の条件を再確認する。
 - 将来、同等以上の品質で CC0 / CC BY または正式許諾済みの独自写真が得られた場合は差し替え候補とする。
 
+## 都道府県「食」写真
+
+| 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
+|---|---|---|---|---|---|---|---|
+| 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+
+### 福井「食」写真利用メモ
+
+- 越前ガニの雄と雌を写した実写で、越前港で水揚げされたことを示す黄色いタグが確認できる。
+- 原画像は2021-01-04撮影、6,000 × 4,000px。撮影者はさかおり、CC BY-SA 4.0。
+- 画面上に `Photo: さかおり / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 全県共通ルールとして食写真は各県1枚とし、店舗の商品写真は許諾または明示された再利用条件がない限り転載しない。
+
 ## 米比較ページ候補
 
 | 用途 | 資料候補 | 出典 | 利用判定 | 理由 / 次の確認 |
