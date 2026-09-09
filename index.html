@@ -718,6 +718,16 @@
       .memory-detail-fact dt { color: #8a796d; font-size: 12px; }
       .memory-detail-fact dd { margin: 0; line-height: 1.55; }
       .memory-detail-comment { margin: 24px 0; padding: 20px 4px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 18px; line-height: 1.9; white-space: pre-wrap; }
+      .delete-dialog { width: min(calc(100% - 36px), 430px); padding: 0; border: 1px solid #b89c83; border-radius: 6px; background: #f7efe3; color: #2b211a; box-shadow: 0 24px 70px rgba(45,28,18,.36); }
+      .delete-dialog::backdrop { background: rgba(28,20,15,.66); }
+      .delete-dialog-inner { padding: 27px 22px 22px; }
+      .delete-dialog-kicker { color: #93483b; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .delete-dialog h2 { margin: 7px 0 12px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 24px; font-weight: 500; }
+      .delete-dialog-name { margin: 0; padding: 13px 0; border-top: 1px solid rgba(74,50,35,.18); border-bottom: 1px solid rgba(74,50,35,.18); font-weight: 800; }
+      .delete-dialog-copy { margin: 14px 0 20px; color: #74665c; font-size: 13px; line-height: 1.7; }
+      .delete-dialog-actions { display: grid; gap: 7px; }
+      .delete-dialog-delete { min-height: 48px; border: 1px solid #8a3f31; border-radius: 4px; background: #8a3f31; color: #fff9f3; font: inherit; font-weight: 800; }
+      .delete-dialog-cancel { min-height: 44px; border: 0; background: transparent; color: #79543a; font: inherit; font-weight: 800; }
       .memory-detail-section { margin-top: 28px; }
       .memory-detail-section > span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
       .memory-detail-section h3 { margin: 5px 0 14px; font-size: 20px; }
@@ -1244,6 +1254,7 @@
       <section id="historyView" class="page hidden">
         <div class="my-log-screen">
           <div class="my-log-heading"><div><span>MY LOG</span><h2>わたしの酒ログ</h2></div><p>あの日の一杯を、ゆっくり振り返る場所。</p></div>
+          <div id="historyNotice" aria-live="polite"></div>
           <button id="historyFilterToggle" class="history-filter-toggle" type="button" aria-expanded="false" aria-controls="historyFilterPanel"><span>記録を探す</span><span aria-hidden="true">＋</span></button>
           <div id="historyFilterPanel" class="history-filter-panel hidden">
             <div class="history-filter-field"><label for="historyKeyword">キーワード</label><input id="historyKeyword" type="search" placeholder="銘柄・蔵元・場所・誰と" autocomplete="off" /></div>
@@ -1320,6 +1331,19 @@
         >
         を利用しています。
       </div>
+      <dialog id="deleteRecordDialog" class="delete-dialog" aria-labelledby="deleteRecordDialogTitle">
+        <div class="delete-dialog-inner">
+          <div class="delete-dialog-kicker">MY LOG</div>
+          <h2 id="deleteRecordDialogTitle">この記録を削除しますか？</h2>
+          <p id="deleteRecordName" class="delete-dialog-name"></p>
+          <p class="delete-dialog-copy">ラベル・料理・思い出の写真も削除されます。この操作は元に戻せません。</p>
+          <div class="delete-dialog-actions">
+            <button id="confirmDeleteRecordBtn" class="delete-dialog-delete" type="button">記録を削除する</button>
+            <button id="cancelDeleteRecordBtn" class="delete-dialog-cancel" type="button">削除せず戻る</button>
+          </div>
+          <div id="deleteRecordMsg" aria-live="polite"></div>
+        </div>
+      </dialog>
     </main>
     <nav id="bottomNav" class="hidden">
       <div class="navin">
@@ -1342,7 +1366,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=539"></script>
+    <script src="app.js?v=540"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

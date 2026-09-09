@@ -4721,7 +4721,7 @@ ${
       <div class="memory-detail-actions"><button id="editRecordBtn" class="memory-detail-action" type="button">記録を編集</button><button id="deleteRecordBtn" class="memory-detail-action danger" type="button">記録を削除</button></div>`;
     $("recordKnowledgeBtn").onclick = () => openRecordKnowledge(r);
     $("editRecordBtn").onclick = () => renderRecordEditor(r);
-    $("deleteRecordBtn").onclick = () => deleteCurrentRecord();
+    $("deleteRecordBtn").onclick = requestDeleteCurrentRecord;
   } catch (e) {
     $("detailBody").innerHTML = stateMarkup({
       kicker: "読み込みエラー",
@@ -5033,15 +5033,31 @@ function renderRecordEditor(r) {
     }
   };
 }
+function closeDeleteRecordDialog() {
+  const dialog = $("deleteRecordDialog");
+  if (!dialog) return;
+  if (typeof dialog.close === "function") dialog.close();
+  else dialog.removeAttribute("open");
+}
+function requestDeleteCurrentRecord() {
+  const r = S.detailRecord;
+  if (!r) return;
+  const title = [r.brand_name, r.product_name].filter(Boolean).join(" ") || "名称未登録の一杯";
+  $("deleteRecordName").textContent = title;
+  msg($("deleteRecordMsg"), "");
+  const dialog = $("deleteRecordDialog");
+  if (typeof dialog?.showModal === "function") dialog.showModal();
+  else dialog?.setAttribute("open", "");
+}
 async function deleteCurrentRecord() {
   const r = S.detailRecord;
   if (!r) return;
-  if (
-    !confirm(
-      `「${[r.brand_name, r.product_name].filter(Boolean).join(" ")}」の記録を削除しますか？`,
-    )
-  )
-    return;
+  if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。")) return;
+  const button = $("confirmDeleteRecordBtn");
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  button.textContent = "削除しています…";
+  msg($("deleteRecordMsg"), "記録と写真を削除しています。", "info");
   try {
     const photos = await getRecordPhotos(r.id);
     const item = {
@@ -5050,15 +5066,26 @@ async function deleteCurrentRecord() {
     };
     queuePendingRollback(item.recordId, item.storagePaths);
     const clean = await cleanupPendingRollbacks();
-    if (!clean) {
-      alert(
-        "記録の削除を受け付けました。残った写真データは次回接続時に自動で整理します。",
-      );
-    }
+    closeDeleteRecordDialog();
     S.detailRecord = null;
     show("historyView");
+    msg(
+      $("historyNotice"),
+      clean
+        ? "記録を削除しました。"
+        : "記録を削除しました。残った写真は次回接続時に整理します。",
+      "ok",
+    );
   } catch (e) {
-    alert("削除できませんでした: " + e.message);
+    msg(
+      $("deleteRecordMsg"),
+      "削除できませんでした。通信状況を確認して、もう一度お試しください。",
+      "err",
+    );
+  } finally {
+    button.disabled = false;
+    button.setAttribute("aria-busy", "false");
+    button.textContent = "記録を削除する";
   }
 }
 
@@ -5494,6 +5521,10 @@ wireRecordValidation();
 restore();
 
 if ($("detailBackBtn")) $("detailBackBtn").onclick = () => show("historyView");
+if ($("cancelDeleteRecordBtn"))
+  $("cancelDeleteRecordBtn").onclick = closeDeleteRecordDialog;
+if ($("confirmDeleteRecordBtn"))
+  $("confirmDeleteRecordBtn").onclick = deleteCurrentRecord;
 if ($("historyFilterToggle")) {
   $("historyFilterToggle").onclick = () => {
     const panel = $("historyFilterPanel");
