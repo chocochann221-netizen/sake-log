@@ -74,6 +74,7 @@
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
+| 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 | 東京都 | 江戸前の寿司 | Sushi food in Tokyo, Japan.jpg | Joli Rumi | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Sushi_food_in_Tokyo,_Japan.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 | 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 
@@ -83,6 +84,12 @@
 - 原画像は2021-01-04撮影、6,000 × 4,000px。撮影者はさかおり、CC BY-SA 4.0。
 - 画面上に `Photo: さかおり / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
 - 全県共通ルールとして食写真は各県1枚とし、店舗の商品写真は許諾または明示された再利用条件がない限り転載しない。
+
+## UI木板テクスチャ
+
+| 用途 | 作品 | 制作者 | 利用条件 | 出典 | 状態 |
+|---|---|---|---|---|---|
+| 酒蔵案内の木板背景 | Wood planks diff 8k | Amal Kumar via Poly Haven | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Wood_planks_diff_8k_(Amal_Kumar_via_Poly_Haven).png | 採用・実装済み |
 
 ## 米比較ページ候補
 
