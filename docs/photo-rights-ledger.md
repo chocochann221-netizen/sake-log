@@ -88,9 +88,16 @@
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
-| 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+| 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 東京都 | 江戸前の寿司 | Sushi food in Tokyo, Japan.jpg | Joli Rumi | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Sushi_food_in_Tokyo,_Japan.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 | 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+
+### 奈良「食」写真利用メモ
+
+- Ver.1は `Kakinoha (persimmon leaf) sushi in Nara.jpg` を確定素材として使用する。
+- 原典は Wikimedia Commons。撮影者 ZhengZhou、CC BY-SA 4.0。
+- 画面上に `Photo: ZhengZhou / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 将来、運営者が自ら撮影した複数個を端正に並べた柿の葉寿司写真が用意できた場合は、表示確認後に権利台帳と実装を同時更新して差し替える。
 
 ### 福井「食」写真利用メモ
 
