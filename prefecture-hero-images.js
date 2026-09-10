@@ -21,15 +21,45 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Motokoka / Wikimedia Commons / CC BY-SA 4.0",
     position: "50% center"
   },
+  "東京都": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tokyo%20%2816204487106%29.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg",
+    title: "Tokyo (16204487106).jpg",
+    author: "Moyan Brenn",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    credit: "Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0",
+    position: "50% center"
+  },
   "奈良県": {
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Deer_at_nara_park_1.jpg/1280px-Deer_at_nara_park_1.jpg",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg",
-    title: "Deer at nara park 1.jpg",
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Deer%20at%20nara%20park%202.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg",
+    title: "Deer at nara park 2.jpg",
     author: "Ian G Shingler",
     license: "CC BY-SA 4.0",
     licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
     credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
-    position: "52% center"
+    position: "50% center"
+  },
+  "石川県": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tsuzumi-mon%2C%20Kanazawa%20Station%20-%20Kanazawa%2C%20Japan%20-%20DSC09640.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg",
+    title: "Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg",
+    author: "Daderot",
+    license: "CC0 1.0",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    credit: "Photo: Daderot / Wikimedia Commons / CC0",
+    position: "50% center"
+  },
+  "福井県": {
+    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tojinbo%20cliffs%2C%20Fukui%20Prefecture%3B%20September%202019%20%2801%29.jpg?width=1280",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg",
+    title: "Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg",
+    author: "雷太（Raita Futo）",
+    license: "CC BY 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+    credit: "Photo: 雷太 (Raita Futo) / Wikimedia Commons / CC BY 2.0",
+    position: "50% center"
   },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",

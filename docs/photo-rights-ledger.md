@@ -1,6 +1,6 @@
 # 和酒ログ「知識の蔵」写真権利台帳
 
-最終更新: 2026-09-06
+最終更新: 2026-09-09
 
 ## 運用ルール
 
@@ -27,7 +27,24 @@
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
-| 奈良県 | 早朝の奈良公園・鹿 × 古都 | Deer at nara park 1.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_1.jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+| 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
+| 奈良県 | 早朝の奈良公園・鹿と石灯籠 | Deer at nara park 2.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
+| 石川県 | 夕景の金沢駅・鼓門 | Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg | Daderot | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg | `prefecture-hero-images.js` | 採用・実装済み |
+| 福井県 | 東尋坊の断崖・太古の地層 | Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg | 雷太（Raita Futo） | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg | `prefecture-hero-images.js` | 採用・実装済み |
+
+### 福井ヒーロー利用メモ
+
+- 原画像は2019-09-18撮影。東尋坊の柱状節理と日本海を写した自然景観で、「太古の地層から恐竜・化石文化へ」という構成に用いる。
+- 原典はFlickrからWikimedia Commonsへ収録され、FlickreviewR 2によりCC BY 2.0であることが確認済み。
+- 撮影者は雷太（Raita Futo）。画面上に `Photo: 雷太 (Raita Futo) / Wikimedia Commons / CC BY 2.0` を表示し、原典ページへリンクする。
+- 原画像は5,842 × 3,895px。横長ヒーローでは断崖と海の双方が残る中央配置を基本とする。
+
+### 石川ヒーロー利用メモ
+
+- 原画像は 2018-04-15 撮影。夕景の金沢駅・鼓門が写り、伝統的な木組みと現代建築が重なる「石川への入口」というヒーロー方針に合致する。
+- 原典は Wikimedia Commons。撮影者 Daderot、CC0 1.0。商用利用・加工が可能。
+- 画面上には出典管理の透明性を保つため、任意クレジットとして `Photo: Daderot / Wikimedia Commons / CC0` を表示し、原典ページへリンクする。
+- 原画像は 5,472 × 3,648px。ヒーローでは横長にトリミングし、鼓門の木組みが中央に残るよう `background-position: 50% center` とする。
 
 ### 北海道ストーリー利用メモ
 
@@ -37,13 +54,63 @@
 - アイヌ文化の章は現時点で写真を置かず、装飾利用を避ける。将来写真・資料を採用する場合は、権利だけでなく当事者・施設・資料の文脈を確認する。
 - 北海道ページは「広さ」をスクロール距離で表現し、流氷 → 美瑛 → 札幌 → アイヌ文化 → 函館 → 食・米・酒へ接続する。
 
+### 東京ヒーロー利用メモ
+
+- 決定済みテーマは「雨の夜の渋谷スクランブル交差点」。東京駅案は不採用。
+- 原画像は雨の夕刻の渋谷スクランブル交差点で、傘・人の流れ・濡れた路面・都市の光が写る。
+- 原典は Flickr から Wikimedia Commons へ収録され、FlickreviewR により CC BY 2.0 を確認済み。
+- 撮影者は Moyan Brenn。画面上に `Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0` を表示する。
+- 原画像は3,840 × 2,239px。横長ヒーローでは交差点の密度を残して中央配置する。
+
 ### 奈良ヒーロー利用メモ
 
-- 原画像は 2023-10-01 05:58 撮影。奈良公園の鹿と石灯籠が写り、今回の「早朝の奈良公園・鹿 × 古都」というヒーロー方針に合致する。
+- 採用確定写真は、早朝の奈良公園で鹿と石灯籠を写した実写。2023-10-01 05:58撮影。
 - 原典は Wikimedia Commons。撮影者 Ian G Shingler、CC BY-SA 4.0。
 - 画面上に `Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
-- CSS の `background-size: cover` による見え方の調整を含め、加工・再利用時は CC BY-SA 4.0 の条件を再確認する。
-- 将来、同等以上の品質で CC0 / CC BY または正式許諾済みの独自写真が得られた場合は差し替え候補とする。
+- 原画像は 5,041 × 3,361px。横長ヒーローでも鹿・石灯籠・森の奥行きが伝わる中央配置を基本とする。
+- 実表示で被写体が判別しやすいことを確認して候補3から変更。この写真を奈良県ヒーローの確定素材とする。
+
+## 都道府県「地域」写真
+
+| 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
+|---|---|---|---|---|---|---|---|
+| 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
+
+### 奈良「地域」写真利用メモ
+
+- 東大寺南大門を正面から写した実写。2010-07-16撮影。
+- 原典は Wikimedia Commons。撮影者 Jakub Hałun、CC BY-SA 4.0。
+- 画面上に `Photo: Jakub Hałun / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 原画像は 4,288 × 2,848px。横長表示でも南大門の全体像が伝わる中央配置を基本とする。
+- この写真を奈良県の地域写真として確定し、変更する場合は利用者確認後に権利台帳と実装を同時更新する。
+
+## 都道府県「食」写真
+
+| 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
+|---|---|---|---|---|---|---|---|
+| 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用確定・クレジット表示済み |
+| 東京都 | 江戸前の寿司 | Sushi food in Tokyo, Japan.jpg | Joli Rumi | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Sushi_food_in_Tokyo,_Japan.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+| 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+
+### 奈良「食」写真利用メモ
+
+- Ver.1は `Kakinoha (persimmon leaf) sushi in Nara.jpg` を確定素材として使用する。
+- 原典は Wikimedia Commons。撮影者 ZhengZhou、CC BY-SA 4.0。
+- 画面上に `Photo: ZhengZhou / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 将来、運営者が自ら撮影した複数個を端正に並べた柿の葉寿司写真が用意できた場合は、表示確認後に権利台帳と実装を同時更新して差し替える。
+
+### 福井「食」写真利用メモ
+
+- 越前ガニの雄と雌を写した実写で、越前港で水揚げされたことを示す黄色いタグが確認できる。
+- 原画像は2021-01-04撮影、6,000 × 4,000px。撮影者はさかおり、CC BY-SA 4.0。
+- 画面上に `Photo: さかおり / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 全県共通ルールとして食写真は各県1枚とし、店舗の商品写真は許諾または明示された再利用条件がない限り転載しない。
+
+## UI木板テクスチャ
+
+| 用途 | 作品 | 制作者 | 利用条件 | 出典 | 状態 |
+|---|---|---|---|---|---|
+| 酒蔵案内の木板背景 | Wood planks diff 8k | Amal Kumar via Poly Haven | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Wood_planks_diff_8k_(Amal_Kumar_via_Poly_Haven).png | 採用・実装済み |
 
 ## 米比較ページ候補
 
