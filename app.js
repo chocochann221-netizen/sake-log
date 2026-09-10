@@ -29,6 +29,7 @@ const S = {
 };
 const photoObjectUrls = new Map();
 let freshPhotoPickerConfirmed = false;
+let recordEditState = null;
 const cfgKey = () => localStorage.getItem("sakelog_pubkey") || PUBLISHABLE_KEY;
 const msg = (el, text, type = "ok") =>
   (el.innerHTML = text
@@ -4835,6 +4836,54 @@ function setRecordEditBusy(busy) {
   const saveButton = $("saveEditBtn");
   if (saveButton)
     saveButton.textContent = busy ? "変更を保存しています…" : "変更を保存";
+  if (recordEditState) recordEditState.busy = busy;
+}
+function recordEditSignature() {
+  const values = [
+    "eDrankDate", "eRating", "eCompanion", "eRestaurant", "eComment",
+    "eBrand", "eProduct", "eBrewery", "ePrefecture", "eClass", "eRice",
+    "eRiceVariety", "ePolishing", "eAlcohol", "eVolume", "ePrice",
+  ].map((id) => $(id)?.value ?? "");
+  const photos = [
+    ["editFrontPhoto", "deleteFrontPhoto"],
+    ["editBackPhoto", "deleteBackPhoto"],
+    ["editFoodPhoto", "deleteFoodPhoto"],
+    ["editMemoryPhoto", "deleteMemoryPhoto"],
+  ].map(([inputId, deleteId]) => {
+    const file = $(inputId)?.files?.[0];
+    return [file?.name || "", file?.size || 0, file?.lastModified || 0, Boolean($(deleteId)?.checked)];
+  });
+  return JSON.stringify([values, photos]);
+}
+function hasUnsavedRecordEdit() {
+  return Boolean(
+    recordEditState &&
+      !recordEditState.busy &&
+      recordEditSignature() !== recordEditState.initialSignature,
+  );
+}
+function syncRecordEditDirtyState() {
+  const saveButton = $("saveEditBtn");
+  if (!saveButton || !recordEditState) return;
+  const dirty = recordEditSignature() !== recordEditState.initialSignature;
+  saveButton.disabled = recordEditState.busy || !dirty;
+  saveButton.setAttribute("aria-disabled", String(!dirty));
+}
+function closeDiscardEditDialog() {
+  const dialog = $("discardEditDialog");
+  if (typeof dialog?.close === "function") dialog.close();
+  else dialog?.removeAttribute("open");
+}
+function requestRecordEditorExit(action) {
+  if (!hasUnsavedRecordEdit()) {
+    recordEditState = null;
+    action();
+    return;
+  }
+  recordEditState.exitAction = action;
+  const dialog = $("discardEditDialog");
+  if (typeof dialog?.showModal === "function") dialog.showModal();
+  else dialog?.setAttribute("open", "");
 }
 function renderRecordEditor(r) {
   const rating = Number(r.rating ?? 4);
@@ -4866,7 +4915,7 @@ function renderRecordEditor(r) {
        <label>容量</label><input id="eVolume" value="${escapeHtml(r.volume || "")}">
        <label>価格（円）</label><input id="ePrice" type="number" value="${escapeHtml(r.price_yen ?? "")}">
      </details>
-     <div class="memory-edit-actions"><button id="saveEditBtn" class="btn primary">変更を保存</button><button id="cancelEditBtn" class="confirm-text-button">キャンセル</button></div>
+     <div class="memory-edit-actions"><button id="saveEditBtn" class="btn primary" disabled>変更を保存</button><button id="cancelEditBtn" class="confirm-text-button">キャンセル</button></div>
      <div id="editMsg"></div>
    </div>`;
   document.querySelectorAll(".edit-rating-choice").forEach((button) => {
@@ -4875,6 +4924,7 @@ function renderRecordEditor(r) {
       document.querySelectorAll(".edit-rating-choice").forEach((item) =>
         item.classList.toggle("is-selected", item === button),
       );
+      syncRecordEditDirtyState();
     };
   });
   [
@@ -4900,9 +4950,15 @@ function renderRecordEditor(r) {
         ?.querySelector(".memory-edit-photo-preview");
       if (preview)
         preview.innerHTML = `<img src="${escapeHtml(URL.createObjectURL(file))}" alt="選択した写真" />`;
+      syncRecordEditDirtyState();
     });
   });
-  $("cancelEditBtn").onclick = () => openRecordDetail(r.id);
+  recordEditState = { recordId: r.id, initialSignature: recordEditSignature(), busy: false, exitAction: null };
+  document.querySelectorAll(".memory-edit input, .memory-edit textarea, .memory-edit select").forEach((control) => {
+    control.addEventListener("input", syncRecordEditDirtyState);
+    control.addEventListener("change", syncRecordEditDirtyState);
+  });
+  $("cancelEditBtn").onclick = () => requestRecordEditorExit(() => openRecordDetail(r.id));
   $("saveEditBtn").onclick = async () => {
     if (!requireOnline("現在オフラインです。変更内容は画面に残っています。通信が戻ってから保存してください。")) return;
     setRecordEditBusy(true);
@@ -5038,6 +5094,7 @@ function renderRecordEditor(r) {
       }
       msg($("editMsg"), "✓ 更新しました", "ok");
       editSucceeded = true;
+      recordEditState = null;
       setTimeout(() => {
         setRecordEditBusy(false);
         openRecordDetail(r.id);
@@ -5536,19 +5593,54 @@ if ($("googleLoginBtn"))
   $("googleLoginBtn").onclick = () => startOAuth("google");
 if ($("lineLoginBtn")) $("lineLoginBtn").onclick = startLineLogin;
 
-document.querySelectorAll(".navbtn").forEach(
-  (b) =>
-    (b.onclick = () => {
-      if (b.dataset.page === "recordView") {
-        startFreshRecord();
-      } else show(b.dataset.page);
-    }),
-);
+document.querySelectorAll(".navbtn").forEach((b) => {
+  b.onclick = (event) => {
+    const navigate = () => {
+      if (b.dataset.page === "recordView") startFreshRecord();
+      else if (b.dataset.page) show(b.dataset.page);
+      else if (b.href) location.href = b.href;
+    };
+    if (recordEditState) {
+      event.preventDefault();
+      requestRecordEditorExit(navigate);
+      return;
+    }
+    if (b.dataset.page) {
+      event.preventDefault();
+      navigate();
+    }
+  };
+});
 wireRecordDraftAutosave();
 wireRecordValidation();
 restore();
 
-if ($("detailBackBtn")) $("detailBackBtn").onclick = () => show("historyView");
+if ($("detailBackBtn"))
+  $("detailBackBtn").onclick = () =>
+    requestRecordEditorExit(() => show("historyView"));
+if ($("stayEditingBtn"))
+  $("stayEditingBtn").onclick = () => {
+    if (recordEditState) recordEditState.exitAction = null;
+    closeDiscardEditDialog();
+  };
+if ($("discardEditBtn"))
+  $("discardEditBtn").onclick = () => {
+    const action = recordEditState?.exitAction;
+    recordEditState = null;
+    closeDiscardEditDialog();
+    action?.();
+  };
+if ($("discardEditDialog"))
+  $("discardEditDialog").addEventListener("cancel", (event) => {
+    event.preventDefault();
+    if (recordEditState) recordEditState.exitAction = null;
+    closeDiscardEditDialog();
+  });
+window.addEventListener("beforeunload", (event) => {
+  if (!hasUnsavedRecordEdit()) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
 if ($("cancelDeleteRecordBtn"))
   $("cancelDeleteRecordBtn").onclick = closeDeleteRecordDialog;
 if ($("confirmDeleteRecordBtn"))
