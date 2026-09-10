@@ -730,6 +730,13 @@
       .delete-dialog-cancel { min-height: 44px; border: 0; background: transparent; color: #79543a; font: inherit; font-weight: 800; }
       .discard-dialog-stay { min-height: 48px; border: 1px solid #8d5433; border-radius: 4px; background: #8d5433; color: #fff9f3; font: inherit; font-weight: 800; }
       .discard-dialog-leave { min-height: 44px; border: 0; background: transparent; color: #79543a; font: inherit; font-weight: 800; }
+      .account-delete-email { display: block; margin: 17px 0 7px; color: #6f5f54; font-size: 12px; font-weight: 800; }
+      .account-delete-email input { width: 100%; min-height: 48px; margin-top: 7px; border: 1px solid #bda48d; border-radius: 4px; background: #fffaf1; color: #2b211a; font-size: 16px; }
+      .account-delete-registered { margin: 0 0 16px; color: #806f63; font-size: 11px; overflow-wrap: anywhere; }
+      .account-delete-progress { display: grid; place-items: center; min-height: 210px; text-align: center; }
+      .account-delete-door { position: relative; width: 54px; height: 76px; margin: 0 auto 18px; border: 2px solid #8d5433; }
+      .account-delete-door::after { content: ""; position: absolute; top: 35px; right: 7px; width: 5px; height: 5px; border-radius: 50%; background: #8d5433; }
+      .account-delete-progress p { margin: 0; color: #6f5f54; line-height: 1.8; }
       .memory-detail-section { margin-top: 28px; }
       .memory-detail-section > span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
       .memory-detail-section h3 { margin: 5px 0 14px; font-size: 20px; }
@@ -1360,6 +1367,25 @@
           </div>
         </div>
       </dialog>
+      <dialog id="deleteAccountDialog" class="delete-dialog" aria-labelledby="deleteAccountDialogTitle">
+        <div id="deleteAccountConfirmPanel" class="delete-dialog-inner">
+          <div class="delete-dialog-kicker">ACCOUNT</div>
+          <h2 id="deleteAccountDialogTitle">アカウントを削除しますか？</h2>
+          <p class="delete-dialog-copy">飲酒記録・ラベル・料理・思い出の写真など、あなたに紐づくデータが削除されます。この操作は元に戻せません。</p>
+          <label class="account-delete-email">確認のため登録メールアドレスを入力
+            <input id="deleteAccountEmail" type="email" autocomplete="email" inputmode="email" />
+          </label>
+          <p id="deleteAccountRegisteredEmail" class="account-delete-registered"></p>
+          <div class="delete-dialog-actions">
+            <button id="confirmDeleteAccountBtn" class="delete-dialog-delete" type="button" disabled>アカウントと記録を削除する</button>
+            <button id="cancelDeleteAccountBtn" class="delete-dialog-cancel" type="button">削除せず戻る</button>
+          </div>
+          <div id="deleteAccountDialogMsg" aria-live="polite"></div>
+        </div>
+        <div id="deleteAccountProgressPanel" class="delete-dialog-inner account-delete-progress hidden" role="status" aria-live="polite">
+          <div><div class="account-delete-door" aria-hidden="true"></div><p>扉を閉じています。<br />このままお待ちください。</p></div>
+        </div>
+      </dialog>
     </main>
     <nav id="bottomNav" class="hidden">
       <div class="navin">
@@ -1382,7 +1408,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=542"></script>
+    <script src="app.js?v=543"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>

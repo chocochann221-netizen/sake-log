@@ -5466,7 +5466,7 @@ async function loadProfile() {
   $("profileSettingsBtn").onclick = () => show("settingsView");
   $("profileLogoutBtn").onclick = logout;
   const btn = $("deleteAccountBtn");
-  if (btn) btn.onclick = deleteMyAccount;
+  if (btn) btn.onclick = requestDeleteMyAccount;
   const lineBtn = $("linkLineBtn");
   if (lineBtn) lineBtn.onclick = startLineLink;
 }
@@ -5530,36 +5530,53 @@ function clearAllLocalUserData() {
   clearSession();
 }
 
-async function deleteMyAccount() {
-  if (!S.user?.email) return;
-
-  const first = confirm(
-    "和酒ログのアカウントを削除します。\n\n飲酒記録、写真、参加情報など本人に紐づくデータは削除され、元に戻せません。\n\n続けますか？",
-  );
-  if (!first) return;
-
-  const entered = prompt("確認のため、登録メールアドレスを入力してください。");
-  if (entered === null) return;
-
-  if (
-    entered.trim().toLowerCase() !== String(S.user.email).trim().toLowerCase()
-  ) {
+function closeDeleteAccountDialog() {
+  const dialog = $("deleteAccountDialog");
+  if (typeof dialog?.close === "function") dialog.close();
+  else dialog?.removeAttribute("open");
+}
+function syncDeleteAccountConfirmation() {
+  const entered = $("deleteAccountEmail")?.value?.trim().toLowerCase() || "";
+  const expected = String(S.user?.email || "").trim().toLowerCase();
+  const button = $("confirmDeleteAccountBtn");
+  if (button) button.disabled = !expected || entered !== expected;
+  msg($("deleteAccountDialogMsg"), "");
+}
+function requestDeleteMyAccount() {
+  if (!S.user?.email) {
     msg(
       $("deleteAccountMsg"),
-      "メールアドレスが一致しません。アカウントは削除されていません。",
+      "登録情報を確認できませんでした。再ログインしてからお試しください。",
       "err",
     );
     return;
   }
-
-  const finalCheck = confirm(
-    "最終確認です。アカウントと本人データを完全に削除しますか？",
-  );
-  if (!finalCheck) return;
-
-  const btn = $("deleteAccountBtn");
-  if (btn) btn.disabled = true;
-  msg($("deleteAccountMsg"), "アカウントを削除しています…", "info");
+  $("deleteAccountEmail").value = "";
+  $("deleteAccountRegisteredEmail").textContent = `登録メール：${S.user.email}`;
+  $("deleteAccountConfirmPanel").classList.remove("hidden");
+  $("deleteAccountProgressPanel").classList.add("hidden");
+  syncDeleteAccountConfirmation();
+  const dialog = $("deleteAccountDialog");
+  if (typeof dialog?.showModal === "function") dialog.showModal();
+  else dialog?.setAttribute("open", "");
+  setTimeout(() => $("deleteAccountEmail")?.focus(), 0);
+}
+async function deleteMyAccount() {
+  const entered = $("deleteAccountEmail")?.value?.trim() || "";
+  if (
+    entered.toLowerCase() !== String(S.user?.email || "").trim().toLowerCase()
+  ) {
+    msg(
+      $("deleteAccountDialogMsg"),
+      "登録メールアドレスと一致しません。",
+      "err",
+    );
+    return;
+  }
+  if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。"))
+    return;
+  $("deleteAccountConfirmPanel").classList.add("hidden");
+  $("deleteAccountProgressPanel").classList.remove("hidden");
 
   try {
     const r = await authFetch(BASE + "/functions/v1/delete-account", {
@@ -5570,6 +5587,7 @@ async function deleteMyAccount() {
     const d = await r.json().catch(() => null);
     if (!r.ok) throw new Error(d?.error || "アカウント削除に失敗しました");
 
+    closeDeleteAccountDialog();
     clearAllLocalUserData();
     show("authView");
     msg(
@@ -5578,14 +5596,14 @@ async function deleteMyAccount() {
       "ok",
     );
   } catch (e) {
+    $("deleteAccountConfirmPanel").classList.remove("hidden");
+    $("deleteAccountProgressPanel").classList.add("hidden");
     msg(
-      $("deleteAccountMsg"),
-      (e?.message || "アカウントを削除できませんでした。") +
-        " 通信状況を確認して、もう一度お試しください。",
+      $("deleteAccountDialogMsg"),
+      "削除できませんでした。通信状況を確認して、もう一度お試しください。",
       "err",
     );
-  } finally {
-    if (btn) btn.disabled = false;
+    console.warn("account deletion failed", e);
   }
 }
 
@@ -5645,6 +5663,23 @@ if ($("cancelDeleteRecordBtn"))
   $("cancelDeleteRecordBtn").onclick = closeDeleteRecordDialog;
 if ($("confirmDeleteRecordBtn"))
   $("confirmDeleteRecordBtn").onclick = deleteCurrentRecord;
+if ($("deleteAccountEmail"))
+  $("deleteAccountEmail").addEventListener(
+    "input",
+    syncDeleteAccountConfirmation,
+  );
+if ($("cancelDeleteAccountBtn"))
+  $("cancelDeleteAccountBtn").onclick = closeDeleteAccountDialog;
+if ($("confirmDeleteAccountBtn"))
+  $("confirmDeleteAccountBtn").onclick = deleteMyAccount;
+if ($("deleteAccountDialog"))
+  $("deleteAccountDialog").addEventListener("cancel", (event) => {
+    if (!$("deleteAccountProgressPanel")?.classList.contains("hidden")) {
+      event.preventDefault();
+      return;
+    }
+    closeDeleteAccountDialog();
+  });
 if ($("historyFilterToggle")) {
   $("historyFilterToggle").onclick = () => {
     const panel = $("historyFilterPanel");
