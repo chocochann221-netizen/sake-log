@@ -1,6 +1,6 @@
 # 和酒ログ「知識の蔵」写真権利台帳
 
-最終更新: 2026-09-09
+最終更新: 2026-09-13
 
 ## 運用ルール
 
@@ -74,7 +74,7 @@
 
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
-| 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
+| 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |\n| 東京都 | 東京の風景・御岳渓谷 | Mitake Valley @ Mitake (10418724484).jpg | Guilhem Vellut | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Mitake_Valley_@_Mitake_(10418724484).jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
 
 ### 奈良「地域」写真利用メモ
 
@@ -84,7 +84,7 @@
 - 原画像は 4,288 × 2,848px。横長表示でも南大門の全体像が伝わる中央配置を基本とする。
 - この写真を奈良県の地域写真として確定し、変更する場合は利用者確認後に権利台帳と実装を同時更新する。
 
-## 都道府県「食」写真
+### 東京「地域」写真利用メモ\n\n- 御岳渓谷の多摩川と森を写した実写。都市の光を描く渋谷ヒーローから、東京西部の水と緑へ場面を切り替える。\n- 原典は Flickr から Wikimedia Commons へ収録。撮影者 Guilhem Vellut、CC BY 2.0。\n- 画面上に `Photo: Guilhem Vellut / Wikimedia Commons / CC BY 2.0` を表示し、原典ページへリンクする。\n- 原画像は 3,648 × 2,736px。横長表示では川の流れと両岸の森が残る中央配置を基本とする。\n\n## 都道府県「食」写真
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
