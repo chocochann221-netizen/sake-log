@@ -13,7 +13,7 @@
 <header><div class="wrap"><a class="back" id="back" href="prefecture-guide.html">← 都道府県ページ</a></div></header>
 <div class="wrap"><section class="hero"><div class="kicker">酒蔵を知る</div><h1 id="title">酒蔵一覧</h1><p>土地に根ざして酒を醸す蔵と、代表銘柄をたどります。</p></section><div class="timber-line" aria-hidden="true"></div>
 <main class="body"><div class="tools"><label><span style="position:absolute;clip:rect(0 0 0 0)">酒蔵を検索</span><input class="search" id="search" type="search" placeholder="酒蔵名・銘柄・地域から検索"></label><div class="count" id="count"></div></div><div class="list" id="list"></div><div class="source" id="source"></div></main></div>
-<script src="prefecture-brewery-data.js?v=1"></script>
+<script src="prefecture-brewery-data.js?v=2"></script>
 <script>
 const esc=s=>String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const p=new URLSearchParams(location.search);const prefecture=p.get("prefecture")||p.get("name")||"奈良県";const data=(window.WASHULOG_PREFECTURE_BREWERIES||{})[prefecture];
