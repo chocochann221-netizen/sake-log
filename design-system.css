@@ -1,0 +1,325 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@500;600;700&display=swap");
+
+:root {
+  --paper: #f6f0e3;
+  --paper-deep: #eee3d0;
+  --ink: #202b2e;
+  --muted: #716c63;
+  --wood: #7a421d;
+  --wood-light: #b98555;
+  --lantern: #d59b4a;
+  --line: #cbbca4;
+  --danger: #8a3828;
+  --white: #fffdf8;
+  --shadow: 0 10px 30px rgba(65, 43, 25, 0.08);
+}
+html {
+  background: var(--paper);
+  color-scheme: light;
+}
+body {
+  font-family:
+    "Noto Sans JP",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background:
+    radial-gradient(
+      circle at 15% 0,
+      rgba(255, 255, 255, 0.75),
+      transparent 32rem
+    ),
+    var(--paper);
+  color: var(--ink);
+  letter-spacing: 0.015em;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  z-index: 100;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.09'/%3E%3C/svg%3E");
+}
+h1,
+h2,
+h3,
+.brand {
+  font-family: "Noto Serif JP", serif;
+  letter-spacing: 0.04em;
+}
+a {
+  color: var(--wood);
+}
+button,
+input,
+textarea {
+  font: inherit;
+}
+header {
+  background: rgba(246, 240, 227, 0.94);
+  border-color: var(--line);
+  padding: 13px 18px;
+  backdrop-filter: blur(12px);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 21px;
+  font-weight: 700;
+}
+.brand-mark {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--wood);
+  color: var(--wood);
+  font:
+    700 15px/1 "Noto Serif JP",
+    serif;
+}
+#logoutTop {
+  min-height: 44px !important;
+  border-color: var(--line) !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--wood) !important;
+}
+.network-banner {
+  top: 71px;
+  background: #f4e5c7;
+  color: #694b20;
+  border-color: var(--line);
+}
+main {
+  max-width: 680px;
+  padding: 22px 18px 104px;
+}
+.card {
+  background: rgba(255, 253, 248, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.hero {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 253, 248, 0.96),
+    rgba(238, 227, 208, 0.78)
+  );
+  border-left: 4px solid var(--wood);
+}
+.small,
+label,
+.sake-sub,
+.sake-meta {
+  color: var(--muted);
+}
+label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 14px;
+}
+input,
+textarea {
+  min-height: 48px;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255, 253, 248, 0.92);
+  color: var(--ink);
+}
+input:focus,
+textarea:focus {
+  outline: 2px solid rgba(213, 155, 74, 0.42);
+  outline-offset: 1px;
+  border-color: var(--wood);
+}
+.btn {
+  min-height: 48px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  transition:
+    transform 0.16s ease,
+    filter 0.16s ease,
+    background 0.16s ease;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.primary {
+  background: var(--wood);
+  color: var(--white);
+}
+.secondary {
+  background: var(--paper-deep);
+  color: var(--wood);
+  border: 1px solid var(--wood-light);
+}
+.outline {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.danger {
+  background: #f3e4de;
+  color: var(--danger);
+  border-color: #d7aaa0;
+}
+.msg {
+  border-radius: 5px;
+}
+.ok {
+  background: #e8ede2;
+  color: #3f6045;
+}
+.err {
+  background: #f3e4de;
+  color: var(--danger);
+}
+.info {
+  background: #e9e8df;
+  color: #42545a;
+}
+.preview,
+.sake-thumb,
+.detail-photo {
+  border-radius: 5px;
+  background: var(--paper-deep);
+}
+.sake-card,
+.top-sake,
+.complete-sake {
+  border-color: var(--line);
+  border-radius: 6px;
+  background: var(--white);
+}
+.tag {
+  background: var(--paper-deep);
+  color: var(--wood);
+  border-radius: 3px;
+}
+.sake-comment,
+.detail-info > div,
+.detail-comment,
+.stat-card,
+.rank-row {
+  background: #f1eadc;
+  border-radius: 5px;
+}
+.complete-mark {
+  background: var(--paper-deep);
+  color: var(--wood);
+}
+nav {
+  background: rgba(246, 240, 227, 0.97);
+  border-color: var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(14px);
+}
+.navin {
+  grid-template-columns: repeat(3, 1fr);
+}
+.navbtn {
+  min-height: 64px;
+  padding: 8px 4px 7px;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  position: relative;
+}
+.navbtn svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+}
+.navbtn.active,
+.navbtn.is-active {
+  color: var(--wood);
+  font-weight: 700;
+}
+.navbtn.active::before,
+.navbtn.is-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 38px;
+  height: 2px;
+  background: var(--lantern);
+}
+.v2-deferred {
+  display: none !important;
+}
+.head .back,
+.topic,
+.term,
+.more {
+  border-color: var(--line);
+  border-radius: 6px;
+  background: rgba(255, 253, 248, 0.9);
+  color: var(--ink);
+  box-shadow: none;
+}
+.head .back {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--wood);
+}
+.topic {
+  min-height: 132px;
+}
+.topic p,
+.lead,
+.guide-lead,
+.term-body {
+  color: var(--muted);
+}
+.topic .tag {
+  background: var(--wood);
+  color: var(--white);
+}
+.term summary::after,
+.term-body b {
+  color: var(--wood);
+}
+.tip,
+.note {
+  background: var(--paper-deep);
+  border-radius: 6px;
+}
+.more {
+  color: var(--wood);
+}
+@media (max-width: 420px) {
+  main {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .card {
+    padding: 17px;
+  }
+  .grid {
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
