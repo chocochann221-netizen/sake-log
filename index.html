@@ -13,6 +13,10 @@
       * {
         box-sizing: border-box;
       }
+      :focus-visible {
+        outline: 3px solid #b87545;
+        outline-offset: 3px;
+      }
       body {
         margin: 0;
         font-family:
@@ -38,13 +42,13 @@
         position: sticky;
         top: 57px;
         z-index: 19;
-        padding: 9px 14px;
+        padding: 10px 18px;
         text-align: center;
         font-size: 12px;
         font-weight: 700;
-        background: #fff4d8;
-        color: #7b5a14;
-        border-bottom: 1px solid #ead7a4;
+        background: #f3e5cf;
+        color: #6c472d;
+        border-bottom: 1px solid #c9aa88;
       }
       .brand {
         font-size: 22px;
@@ -88,12 +92,14 @@
         margin: 10px 0 6px;
       }
       input,
-      textarea {
+      textarea,
+      select {
         width: 100%;
         padding: 13px;
         border: 1px solid #d5dcd8;
         border-radius: 13px;
         font: inherit;
+        font-size: 16px;
       }
       .field-error {
         border-color: #c94c43 !important;
@@ -134,22 +140,23 @@
       }
       .msg {
         margin-top: 12px;
-        padding: 11px;
-        border-radius: 12px;
+        padding: 12px 2px 12px 13px;
+        border-left: 3px solid currentColor;
+        border-radius: 0;
         white-space: pre-wrap;
         word-break: break-word;
       }
       .ok {
-        background: #e8f7ef;
-        color: #17683f;
+        background: #eef1e7;
+        color: #49603e;
       }
       .err {
-        background: #fff0ee;
-        color: #a32c22;
+        background: #f8e9e2;
+        color: #8a3f31;
       }
       .info {
-        background: #eef5ff;
-        color: #235a90;
+        background: #f3e9da;
+        color: #765136;
       }
       .preview {
         width: 100%;
@@ -176,28 +183,36 @@
         background: #fff;
         border-top: 1px solid #dfe4e0;
         z-index: 30;
+        padding-bottom: env(safe-area-inset-bottom, 0);
       }
       .navin {
         max-width: 680px;
         margin: auto;
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(3, 1fr);
       }
       .navbtn {
+        display: flex;
+        min-height: 56px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
         border: 0;
         background: transparent;
         padding: 10px 4px;
         font-size: 11px;
-        color: #6f7773;
+        color: #76685e;
+        text-decoration: none;
       }
       .navbtn span {
         display: block;
         font-size: 20px;
       }
       .navbtn.active {
-        color: #238464;
+        color: #8d5433;
         font-weight: 800;
       }
+      .navbtn svg { width: 21px; height: 21px; margin-bottom: 3px; fill: none; stroke: currentColor; stroke-width: 1.7; }
       .hero {
         background: linear-gradient(135deg, #eaf7f1, #fff);
       }
@@ -530,45 +545,48 @@
         color: #238464;
       }
 
-      .complete-card {
-        text-align: center;
-        padding: 30px 22px;
-      }
+      .complete-card { max-width: 560px; margin: 0 auto; padding: 34px 22px 110px; text-align: center; background: #f7efe3; color: #2b211a; border: 0; border-radius: 0; box-shadow: none; }
       .complete-kicker {
         font-size: 11px;
         font-weight: 900;
         letter-spacing: 0.14em;
-        color: #8a5f3c;
+        color: #94613e;
         margin-bottom: 12px;
       }
       .complete-mark {
-        width: 56px;
-        height: 56px;
-        margin: 0 auto 16px;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 18px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #edf5f1;
-        color: #238464;
-        font-size: 28px;
+        background: #9b6037;
+        color: #fffaf1;
+        font-size: 23px;
         font-weight: 900;
       }
       .complete-card h2 {
-        font-size: 28px;
-        line-height: 1.35;
-        margin-bottom: 18px;
+        font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        font-size: 29px;
+        font-weight: 500;
+        line-height: 1.5;
+        margin-bottom: 22px;
       }
+      .complete-photo { width: min(100%, 330px); margin: 0 auto 22px; padding: 8px; border: 1px solid #b89c83; background: #e7d5bd; box-shadow: 0 8px 24px rgba(61,38,23,.15); }
+      .complete-photo img { display: block; width: 100%; max-height: 430px; object-fit: cover; }
       .complete-sake {
-        padding: 18px;
-        border: 1px solid #e2ddd4;
-        border-radius: 18px;
-        background: #fffaf4;
-        margin-bottom: 14px;
+        padding: 0 0 20px;
+        border: 0;
+        border-bottom: 1px solid rgba(74,50,35,.22);
+        border-radius: 0;
+        background: transparent;
+        margin-bottom: 18px;
       }
       .complete-sake strong {
         display: block;
-        font-size: 21px;
+        font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+        font-size: 23px;
         line-height: 1.45;
       }
       .complete-sake span {
@@ -576,21 +594,267 @@
         color: #6f655d;
         margin-top: 4px;
       }
-      .complete-rating {
-        margin-top: 10px;
-        font-weight: 900;
-      }
-      .complete-rating small {
-        font-size: 12px;
-        color: #6f655d;
-      }
+      .complete-rating { display: flex; justify-content: center; align-items: baseline; gap: 6px; margin-top: 12px; color: #9b6037; }
+      .complete-rating strong { font-family: inherit; font-size: 28px; line-height: 1; }
+      .complete-rating small { font-size: 13px; color: #796b60; }
       .complete-copy {
         color: #6f655d;
         line-height: 1.8;
-        margin: 14px 0 18px;
+        margin: 14px auto 24px;
+        max-width: 340px;
       }
+      .complete-actions { display: grid; gap: 4px; }
+      .record-screen { max-width: 560px; margin: 0 auto; padding: 22px 18px 110px; color: #2b211a; }
+      .record-heading span, .record-section-kicker { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .record-heading h2 { margin: 6px 0 22px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; }
+      .record-sake-summary { display: grid; grid-template-columns: 104px 1fr; gap: 18px; align-items: center; padding: 0 0 22px; border-bottom: 1px solid rgba(74,50,35,.25); }
+      .record-sake-summary img { width: 104px; height: 142px; object-fit: cover; border-radius: 4px; background: #ddd1c2; }
+      .record-sake-summary strong { display: block; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 21px; line-height: 1.45; }
+      .record-sake-summary p { margin: 7px 0 12px; color: #74665c; }
+      .record-edit-link { padding: 0; border: 0; background: none; color: #865534; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+      .record-edit-link, .confirm-text-button, .memory-detail-back, .settings-back, .history-filter-reset { min-height: 44px; }
+      .location-status { min-height: 22px; margin-top: 3px; line-height: 1.6; }
+      .location-status.is-success { color: #49603e; }
+      .location-status.is-error { color: #8a3f31; }
+      #locateBtn:disabled { cursor: wait; opacity: .65; }
+      .record-section { padding: 25px 0; border-bottom: 1px solid rgba(74,50,35,.2); }
+      .record-section h3 { margin: 5px 0 16px; font-size: 21px; }
+      .record-field { margin-top: 17px; }
+      .record-field label { display: flex; justify-content: space-between; }
+      .record-field label small { color: #88796e; font-weight: 500; }
+      .record-field input, .record-field textarea { background: rgba(255,252,246,.78); border-color: #cbbcac; border-radius: 6px; }
+      .rating-choices { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .rating-choice { aspect-ratio: 1; min-width: 0; border: 1px solid #b89c83; border-radius: 50%; background: #f8f0e4; color: #60432f; font-size: 17px; font-weight: 800; }
+      .rating-choice.is-selected { background: #9b6037; border-color: #9b6037; color: #fffaf1; box-shadow: 0 3px 10px rgba(72,42,25,.22); }
+      #rating { position: absolute; opacity: 0; pointer-events: none; }
+      .memory-photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .memory-photo-slot { min-height: 148px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px dashed #b9a38e; border-radius: 6px; background: rgba(255,250,242,.58); color: #604b3d; font-weight: 700; overflow: hidden; }
+      .memory-photo-slot small { display: block; margin-top: 6px; color: #88796e; }
+      .memory-photo-slot img { width: 100%; height: 148px; object-fit: cover; border-radius: 5px; }
+      .memory-photo-slot.has-photo { padding: 0; border-style: solid; }
+      .memory-photo-slot.has-photo > span,
+      .memory-photo-slot.has-photo > small { display: none; }
+      .record-details { margin-top: 22px; border-top: 1px solid rgba(74,50,35,.2); }
+      .record-details summary { padding: 18px 0; font-weight: 800; cursor: pointer; }
+      .record-save { margin-top: 26px; }
+      .record-confirm-screen { max-width: 560px; margin: 0 auto; padding: 22px 18px 110px; color: #2b211a; }
+      .record-confirm-hero { position: relative; margin: 18px 0 22px; }
+      .record-confirm-hero img { width: 100%; max-height: 480px; object-fit: cover; border-radius: 5px; }
+      .record-confirm-title { padding-bottom: 20px; border-bottom: 1px solid rgba(74,50,35,.24); }
+      .record-confirm-title strong { display: block; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 26px; line-height: 1.45; }
+      .record-confirm-title span { display: block; margin-top: 6px; color: #74665c; }
+      .record-confirm-rating { display: flex; align-items: baseline; gap: 7px; margin: 22px 0; color: #9b6037; }
+      .record-confirm-rating strong { font-size: 34px; line-height: 1; }
+      .record-confirm-rating span { color: #88796e; font-size: 15px; }
+      .record-confirm-list { margin: 0; }
+      .record-confirm-row { display: grid; grid-template-columns: 76px 1fr; gap: 14px; padding: 13px 0; border-top: 1px solid rgba(74,50,35,.16); }
+      .record-confirm-row dt { color: #88796e; font-size: 13px; }
+      .record-confirm-row dd { margin: 0; line-height: 1.65; white-space: pre-wrap; }
+      .record-confirm-memories { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+      .record-confirm-memories img { width: 100%; height: 150px; object-fit: cover; border-radius: 5px; }
+      .record-confirm-actions { margin-top: 28px; }
+      .my-log-screen { max-width: 620px; margin: 0 auto; padding: 28px 18px 110px; color: #2b211a; }
+      .my-log-heading { display: flex; justify-content: space-between; align-items: end; gap: 18px; padding-bottom: 21px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .my-log-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .my-log-heading h2 { margin: 5px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 31px; font-weight: 500; }
+      .my-log-heading p { max-width: 180px; margin: 0; color: #796b60; font-size: 12px; line-height: 1.65; text-align: right; }
+      .history-filter-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 13px 0 0; padding: 12px 2px; border: 0; border-bottom: 1px solid rgba(74,50,35,.2); background: transparent; color: #684832; font-size: 14px; font-weight: 800; text-align: left; }
+      .history-filter-toggle span:last-child { font-size: 18px; font-weight: 400; transition: transform .2s ease; }
+      .history-filter-toggle[aria-expanded="true"] span:last-child { transform: rotate(45deg); }
+      .history-filter-panel { padding: 19px 2px 17px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .history-filter-field + .history-filter-field { margin-top: 14px; }
+      .history-filter-field label { display: block; margin-bottom: 7px; color: #6e5d51; font-size: 12px; font-weight: 700; }
+      .history-filter-field input, .history-filter-field select { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #c8b5a2; border-radius: 5px; background: rgba(255,252,246,.78); color: #2b211a; font: inherit; }
+      .history-filter-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .history-filter-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 17px; }
+      .history-result-count { color: #806e61; font-size: 12px; }
+      .history-filter-reset { padding: 6px 0; border: 0; background: transparent; color: #8d5433; font-size: 12px; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
+      .my-log-month { margin: 28px 0 10px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 18px; font-weight: 500; color: #6d4a33; }
+      .my-log-entry { position: relative; display: grid; grid-template-columns: 106px 1fr; gap: 17px; padding: 14px 0 20px 14px; border-left: 1px solid #bda48d; border-bottom: 1px solid rgba(74,50,35,.16); cursor: pointer; }
+      .my-log-entry::before { content: ""; position: absolute; top: 22px; left: -4px; width: 7px; height: 7px; border-radius: 50%; background: #9b6037; box-shadow: 0 0 0 4px #f7efe3; }
+      .my-log-entry .sake-thumb { width: 106px; height: 144px; border-radius: 4px; object-fit: cover; background: #dfd2c2; }
+      .my-log-entry .sake-thumb.placeholder { font-size: 11px; color: #87786c; }
+      .my-log-date { margin-bottom: 7px; color: #8c725f; font-size: 12px; }
+      .my-log-title { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 19px; font-weight: 600; line-height: 1.42; }
+      .my-log-brewery { margin-top: 3px; color: #74665c; font-size: 12px; }
+      .my-log-rating { display: flex; align-items: baseline; gap: 4px; margin-top: 10px; color: #9b6037; }
+      .my-log-rating strong { font-size: 21px; line-height: 1; }
+      .my-log-rating span { color: #88796e; font-size: 11px; }
+      .my-log-meta { margin-top: 8px; color: #67584e; font-size: 12px; line-height: 1.55; }
+      .my-log-comment { display: -webkit-box; overflow: hidden; margin-top: 8px; color: #493d35; font-size: 12px; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .my-log-arrow { position: absolute; right: 2px; bottom: 19px; color: #9b6037; font-size: 18px; }
+      .my-log-empty { padding: 58px 12px; text-align: center; color: #74665c; line-height: 1.8; }
+      .state-kicker { color: #9b6037; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .state-title { margin: 7px 0 8px; color: #3e3027; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 22px; font-weight: 500; }
+      .state-copy { margin: 0 auto; max-width: 290px; font-size: 13px; line-height: 1.75; }
+      .state-action { min-width: 190px; margin-top: 22px; padding: 12px 22px; border: 1px solid #9b6037; border-radius: 4px; background: #9b6037; color: #fffaf3; font: inherit; font-size: 14px; font-weight: 800; box-shadow: 0 3px 0 #68442d; }
+      .state-action.secondary-action { background: transparent; color: #805234; box-shadow: none; }
+      .record-confirm-actions button:disabled { cursor: wait; opacity: .72; }
+      #commitRecordBtn[aria-busy="true"] { background: #775039; color: #fff8ef; }
+      .loading-state { padding: 42px 12px; color: #79685b; text-align: center; }
+      .loading-state.compact { padding: 22px 8px; }
+      .loading-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 12px; }
+      .loading-dots span { width: 6px; height: 6px; border-radius: 50%; background: #9b6037; animation: loading-pulse 1.2s ease-in-out infinite; }
+      .loading-dots span:nth-child(2) { animation-delay: .16s; }
+      .loading-dots span:nth-child(3) { animation-delay: .32s; }
+      .loading-label { font-size: 12px; letter-spacing: .08em; }
+      .capture-issue { margin: 12px 18px 0; padding: 11px 2px 11px 13px; border-left: 3px solid #9b6037; background: rgba(248,233,226,.92); color: #743c30; font-size: 12px; line-height: 1.65; }
+      @keyframes loading-pulse { 0%, 80%, 100% { opacity: .28; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+      @media (prefers-reduced-motion: reduce) { .loading-dots span { animation: none; opacity: .65; } }
+      @media (max-width: 380px) { .my-log-entry { grid-template-columns: 92px 1fr; gap: 13px; } .my-log-entry .sake-thumb { width: 92px; height: 126px; } }
+      .memory-detail-screen { max-width: 620px; margin: 0 auto; padding: 18px 18px 110px; color: #2b211a; }
+      .memory-detail-back { margin: 0 0 18px; padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 700; }
+      .memory-detail-front { width: min(100%, 410px); margin: 0 auto 25px; padding: 8px; border: 1px solid #b89c83; background: #e7d5bd; box-shadow: 0 9px 26px rgba(61,38,23,.16); }
+      .memory-detail-front .detail-photo { display: block; width: 100%; max-height: 540px; aspect-ratio: 3/4; border-radius: 0; object-fit: cover; }
+      .memory-detail-title { padding-bottom: 21px; border-bottom: 1px solid rgba(74,50,35,.24); }
+      .memory-detail-title span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .memory-detail-title h2 { margin: 6px 0 4px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; line-height: 1.45; }
+      .memory-detail-title p { margin: 0; color: #74665c; }
+      .memory-detail-rating { display: flex; align-items: baseline; gap: 6px; margin: 22px 0 15px; color: #9b6037; }
+      .memory-detail-rating strong { font-size: 34px; line-height: 1; }
+      .memory-detail-rating span { color: #88796e; font-size: 14px; }
+      .memory-detail-facts { margin: 0; }
+      .memory-detail-fact { display: grid; grid-template-columns: 72px 1fr; gap: 14px; padding: 11px 0; border-top: 1px solid rgba(74,50,35,.14); }
+      .memory-detail-fact dt { color: #8a796d; font-size: 12px; }
+      .memory-detail-fact dd { margin: 0; line-height: 1.55; }
+      .memory-detail-comment { margin: 24px 0; padding: 20px 4px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 18px; line-height: 1.9; white-space: pre-wrap; }
+      .delete-dialog { width: min(calc(100% - 36px), 430px); padding: 0; border: 1px solid #b89c83; border-radius: 6px; background: #f7efe3; color: #2b211a; box-shadow: 0 24px 70px rgba(45,28,18,.36); }
+      .delete-dialog::backdrop { background: rgba(28,20,15,.66); }
+      .delete-dialog-inner { padding: 27px 22px 22px; }
+      .delete-dialog-kicker { color: #93483b; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .delete-dialog h2 { margin: 7px 0 12px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 24px; font-weight: 500; }
+      .delete-dialog-name { margin: 0; padding: 13px 0; border-top: 1px solid rgba(74,50,35,.18); border-bottom: 1px solid rgba(74,50,35,.18); font-weight: 800; }
+      .delete-dialog-copy { margin: 14px 0 20px; color: #74665c; font-size: 13px; line-height: 1.7; }
+      .delete-dialog-actions { display: grid; gap: 7px; }
+      .delete-dialog-delete { min-height: 48px; border: 1px solid #8a3f31; border-radius: 4px; background: #8a3f31; color: #fff9f3; font: inherit; font-weight: 800; }
+      .delete-dialog-cancel { min-height: 44px; border: 0; background: transparent; color: #79543a; font: inherit; font-weight: 800; }
+      .discard-dialog-stay { min-height: 48px; border: 1px solid #8d5433; border-radius: 4px; background: #8d5433; color: #fff9f3; font: inherit; font-weight: 800; }
+      .discard-dialog-leave { min-height: 44px; border: 0; background: transparent; color: #79543a; font: inherit; font-weight: 800; }
+      .account-delete-email { display: block; margin: 17px 0 7px; color: #6f5f54; font-size: 12px; font-weight: 800; }
+      .account-delete-email input { width: 100%; min-height: 48px; margin-top: 7px; border: 1px solid #bda48d; border-radius: 4px; background: #fffaf1; color: #2b211a; font-size: 16px; }
+      .account-delete-registered { margin: 0 0 16px; color: #806f63; font-size: 11px; overflow-wrap: anywhere; }
+      .account-delete-progress { display: grid; place-items: center; min-height: 210px; text-align: center; }
+      .account-delete-door { position: relative; width: 54px; height: 76px; margin: 0 auto 18px; border: 2px solid #8d5433; }
+      .account-delete-door::after { content: ""; position: absolute; top: 35px; right: 7px; width: 5px; height: 5px; border-radius: 50%; background: #8d5433; }
+      .account-delete-progress p { margin: 0; color: #6f5f54; line-height: 1.8; }
+      .memory-detail-section { margin-top: 28px; }
+      .memory-detail-section > span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+      .memory-detail-section h3 { margin: 5px 0 14px; font-size: 20px; }
+      .memory-detail-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .memory-detail-photos .detail-photo { width: 100%; aspect-ratio: 1; border-radius: 5px; object-fit: cover; }
+      .memory-sake-details { margin-top: 30px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
+      .memory-sake-details summary { padding: 18px 0; color: #60432f; font-weight: 800; cursor: pointer; }
+      .memory-back-label { width: 130px; margin: 0 0 18px; }
+      .memory-back-label .detail-photo { width: 100%; aspect-ratio: 3/4; border-radius: 4px; object-fit: cover; }
+      .memory-spec-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; padding-bottom: 16px; }
+      .memory-spec-list div { padding: 10px 0; border-top: 1px solid rgba(74,50,35,.12); }
+      .memory-spec-list b { display: block; margin-bottom: 3px; color: #88796e; font-size: 11px; }
+      .memory-knowledge-link { width: 100%; margin-top: 26px; padding: 18px 0; border: 0; border-top: 1px solid #bda48d; border-bottom: 1px solid #bda48d; background: transparent; color: #2b211a; text-align: left; }
+      .memory-knowledge-link small, .memory-knowledge-link strong, .memory-knowledge-link span { display: block; }
+      .memory-knowledge-link small { color: #94613e; font-weight: 800; }
+      .memory-knowledge-link strong { margin-top: 5px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 21px; }
+      .memory-knowledge-link span { margin-top: 7px; color: #796b60; font-size: 12px; line-height: 1.6; }
+      .memory-detail-actions { display: flex; justify-content: center; gap: 24px; margin-top: 32px; }
+      .memory-detail-action { padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+      .memory-detail-action.danger { color: #9a4139; }
+      @media (max-width: 400px) { .memory-spec-list { grid-template-columns: 1fr; } }
+      .memory-edit { padding-bottom: 20px; }
+      .memory-edit-heading { padding-bottom: 18px; border-bottom: 1px solid rgba(74,50,35,.24); }
+      .memory-edit-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .memory-edit-heading h2 { margin: 6px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; }
+      .memory-edit-section { padding: 24px 0; border-bottom: 1px solid rgba(74,50,35,.2); }
+      .memory-edit-section h3 { margin: 0 0 15px; font-size: 20px; }
+      .memory-edit-field { margin-top: 16px; }
+      .memory-edit-field label { display: flex; justify-content: space-between; }
+      .memory-edit-field label small { color: #88796e; font-weight: 500; }
+      .memory-edit-field input, .memory-edit-field textarea, .memory-edit-details input { background: rgba(255,252,246,.78); border-color: #cbbcac; border-radius: 6px; }
+      .edit-rating-choices { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .edit-rating-choice { aspect-ratio: 1; min-width: 0; border: 1px solid #b89c83; border-radius: 50%; background: #f8f0e4; color: #60432f; font-size: 17px; font-weight: 800; }
+      .edit-rating-choice.is-selected { background: #9b6037; border-color: #9b6037; color: #fffaf1; box-shadow: 0 3px 10px rgba(72,42,25,.22); }
+      #eRating { position: absolute; opacity: 0; pointer-events: none; }
+      .memory-edit-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
+      .memory-edit-photo { min-width: 0; }
+      .memory-edit-photo-preview { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 3/4; overflow: hidden; border: 1px solid #c7b29d; border-radius: 5px; background: #e6d9ca; color: #7c6d61; font-size: 12px; }
+      .memory-edit-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+      .memory-edit-photo strong { display: block; margin-top: 8px; font-size: 13px; }
+      .memory-edit-photo-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 7px; color: #79543a; font-size: 12px; }
+      .memory-edit-photo-actions label { cursor: pointer; }
+      .memory-edit-photo-actions input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+      .memory-edit-photo-actions .delete-photo { color: #9a4139; }
+      .memory-edit-details { margin-top: 24px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
+      .memory-edit-details summary { padding: 18px 0; font-weight: 800; cursor: pointer; }
+      .memory-edit-actions { display: grid; gap: 4px; margin-top: 28px; }
+      .memory-edit[aria-busy="true"] { opacity: .82; }
+      .memory-edit[aria-busy="true"] #saveEditBtn { background: #775039; color: #fff8ef; }
+      .memory-edit button:disabled, .memory-edit input:disabled, .memory-edit textarea:disabled { cursor: wait; }
+      .top-profile { padding: 8px 0 !important; border: 0 !important; border-bottom: 1px solid rgba(74,50,35,.42) !important; border-radius: 0 !important; background: transparent !important; color: #684832 !important; font-size: 12px; font-weight: 800; }
+      .profile-screen { max-width: 620px; margin: 0 auto; padding: 28px 18px 110px; color: #2b211a; }
+      .profile-heading { padding-bottom: 20px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .profile-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .profile-heading h2 { margin: 5px 0 6px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 30px; font-weight: 500; }
+      .profile-heading p { margin: 0; color: #796b60; font-size: 13px; line-height: 1.7; }
+      .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 24px 0 28px; border-top: 1px solid rgba(74,50,35,.2); border-bottom: 1px solid rgba(74,50,35,.2); }
+      .profile-stat { padding: 17px 5px; text-align: center; }
+      .profile-stat + .profile-stat { border-left: 1px solid rgba(74,50,35,.18); }
+      .profile-stat strong { display: block; color: #8d5433; font-family: "Yu Mincho", serif; font-size: 26px; font-weight: 600; }
+      .profile-stat span { display: block; margin-top: 3px; color: #806f63; font-size: 10px; }
+      .profile-account { padding: 0 2px 22px; border-bottom: 1px solid rgba(74,50,35,.2); }
+      .profile-account-label { color: #88796e; font-size: 11px; }
+      .profile-account-value { margin-top: 5px; overflow-wrap: anywhere; font-size: 14px; font-weight: 700; }
+      .profile-menu { margin-top: 12px; border-top: 1px solid rgba(74,50,35,.22); }
+      .profile-menu-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 17px 2px; border: 0; border-bottom: 1px solid rgba(74,50,35,.18); background: transparent; color: #2b211a; text-align: left; text-decoration: none; }
+      .profile-menu-item strong { display: block; font-family: "Yu Mincho", serif; font-size: 17px; }
+      .profile-menu-item small { display: block; margin-top: 4px; color: #806f63; font-size: 11px; }
+      .profile-menu-item > span:last-child { color: #9b6037; font-size: 19px; }
+      .profile-link-area { margin-top: 25px; padding: 18px 2px; border-top: 1px solid rgba(74,50,35,.22); border-bottom: 1px solid rgba(74,50,35,.22); }
+      .profile-link-area .btn { border-radius: 5px; }
+      .profile-danger { margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(74,50,35,.2); }
+      .profile-danger .btn { border-radius: 5px; }
+      .settings-screen { max-width: 620px; margin: 0 auto; padding: 24px 18px 110px; color: #2b211a; }
+      .settings-back { padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 800; }
+      .settings-heading { margin-top: 15px; padding-bottom: 19px; border-bottom: 1px solid rgba(74,50,35,.26); }
+      .settings-heading span { color: #94613e; font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+      .settings-heading h2 { margin: 5px 0 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 30px; font-weight: 500; }
+      .settings-group { margin-top: 30px; }
+      .settings-group h3 { margin: 0 0 8px; color: #806f63; font-size: 11px; letter-spacing: .12em; }
+      .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 68px; padding: 13px 2px; border-top: 1px solid rgba(74,50,35,.18); }
+      .settings-row:last-child { border-bottom: 1px solid rgba(74,50,35,.18); }
+      .settings-row strong { display: block; font-size: 15px; }
+      .settings-row small { display: block; margin-top: 4px; color: #806f63; font-size: 11px; line-height: 1.5; }
+      .settings-select { max-width: 145px; min-height: 42px; padding: 8px 30px 8px 9px; border: 1px solid #bda48d; border-radius: 5px; background: #fffaf1; color: #44352b; }
+      .settings-switch { position: relative; flex: 0 0 48px; width: 48px; height: 28px; }
+      .settings-switch input { position: absolute; opacity: 0; }
+      .settings-switch span { position: absolute; inset: 0; border: 1px solid #b6a18e; border-radius: 20px; background: #d9cbbb; transition: .2s ease; }
+      .settings-switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fffaf1; box-shadow: 0 1px 4px rgba(57,36,23,.22); transition: .2s ease; }
+      .settings-switch input:checked + span { border-color: #8d5433; background: #9b6037; }
+      .settings-switch input:checked + span::after { transform: translateX(20px); }
+      .settings-note { margin-top: 14px; color: #806f63; font-size: 11px; line-height: 1.7; }
+      .settings-saved { min-height: 24px; margin-top: 18px; color: #8d5433; font-size: 12px; text-align: center; }
+      #authView { margin: -18px -18px 0; min-height: calc(100vh - 58px); padding: 0 18px 60px; background: #f7efe3; }
+      #authView .card { max-width: 520px; margin: 0 auto; padding: 40px 4px 20px; border: 0; border-radius: 0; background: transparent; }
+      .auth-mark { width: 54px; height: 54px; margin: 0 auto 17px; border: 1px solid #9b7659; color: #6c4630; font-family: "Yu Mincho", serif; font-size: 25px; line-height: 52px; text-align: center; transform: rotate(45deg); }
+      .auth-mark span { display: block; transform: rotate(-45deg); }
+      .auth-intro { margin-bottom: 28px; text-align: center; }
+      .auth-intro h1 { margin: 0; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 29px; font-weight: 500; line-height: 1.5; }
+      .auth-intro p { margin: 9px auto 0; color: #74665c; font-size: 13px; line-height: 1.75; }
+      .auth-steps { display: flex; justify-content: center; gap: 0; margin: 20px 0 28px; color: #806f63; font-size: 11px; }
+      .auth-steps span { display: flex; align-items: center; }
+      .auth-steps span + span::before { content: "—"; margin: 0 8px; color: #b79b84; }
+      .auth-heading { padding-top: 21px; border-top: 1px solid rgba(74,50,35,.24); text-align: center; }
+      .auth-heading h2 { margin: 0 0 5px; font-family: "Yu Mincho", serif; font-size: 22px; font-weight: 600; }
+      .auth-heading p { margin: 0; color: #806f63; font-size: 12px; }
+      .auth-social { margin: 17px 0 22px !important; }
+      .auth-social .btn { min-height: 50px; border: 1px solid #bda48d; border-radius: 5px; background: rgba(255,252,246,.72); color: #3f3027; font-size: 14px; }
+      .auth-social .btn:disabled { opacity: .48; }
+      .auth-separator { display: flex; align-items: center; gap: 12px; margin: 19px 0 15px !important; color: #8b7a6d; font-size: 11px; }
+      .auth-separator::before, .auth-separator::after { content: ""; flex: 1; height: 1px; background: rgba(74,50,35,.18); }
+      .auth-email label { margin-top: 13px; color: #6e5d51; font-size: 12px; font-weight: 700; }
+      .auth-email input { border-color: #c8b5a2; border-radius: 5px; background: rgba(255,252,246,.8); }
+      .auth-email .primary { margin-top: 18px; border-radius: 5px; background: #8d5433; color: #fffaf1; }
+      .auth-mode-toggle { padding: 13px 0 !important; border: 0 !important; background: transparent !important; color: #79543a !important; font-size: 13px !important; text-decoration: underline; text-underline-offset: 4px; }
+      .auth-consent { margin-top: 17px; color: #806f63 !important; font-size: 10px !important; }
     </style>
-    <link rel="stylesheet" href="design-system.css?v=1" />
+    <link rel="stylesheet" href="design-system.css?v=2" />
   </head>
   <body>
     <header>
@@ -599,16 +863,14 @@
         ><span>和酒ログ</span>
       </div>
       <button
-        id="logoutTop"
-        class="outline"
-        style="padding: 8px 11px; border-radius: 10px"
+        id="profileTop"
+        class="outline top-profile"
       >
-        ログアウト
+        マイページ
       </button>
     </header>
     <div id="networkBanner" class="network-banner hidden">
-      📡
-      オフラインです。入力内容はそのまま残ります。通信が戻ってから保存してください。
+      オフラインです。入力内容は残っています。通信が戻ってから保存してください。
     </div>
     <main>
       <section id="setupView" class="hidden">
@@ -635,39 +897,35 @@
       </section>
       <section id="authView" class="hidden">
         <div class="card">
-          <h2 id="authTitle">ログイン</h2>
+          <div class="auth-intro">
+            <div class="auth-mark" aria-hidden="true"><span>和</span></div>
+            <h1>一杯の記憶を、<br>自分のために残す。</h1>
+            <p>人に見せるためではなく、<br>あの日の味と時間を忘れないための酒ログです。</p>
+          </div>
+          <div class="auth-steps" aria-label="使い方"><span>撮る</span><span>見つける</span><span>残す</span></div>
+          <div class="auth-heading"><h2 id="authTitle">ログイン</h2><p id="authModeLead">いつもの方法で中へどうぞ。</p></div>
 
-          <div id="socialLoginBox" class="hidden" style="margin-bottom: 18px">
+          <div id="socialLoginBox" class="auth-social hidden">
             <button id="googleLoginBtn" class="btn outline hidden">
               Googleで続ける
-            </button>
-            <button id="appleLoginBtn" class="btn outline hidden">
-              Appleで続ける
             </button>
             <button id="lineLoginBtn" class="btn outline hidden">
               LINEで続ける
             </button>
-            <div class="small" style="text-align: center; margin: 10px 0">
-              または
-            </div>
+            <button id="appleLoginBtn" class="btn outline" type="button" disabled aria-disabled="true">
+              Appleで続ける（準備中）
+            </button>
+            <div class="auth-separator">メールアドレスでも続けられます</div>
           </div>
 
-          <label>メールアドレス</label><input id="email" type="email" />
-          <label>パスワード</label
-          ><input
-            id="password"
-            type="password"
-            autocomplete="current-password"
-          />
-          <button id="authBtn" class="btn primary">ログイン</button>
-          <button id="toggleAuth" class="btn secondary">
-            初めて使う → 新規登録
-          </button>
+          <div class="auth-email">
+            <label for="email">メールアドレス</label><input id="email" type="email" autocomplete="email" />
+            <label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" />
+            <button id="authBtn" class="btn primary">ログイン</button>
+            <button id="toggleAuth" class="btn secondary auth-mode-toggle">初めて使う → 新規登録</button>
+          </div>
           <div id="authMsg"></div>
-          <div
-            class="small"
-            style="margin-top: 14px; text-align: center; line-height: 1.7"
-          >
+          <div class="small auth-consent" style="text-align: center; line-height: 1.7">
             新規登録すると
             <a href="./terms.html" target="_blank" rel="noopener">利用規約</a>
             と
@@ -680,23 +938,36 @@
       </section>
       <section id="homeView" class="page hidden">
         <div id="recoveryNotice" class="hidden"></div>
-        <div class="card hero">
-          <h2>日本酒を記録する</h2>
-          <div class="small" id="userEmail"></div>
-          <div class="grid">
-            <button id="cameraBtn" class="btn primary">📷 表ラベル撮影</button>
-            <button id="galleryBtn" class="btn secondary">
-              🖼 表ラベル選択
-            </button>
+        <div class="autumn-home-hero">
+          <div class="home-intro">
+            <div class="home-logo" aria-label="和酒ログ">
+              <svg viewBox="0 0 64 64" aria-hidden="true">
+                <path
+                  d="M9 47V21L32 8l23 13v26M17 47V25l15-9 15 9v22M25 47V30l7-4 7 4v17M6 49h52"
+                />
+              </svg>
+              <span>和酒ログ</span>
+            </div>
+            <p>こんばんは。今夜は、どんな一杯？</p>
+            <div class="small hidden" id="userEmail"></div>
           </div>
-          <div class="grid">
-            <button id="backCameraBtn" class="btn outline">
-              📷 裏ラベル撮影
-            </button>
-            <button id="backGalleryBtn" class="btn outline">
-              🖼 裏ラベル選択
-            </button>
-          </div>
+          <h1>今夜の一杯を、<br />残しておこう。</h1>
+          <button id="cameraBtn" class="coaster-camera">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <path d="M8 15h8l3-5h10l3 5h8v25H8z" />
+              <circle cx="24" cy="27" r="8" />
+            </svg>
+            <span>ラベルを撮る</span>
+          </button>
+          <button id="galleryBtn" class="home-photo-choice">
+            写真から選ぶ
+          </button>
+          <button id="backCameraBtn" class="hidden" tabindex="-1">
+            裏ラベル撮影
+          </button>
+          <button id="backGalleryBtn" class="hidden" tabindex="-1">
+            裏ラベル選択
+          </button>
           <input
             id="cameraInput"
             type="file"
@@ -749,9 +1020,7 @@
             accept="image/*"
             class="hidden"
           />
-          <button id="manualBtn" class="btn outline">
-            ✍️ 写真なしで手入力
-          </button>
+          <button id="manualBtn" class="home-manual">写真なしで記録する</button>
           <button id="eventsBtn" class="btn outline v2-deferred">
             日本酒イベントを見る
           </button>
@@ -760,9 +1029,17 @@
           <h3>参加予定のイベント</h3>
           <div id="upcomingEventList">読み込み中…</div>
         </div>
-        <div class="card">
-          <h3>最近の記録</h3>
-          <div id="recentList">読み込み中…</div>
+        <div class="home-lower">
+          <h3>前に飲んだ一本</h3>
+          <div id="recentList" aria-live="polite"></div>
+          <a class="home-knowledge" href="knowledge.html">
+            <span class="home-knowledge-mark" aria-hidden="true">蔵</span>
+            <span
+              ><strong>知識の蔵</strong
+              ><small>お酒のことを、やさしく知る</small></span
+            >
+            <span aria-hidden="true">›</span>
+          </a>
         </div>
       </section>
       <section id="eventView" class="page hidden">
@@ -786,101 +1063,199 @@
           />
         </div>
       </section>
+      <section
+        id="captureView"
+        class="page hidden"
+        aria-labelledby="captureTitle"
+      >
+        <div class="capture-screen">
+          <div class="capture-topbar">
+            <button
+              id="captureBackBtn"
+              class="capture-icon-btn"
+              type="button"
+              aria-label="ホームへ戻る"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m15 5-7 7 7 7" />
+              </svg>
+            </button>
+            <div>
+              <span>1 / 2</span>
+              <h2 id="captureTitle">表ラベルを撮る</h2>
+            </div>
+            <span class="capture-top-spacer" aria-hidden="true"></span>
+          </div>
+          <div class="capture-copy">
+            ラベルが枠に入るように、<br />瓶を縦に撮ってください
+          </div>
+          <div class="label-viewfinder" aria-hidden="true">
+            <span class="viewfinder-corner corner-tl"></span
+            ><span class="viewfinder-corner corner-tr"></span>
+            <span class="viewfinder-corner corner-bl"></span
+            ><span class="viewfinder-corner corner-br"></span>
+            <div class="bottle-guide"><span></span></div>
+          </div>
+          <p class="capture-note">
+            撮った縦写真は、あの日の一枚としてMY LOGにも残ります。
+          </p>
+          <div id="captureIssue" class="capture-issue hidden" role="alert"></div>
+          <div class="capture-controls">
+            <button
+              id="captureGalleryBtn"
+              class="capture-side-action"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5h16v14H4zM7 15l3-3 3 3 2-2 3 3M8 9h.01" /></svg
+              ><span>写真から</span>
+            </button>
+            <button
+              id="captureShutterBtn"
+              class="capture-shutter"
+              type="button"
+              aria-label="カメラを開いて撮影する"
+            >
+              <span></span>
+            </button>
+            <div class="capture-side-action capture-help" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path
+                  d="M9.8 9a2.3 2.3 0 0 1 4.4 1c0 2-2.2 2-2.2 4M12 17h.01"
+                /></svg
+              ><span>撮り方</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="frontConfirmView" class="page hidden" aria-labelledby="frontConfirmTitle">
+        <div class="photo-confirm-screen">
+          <div class="confirm-heading"><span>1 / 2</span><h2 id="frontConfirmTitle">表ラベルの写真</h2></div>
+          <div class="confirm-photo-wrap"><img id="frontConfirmPreview" alt="撮影した表ラベルの写真" /></div>
+          <p>ラベルが読めて、残したい景色も写っていますか？</p>
+          <button id="frontConfirmBackLabelBtn" class="btn primary" type="button">この写真を使って、裏ラベルも撮る</button>
+          <button id="frontConfirmWithoutBackBtn" class="btn secondary" type="button">裏ラベルなしで銘柄を探す</button>
+          <button id="frontRetakeBtn" class="confirm-text-button" type="button">撮り直す</button>
+        </div>
+      </section>
+      <section id="backCaptureView" class="page hidden" aria-labelledby="backCaptureTitle">
+        <div class="capture-screen">
+          <div class="capture-topbar">
+            <button id="backCaptureBackBtn" class="capture-icon-btn" type="button" aria-label="表ラベルの確認へ戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg></button>
+            <div><span>2 / 2・任意</span><h2 id="backCaptureTitle">裏ラベルを撮る</h2></div>
+            <span class="capture-top-spacer" aria-hidden="true"></span>
+          </div>
+          <div class="capture-copy">文字が読めるように、<br />裏ラベルへ近づいてください</div>
+          <div class="label-viewfinder back-label-viewfinder" aria-hidden="true">
+            <span class="viewfinder-corner corner-tl"></span><span class="viewfinder-corner corner-tr"></span>
+            <span class="viewfinder-corner corner-bl"></span><span class="viewfinder-corner corner-br"></span>
+            <div class="back-text-guide"><span></span><span></span><span></span><span></span></div>
+          </div>
+          <p class="capture-note">原材料や精米歩合などを見つける手がかりにします。</p>
+          <div id="backCaptureIssue" class="capture-issue hidden" role="alert"></div>
+          <div class="capture-controls">
+            <button id="backCaptureGalleryBtn" class="capture-side-action" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 15l3-3 3 3 2-2 3 3M8 9h.01" /></svg><span>写真から</span></button>
+            <button id="backCaptureShutterBtn" class="capture-shutter" type="button" aria-label="カメラを開いて裏ラベルを撮影する"><span></span></button>
+            <button id="backCaptureSkipBtn" class="capture-side-action" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M15 8l4 4-4 4" /></svg><span>今回は撮らない</span></button>
+          </div>
+        </div>
+      </section>
+      <section id="backConfirmView" class="page hidden" aria-labelledby="backConfirmTitle">
+        <div class="photo-confirm-screen">
+          <div class="confirm-heading"><span>2 / 2・任意</span><h2 id="backConfirmTitle">裏ラベルの写真</h2></div>
+          <div class="confirm-photo-wrap"><img id="backConfirmPreview" alt="撮影した裏ラベルの写真" /></div>
+          <p>銘柄やお酒の情報を探す手がかりにします。</p>
+          <button id="backConfirmUseBtn" class="btn primary" type="button">この写真で銘柄を探す</button>
+          <button id="backRetakeBtn" class="confirm-text-button" type="button">撮り直す</button>
+          <button id="backConfirmDiscardBtn" class="confirm-text-button" type="button">裏ラベルを使わずに探す</button>
+        </div>
+      </section>
+      <section id="searchingView" class="page hidden" aria-labelledby="searchingTitle">
+        <div class="searching-screen">
+          <div class="searching-copy"><span>和酒ログ</span><h2 id="searchingTitle">銘柄を見つけています</h2><p>少しだけお待ちください</p></div>
+          <div class="searching-photos">
+            <figure><img id="searchingFrontPreview" alt="表ラベル" /><figcaption>表</figcaption></figure>
+            <span class="searching-light" aria-hidden="true"></span>
+            <figure id="searchingBackFigure"><img id="searchingBackPreview" alt="裏ラベル" /><figcaption>裏</figcaption></figure>
+          </div>
+          <div class="searching-progress" aria-hidden="true"><span></span></div>
+        </div>
+      </section>
+      <section id="candidateView" class="page hidden" aria-labelledby="candidateTitle">
+        <div class="candidate-screen">
+          <div class="candidate-heading"><span>見つかりました</span><h2 id="candidateTitle">このお酒ですか？</h2><p>近いものを選んでください</p></div>
+          <div class="candidate-photo-pair"><img id="candidateFrontPreview" alt="撮影した表ラベル" /><img id="candidateBackPreview" class="hidden" alt="撮影した裏ラベル" /></div>
+          <div id="candidateBox" class="hidden"></div>
+          <button id="candidateManualBtn" class="confirm-text-button" type="button">候補にない・自分で入力する</button>
+          <button id="candidateRetakeBtn" class="confirm-text-button" type="button">写真を撮り直す</button>
+        </div>
+      </section>
       <section id="recordView" class="page hidden">
-        <div class="card">
-          <h2>ラベル確認・AI候補</h2>
-          <div class="grid">
-            <div>
-              <div class="small">表ラベル</div>
-              <img id="preview" class="preview hidden" />
-            </div>
-            <div>
-              <div class="small">裏ラベル</div>
-              <img id="backPreview" class="preview hidden" />
-            </div>
+        <div class="record-screen">
+          <div class="record-heading"><span>MY LOG</span><h2>この一杯を残す</h2></div>
+          <div class="record-sake-summary">
+            <img id="preview" class="preview hidden" alt="撮影した日本酒" />
+            <div><strong id="recordSakeName">銘柄を入力してください</strong><p id="recordBreweryName">蔵元は未入力です</p><button id="recordEditSakeBtn" class="record-edit-link" type="button">銘柄情報を確認・修正</button></div>
           </div>
-          <div class="grid">
-            <button id="recordFrontGalleryBtn" class="btn outline">
-              🖼 表ラベルを変更
-            </button>
-            <button id="recordBackGalleryBtn" class="btn outline">
-              🖼 裏ラベルを追加
-            </button>
-          </div>
-          <div class="grid">
-            <button id="recordFrontCameraBtn" class="btn outline">
-              📷 表を撮り直す
-            </button>
-            <button id="recordBackCameraBtn" class="btn outline">
-              📷 裏を撮影
-            </button>
-          </div>
+          <img id="backPreview" class="preview hidden" alt="裏ラベル" />
+          <button id="recordFrontGalleryBtn" class="hidden" type="button">表ラベルを変更</button>
+          <button id="recordBackGalleryBtn" class="hidden" type="button">裏ラベルを追加</button>
+          <button id="recordFrontCameraBtn" class="hidden" type="button">表を撮り直す</button>
+          <button id="recordBackCameraBtn" class="hidden" type="button">裏を撮影</button>
           <button id="analyzeBtn" class="btn secondary hidden">
             🔎 AIで銘柄候補を探す
           </button>
           <div id="analysisMsg"></div>
-          <div id="candidateBox" class="hidden"></div>
-          <h3 style="margin-top: 18px">確定して記録</h3>
-          <label>銘柄</label><input id="brand" placeholder="例：今西" />
-          <label>商品名</label
-          ><input id="product" placeholder="例：純米吟醸 朝日" />
-          <label>蔵元</label
-          ><input id="brewery" placeholder="例：今西酒造株式会社" />
-          <label>都道府県</label
-          ><input id="prefecture" placeholder="例：奈良県" />
-          <label>特定名称・酒類区分</label
-          ><input id="classification" placeholder="例：純米吟醸" />
-          <label>原材料名</label
-          ><input id="rice" placeholder="例：米（国産）" />
-          <label>使用米・原料米</label
-          ><input id="riceVariety" placeholder="例：朝日米100%" />
-          <label>精米歩合</label
-          ><input id="polishing" inputmode="decimal" placeholder="例：60%" />
-          <label>アルコール度数</label
-          ><input id="alcohol" inputmode="decimal" placeholder="例：14%" />
-          <label>容量</label
-          ><input id="volume" inputmode="decimal" placeholder="例：720ml" />
-          <label>評価（1〜5）</label
-          ><input
-            id="rating"
-            type="range"
-            min="1"
-            max="5"
-            step=".5"
-            value="4"
-          />
-          <div><span id="ratingVal">4.0</span> ★</div>
-          <label>飲んだ店</label><input id="restaurant" />
-          <label>価格（円・任意）</label
-          ><input id="price" inputmode="numeric" min="0" />
-          <label>コメント</label
-          ><textarea id="comment" maxlength="1000"></textarea>
-          <div class="memory-photo-section">
-            <h3 style="margin-top: 18px">この日の思い出</h3>
-            <div class="grid">
-              <button id="foodCameraBtn" class="btn outline" type="button">
-                🍽️ 料理を撮影
-              </button>
-              <button id="foodGalleryBtn" class="btn outline" type="button">
-                🖼️ 料理写真を選ぶ
-              </button>
+          <section class="record-section">
+            <span class="record-section-kicker">01</span><h3>今日の一杯は？</h3>
+            <div class="rating-choices" role="group" aria-label="評価"><button class="rating-choice" type="button" data-rating="1">1</button><button class="rating-choice" type="button" data-rating="2">2</button><button class="rating-choice" type="button" data-rating="3">3</button><button class="rating-choice is-selected" type="button" data-rating="4">4</button><button class="rating-choice" type="button" data-rating="5">5</button></div>
+            <input id="rating" type="range" min="1" max="5" step="1" value="4" /><span id="ratingVal" class="hidden">4.0</span>
+          </section>
+          <section class="record-section">
+            <span class="record-section-kicker">02</span><h3>あの日のこと</h3>
+            <div class="record-field"><label for="drankDate">日付</label><input id="drankDate" type="date" /></div>
+            <div class="record-field"><label for="companion">誰と <small>任意</small></label><input id="companion" placeholder="家族と、友人と、ひとりで など" /></div>
+            <div class="record-field"><label for="restaurant">どこで <small>任意</small></label><input id="restaurant" placeholder="自宅、お店の名前、旅先 など" /></div>
+            <button id="locateBtn" class="record-edit-link" type="button">現在地を記録する</button><div id="locMsg" class="small location-status" role="status" aria-live="polite"></div>
+            <div class="record-field"><label for="comment">ひとこと <small>任意</small></label><textarea id="comment" maxlength="1000" placeholder="香り、料理、その日の出来事など"></textarea></div>
+          </section>
+          <section class="record-section memory-photo-section">
+            <span class="record-section-kicker">03</span><h3>写真を添える <small>任意</small></h3>
+            <div class="memory-photo-grid">
+              <button id="foodCameraBtn" class="memory-photo-slot" type="button"><span>料理の写真</span><small>タップして追加</small><img id="foodPreview" class="hidden" alt="料理写真" /></button>
+              <button id="memoryCameraBtn" class="memory-photo-slot" type="button"><span>思い出の写真</span><small>タップして追加</small><img id="memoryPreview" class="hidden" alt="思い出写真" /></button>
             </div>
-            <img id="foodPreview" class="hidden" alt="料理写真" />
-            <div class="grid" style="margin-top: 10px">
-              <button id="memoryCameraBtn" class="btn outline" type="button">
-                📷 思い出を撮影
-              </button>
-              <button id="memoryGalleryBtn" class="btn outline" type="button">
-                🖼️ 思い出写真を選ぶ
-              </button>
-            </div>
-            <img id="memoryPreview" class="hidden" alt="思い出写真" />
-          </div>
-          <button id="locateBtn" class="btn outline">📍 現在地を記録</button>
-          <div id="locMsg" class="small"></div>
+            <button id="foodGalleryBtn" class="hidden" type="button">料理写真を選ぶ</button><button id="memoryGalleryBtn" class="hidden" type="button">思い出写真を選ぶ</button>
+          </section>
+          <details id="recordSakeDetails" class="record-details">
+            <summary>銘柄情報を確認・修正</summary>
+            <label>銘柄</label><input id="brand" placeholder="例：今西" />
+            <label>商品名</label><input id="product" placeholder="例：純米吟醸 朝日" />
+            <label>蔵元</label><input id="brewery" placeholder="例：今西酒造株式会社" />
+            <label>都道府県</label><input id="prefecture" placeholder="例：奈良県" />
+            <label>特定名称・酒類区分</label><input id="classification" placeholder="例：純米吟醸" />
+            <label>原材料名</label><input id="rice" placeholder="例：米（国産）" />
+            <label>使用米・原料米</label><input id="riceVariety" placeholder="例：朝日米100%" />
+            <label>精米歩合</label><input id="polishing" inputmode="decimal" placeholder="例：60%" />
+            <label>アルコール度数</label><input id="alcohol" inputmode="decimal" placeholder="例：14%" />
+            <label>容量</label><input id="volume" inputmode="decimal" placeholder="例：720ml" />
+            <label>価格（円・任意）</label><input id="price" inputmode="numeric" min="0" />
+          </details>
           <div id="recordValidationMsg"></div>
-          <button id="saveRecordBtn" class="btn primary">記録を保存</button>
+          <button id="saveRecordBtn" class="btn primary record-save">内容を確認する</button>
           <div id="recordMsg"></div>
+        </div>
+      </section>
+      <section id="recordConfirmView" class="page hidden" aria-labelledby="recordConfirmTitle">
+        <div class="record-confirm-screen">
+          <div class="record-heading"><span>MY LOG</span><h2 id="recordConfirmTitle">この内容で残しますか？</h2></div>
+          <div id="recordConfirmBody"></div>
+          <div class="record-confirm-actions">
+            <button id="commitRecordBtn" class="btn primary" type="button">MY LOGに残す</button>
+            <button id="recordConfirmBackBtn" class="confirm-text-button" type="button">入力に戻る</button>
+            <div id="recordConfirmMsg"></div>
+          </div>
         </div>
       </section>
       <section id="completeView" class="page hidden">
@@ -889,20 +1264,25 @@
         </div>
       </section>
       <section id="historyView" class="page hidden">
-        <div class="card">
-          <h2>🍶 飲んだ記録</h2>
-          <div class="small" style="margin-bottom: 12px">
-            これまで飲んだ一本を、写真・評価・場所と一緒に残します。
+        <div class="my-log-screen">
+          <div class="my-log-heading"><div><span>MY LOG</span><h2>わたしの酒ログ</h2></div><p>あの日の一杯を、ゆっくり振り返る場所。</p></div>
+          <div id="historyNotice" aria-live="polite"></div>
+          <button id="historyFilterToggle" class="history-filter-toggle" type="button" aria-expanded="false" aria-controls="historyFilterPanel"><span>記録を探す</span><span aria-hidden="true">＋</span></button>
+          <div id="historyFilterPanel" class="history-filter-panel hidden">
+            <div class="history-filter-field"><label for="historyKeyword">キーワード</label><input id="historyKeyword" type="search" placeholder="銘柄・蔵元・場所・誰と" autocomplete="off" /></div>
+            <div class="history-filter-pair">
+              <div class="history-filter-field"><label for="historyYearMonth">飲んだ年月</label><select id="historyYearMonth"><option value="">すべての年月</option></select></div>
+              <div class="history-filter-field"><label for="historyMinRating">評価</label><select id="historyMinRating"><option value="">すべて</option><option value="5">5</option><option value="4">4以上</option><option value="3">3以上</option><option value="2">2以上</option><option value="1">1以上</option></select></div>
+            </div>
+            <div class="history-filter-footer"><span id="historyResultCount" class="history-result-count"></span><button id="historyFilterReset" class="history-filter-reset" type="button">条件をクリア</button></div>
           </div>
-          <div id="historyList">読み込み中…</div>
+          <div id="historyList" aria-live="polite"></div>
         </div>
       </section>
       <section id="detailView" class="page hidden">
-        <div class="card">
-          <button id="detailBackBtn" class="btn outline" style="margin-top: 0">
-            ← 記録一覧へ戻る
-          </button>
-          <div id="detailBody" style="margin-top: 14px">読み込み中…</div>
+        <div class="memory-detail-screen">
+          <button id="detailBackBtn" class="memory-detail-back" type="button">← MY LOGへ戻る</button>
+          <div id="detailBody" aria-live="polite"></div>
         </div>
       </section>
       <section id="analysisView" class="page hidden">
@@ -911,41 +1291,49 @@
           <div class="small" style="margin-bottom: 12px">
             これまでの記録から、あなたの日本酒の好みを自動集計します。
           </div>
-          <div id="analysisBody">読み込み中…</div>
+          <div id="analysisBody" aria-live="polite"></div>
         </div>
       </section>
       <section id="profileView" class="page hidden">
-        <div class="card">
-          <h2>マイページ</h2>
+        <div class="profile-screen">
+          <div class="profile-heading"><span>MY PAGE</span><h2>わたしの場所</h2><p>残してきた一杯と、和酒ログの設定。</p></div>
           <div id="profileBody"></div>
-        </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>📅 イベントの記録</h3>
           <div id="profileEventStats">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>✨ イベントでの出会い</h3>
           <div id="profileEventDiscoveries">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>🏮 今年のイベント振り返り</h3>
           <div id="profileEventYearReview">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>📷 自分のイベント写真</h3>
           <div id="profileEventPhotos">読み込み中…</div>
         </div>
-        <div class="card">
+        <div class="card v2-deferred">
           <h3>📅 イベント履歴</h3>
           <div id="profileEventHistory">読み込み中…</div>
         </div>
-        <div class="card">
-          <a
-            href="knowledge.html"
-            class="btn secondary"
-            style="display: block; text-align: center; text-decoration: none"
-            >📚 知識の蔵</a
-          >
+        </div>
+      </section>
+      <section id="settingsView" class="page hidden">
+        <div class="settings-screen">
+          <button id="settingsBackBtn" class="settings-back" type="button">← マイページへ戻る</button>
+          <div class="settings-heading"><span>SETTINGS</span><h2>設定</h2></div>
+          <div class="settings-group">
+            <h3>写真</h3>
+            <div class="settings-row"><span><strong>ラベル写真を端末にも残す</strong><small>記録の保存後、対応端末のダウンロードへ保存します</small></span><label class="settings-switch"><input id="settingSavePhoto" type="checkbox" /><span aria-hidden="true"></span></label></div>
+          </div>
+          <div class="settings-group">
+            <h3>表示</h3>
+            <div class="settings-row"><span><strong>表示言語</strong><small id="settingLanguageHelp">端末の設定に合わせます</small></span><select id="settingLanguage" class="settings-select"><option value="device">端末に合わせる</option><option value="ja">日本語</option><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文</option><option value="ko">한국어</option></select></div>
+          </div>
+          <p class="settings-note">端末の言語が対応外の場合は、日本語で表示します。日本語以外の画面表示は公開版に向けて順次反映します。</p>
+          <div id="settingsSaved" class="settings-saved" role="status"></div>
         </div>
       </section>
       <div class="small" style="text-align: center; margin: 14px 8px 76px">
@@ -955,6 +1343,49 @@
         >
         を利用しています。
       </div>
+      <dialog id="deleteRecordDialog" class="delete-dialog" aria-labelledby="deleteRecordDialogTitle">
+        <div class="delete-dialog-inner">
+          <div class="delete-dialog-kicker">MY LOG</div>
+          <h2 id="deleteRecordDialogTitle">この記録を削除しますか？</h2>
+          <p id="deleteRecordName" class="delete-dialog-name"></p>
+          <p class="delete-dialog-copy">ラベル・料理・思い出の写真も削除されます。この操作は元に戻せません。</p>
+          <div class="delete-dialog-actions">
+            <button id="confirmDeleteRecordBtn" class="delete-dialog-delete" type="button">記録を削除する</button>
+            <button id="cancelDeleteRecordBtn" class="delete-dialog-cancel" type="button">削除せず戻る</button>
+          </div>
+          <div id="deleteRecordMsg" aria-live="polite"></div>
+        </div>
+      </dialog>
+      <dialog id="discardEditDialog" class="delete-dialog" aria-labelledby="discardEditDialogTitle">
+        <div class="delete-dialog-inner">
+          <div class="delete-dialog-kicker">MY LOG</div>
+          <h2 id="discardEditDialogTitle">編集を途中でやめますか？</h2>
+          <p class="delete-dialog-copy">入力した内容や選んだ写真は、まだ保存されていません。</p>
+          <div class="delete-dialog-actions">
+            <button id="stayEditingBtn" class="discard-dialog-stay" type="button">編集を続ける</button>
+            <button id="discardEditBtn" class="discard-dialog-leave" type="button">変更を破棄して戻る</button>
+          </div>
+        </div>
+      </dialog>
+      <dialog id="deleteAccountDialog" class="delete-dialog" aria-labelledby="deleteAccountDialogTitle">
+        <div id="deleteAccountConfirmPanel" class="delete-dialog-inner">
+          <div class="delete-dialog-kicker">ACCOUNT</div>
+          <h2 id="deleteAccountDialogTitle">アカウントを削除しますか？</h2>
+          <p class="delete-dialog-copy">飲酒記録・ラベル・料理・思い出の写真など、あなたに紐づくデータが削除されます。この操作は元に戻せません。</p>
+          <label class="account-delete-email">確認のため登録メールアドレスを入力
+            <input id="deleteAccountEmail" type="email" autocomplete="email" inputmode="email" />
+          </label>
+          <p id="deleteAccountRegisteredEmail" class="account-delete-registered"></p>
+          <div class="delete-dialog-actions">
+            <button id="confirmDeleteAccountBtn" class="delete-dialog-delete" type="button" disabled>アカウントと記録を削除する</button>
+            <button id="cancelDeleteAccountBtn" class="delete-dialog-cancel" type="button">削除せず戻る</button>
+          </div>
+          <div id="deleteAccountDialogMsg" aria-live="polite"></div>
+        </div>
+        <div id="deleteAccountProgressPanel" class="delete-dialog-inner account-delete-progress hidden" role="status" aria-live="polite">
+          <div><div class="account-delete-door" aria-hidden="true"></div><p>扉を閉じています。<br />このままお待ちください。</p></div>
+        </div>
+      </dialog>
     </main>
     <nav id="bottomNav" class="hidden">
       <div class="navin">
@@ -977,7 +1408,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=526"></script>
+    <script src="app.js?v=543"></script>
     <script src="detail-knowledge.js?v=3"></script>
   </body>
 </html>
