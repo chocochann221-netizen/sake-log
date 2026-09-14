@@ -52,13 +52,13 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "50% center"
   },
   "福井県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tojinbo%20cliffs%2C%20Fukui%20Prefecture%3B%20September%202019%20%2801%29.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg",
-    title: "Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg",
-    author: "雷太（Raita Futo）",
-    license: "CC BY 2.0",
-    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-    credit: "Photo: 雷太 (Raita Futo) / Wikimedia Commons / CC BY 2.0",
+    src: "assets/fukui-tojinbo.jpg",
+    sourcePage: "https://www.fuku-e.com/photo/detail_625.html",
+    title: "東尋坊（素材ID 625）",
+    author: "福井県観光連盟または写真素材提供者",
+    license: "福井県観光連盟 写真素材利用規約（福井県の観光PR目的）",
+    licenseUrl: "https://www.fuku-e.com/photo/detail_625.html",
+    credit: "写真提供：福井県観光連盟",
     position: "50% center"
   },
   "大阪府": {

@@ -30,14 +30,14 @@
 | 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
 | 奈良県 | 早朝の奈良公園・鹿と石灯籠 | Deer at nara park 2.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
 | 石川県 | 金沢駅・鼓門 | Kanazawa-STA Tsuzumi-mon.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg | `assets/ishikawa-kanazawa-station.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
-| 福井県 | 東尋坊の断崖・太古の地層 | Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg | 雷太（Raita Futo） | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg | `prefecture-hero-images.js` | 採用・実装済み |
+| 福井県 | 東尋坊の断崖と日本海 | 東尋坊（素材ID 625） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_625.html | `assets/fukui-tojinbo.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 
 ### 福井ヒーロー利用メモ
 
-- 原画像は2019-09-18撮影。東尋坊の柱状節理と日本海を写した自然景観で、「太古の地層から恐竜・化石文化へ」という構成に用いる。
-- 原典はFlickrからWikimedia Commonsへ収録され、FlickreviewR 2によりCC BY 2.0であることが確認済み。
-- 撮影者は雷太（Raita Futo）。画面上に `Photo: 雷太 (Raita Futo) / Wikimedia Commons / CC BY 2.0` を表示し、原典ページへリンクする。
-- 原画像は5,842 × 3,895px。横長ヒーローでは断崖と海の双方が残る中央配置を基本とする。
+- 福井県観光連盟の公式写真ライブラリーに掲載された、東尋坊の断崖と日本海を写した昼景。
+- 写真素材IDは `625`。実装取得データは 640 × 504px。外部直リンクを避けてローカル保存する。
+- 福井県の観光PR目的で利用でき、必要最小限のトリミング・切り抜きが認められる。色調を変えて写真本来の印象を変える加工や、素材自体の商品化・配布は禁止。
+- 画面上に `写真提供：福井県観光連盟` を表示し、写真詳細ページへリンクする。
 
 ### 石川ヒーロー利用メモ
 
@@ -77,6 +77,7 @@
 |---|---|---|---|---|---|---|---|
 | 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 石川県 | 石川の手仕事・輪島塗 | 輪島塗（素材ID 1111111409） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111409.html | `assets/ishikawa-wajima-lacquer.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
+| 福井県 | 福井の手仕事・越前和紙 | 越前和紙（素材ID 1897） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_1897.html | `assets/fukui-echizen-washi.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 
 ### 奈良「地域」写真利用メモ
 
@@ -93,6 +94,13 @@
 - 石川の紹介PRを目的とした利用、加工、WEB掲載が認められる。素材自体の商品化、転売、譲渡、直接リンクは禁止。
 - 画面上に `写真提供：石川県観光連盟` を表示し、写真詳細ページへリンクする。
 
+### 福井「地域」写真利用メモ
+
+- 福井県観光連盟の公式写真ライブラリーに掲載された、越前和紙の製品を俯瞰した実写。
+- 写真素材IDは `1897`。公式ページ記載の原寸は 4,300 × 3,502px、実装取得データは 640 × 521px。
+- 福井県の観光PR目的で利用でき、必要最小限のトリミングが認められる。外部直リンクを避けてローカル保存する。
+- 画面上に `写真提供：福井県観光連盟` を表示し、写真詳細ページへリンクする。
+
 ## 都道府県「食」写真
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
@@ -100,7 +108,7 @@
 | 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 東京都 | 江戸前の寿司・職人の仕事 | A chef prepares sushi on a wooden counter（箸除去補修版） | Stephen Pontes | Unsplash License（商用利用・加工可） | https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4 | `assets/tokyo-edomae-sushi-retouched.png` / `prefecture-food-images.js` | 採用確定・加工明記・クレジット表示済み |
 | 石川県 | 加能ガニ | 加能ガニ（素材ID 1111111513） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111513.html | `assets/ishikawa-kano-crab.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
-| 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+| 福井県 | 越前おろしそば | 越前おろしそば（素材ID 3456） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_3456.html | `assets/fukui-oroshi-soba.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 
 ### 奈良「食」写真利用メモ
 
@@ -127,10 +135,10 @@
 
 ### 福井「食」写真利用メモ
 
-- 越前ガニの雄と雌を写した実写で、越前港で水揚げされたことを示す黄色いタグが確認できる。
-- 原画像は2021-01-04撮影、6,000 × 4,000px。撮影者はさかおり、CC BY-SA 4.0。
-- 画面上に `Photo: さかおり / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
-- 全県共通ルールとして食写真は各県1枚とし、店舗の商品写真は許諾または明示された再利用条件がない限り転載しない。
+- 石川県の加能ガニとの重複を避け、黒い器にそば・大根おろし・ねぎ・鰹節を盛り付けた越前おろしそばへ変更した。
+- 写真素材IDは `3456`。公式ページ記載の原寸は 2,717 × 1,811px、実装取得データは 640 × 426px。
+- 福井県の観光PR目的で利用でき、必要最小限のトリミングが認められる。外部直リンクを避けてローカル保存する。
+- 画面上に `写真提供：福井県観光連盟` を表示し、写真詳細ページへリンクする。
 
 ## UI木板テクスチャ
 

@@ -38,15 +38,15 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     position: "50% center"
   },
   "福井県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Boiled%20Echizen%20crab%20%28snow%20crab%29%20male%20and%20female.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg",
-    title: "Boiled Echizen crab (snow crab) male and female.jpg",
-    heading: "越前がに",
-    caption: "越前港で水揚げされたことを示す黄色いタグをまとった、冬の福井を代表する味覚。",
-    author: "さかおり",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: さかおり / Wikimedia Commons / CC BY-SA 4.0",
+    src: "assets/fukui-oroshi-soba.jpg",
+    sourcePage: "https://www.fuku-e.com/photo/detail_3456.html",
+    title: "越前おろしそば（素材ID 3456）",
+    heading: "越前おろしそば",
+    caption: "香り高いそばに辛味大根と鰹節を重ねる、福井の素朴で凛とした味。",
+    author: "福井県観光連盟または写真素材提供者",
+    license: "福井県観光連盟 写真素材利用規約（福井県の観光PR目的）",
+    licenseUrl: "https://www.fuku-e.com/photo/detail_3456.html",
+    credit: "写真提供：福井県観光連盟",
     position: "50% center"
   }
 };
