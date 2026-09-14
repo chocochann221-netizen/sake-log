@@ -61,6 +61,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "写真提供：福井県観光連盟",
     position: "50% center"
   },
+  "富山県": {
+    src: "assets/toyama-amaharashi.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:%E9%9B%A8%E6%99%B4%E6%B5%B7%E5%B2%B8%EF%BC%88%E5%A5%B3%E5%B2%A9%E3%83%BB%E7%AB%8B%E5%B1%B1%E9%80%A3%E5%B3%B0%EF%BC%8920250215-IMG_2900.jpg",
+    title: "雨晴海岸（女岩・立山連峰）20250215-IMG 2900.jpg",
+    author: "くろふね",
+    license: "CC BY 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    credit: "Photo: くろふね / Wikimedia Commons / CC BY 4.0",
+    position: "50% center"
+  },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",

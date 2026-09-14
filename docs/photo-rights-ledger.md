@@ -31,6 +31,7 @@
 | 奈良県 | 早朝の奈良公園・鹿と石灯籠 | Deer at nara park 2.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
 | 石川県 | 金沢駅・鼓門 | Kanazawa-STA Tsuzumi-mon.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg | `assets/ishikawa-kanazawa-station.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 福井県 | 東尋坊の断崖と日本海 | 東尋坊（素材ID 625） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_625.html | `assets/fukui-tojinbo.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
+| 富山県 | 雨晴海岸・女岩・立山連峰 | 雨晴海岸（女岩・立山連峰）20250215-IMG 2900.jpg | くろふね | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:%E9%9B%A8%E6%99%B4%E6%B5%B7%E5%B2%B8%EF%BC%88%E5%A5%B3%E5%B2%A9%E3%83%BB%E7%AB%8B%E5%B1%B1%E9%80%A3%E5%B3%B0%EF%BC%8920250215-IMG_2900.jpg | `assets/toyama-amaharashi.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 
 ### 福井ヒーロー利用メモ
 
@@ -78,6 +79,7 @@
 | 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 石川県 | 石川の手仕事・輪島塗 | 輪島塗（素材ID 1111111409） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111409.html | `assets/ishikawa-wajima-lacquer.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 福井県 | 福井の手仕事・越前和紙 | 越前和紙（素材ID 1897） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_1897.html | `assets/fukui-echizen-washi.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
+| 富山県 | 富山の暮らし・五箇山相倉集落 | Ainokura (World Heritage Site), Gokayama, Nanto City, Toyama Pref.jpg | 黒ゆり | CC BY-SA 3.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Ainokura_(World_Heritage_Site),_Gokayama,_Nanto_City,_Toyama_Pref.jpg | `assets/toyama-gokayama.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 
 ### 奈良「地域」写真利用メモ
 
@@ -109,6 +111,7 @@
 | 東京都 | 江戸前の寿司・職人の仕事 | A chef prepares sushi on a wooden counter（箸除去補修版） | Stephen Pontes | Unsplash License（商用利用・加工可） | https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4 | `assets/tokyo-edomae-sushi-retouched.png` / `prefecture-food-images.js` | 採用確定・加工明記・クレジット表示済み |
 | 石川県 | 加能ガニ | 加能ガニ（素材ID 1111111513） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111513.html | `assets/ishikawa-kano-crab.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 福井県 | 越前おろしそば | 越前おろしそば（素材ID 3456） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_3456.html | `assets/fukui-oroshi-soba.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
+| 富山県 | ます寿し | 笹ごと切ったます寿し.JPG | Sougenma | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:%E7%AC%B9%E3%81%94%E3%81%A8%E5%88%87%E3%81%A3%E3%81%9F%E3%81%BE%E3%81%99%E5%AF%BF%E3%81%97.JPG | `assets/toyama-masuzushi.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 
 ### 奈良「食」写真利用メモ
 
@@ -139,6 +142,13 @@
 - 写真素材IDは `3456`。公式ページ記載の原寸は 2,717 × 1,811px、実装取得データは 640 × 426px。
 - 福井県の観光PR目的で利用でき、必要最小限のトリミングが認められる。外部直リンクを避けてローカル保存する。
 - 画面上に `写真提供：福井県観光連盟` を表示し、写真詳細ページへリンクする。
+
+### 富山写真利用メモ
+
+- ヒーローは雨晴海岸の女岩と雪の立山連峰を写した実写。撮影者くろふね、CC BY 4.0。取得画像は 1,600 × 1,067px。
+- 地域写真は五箇山・相倉集落の合掌造り。撮影者黒ゆり、CC BY-SA 3.0。取得画像は 1,280 × 960px。
+- 食写真は笹ごと切り分けたます寿し。撮影者Sougenma、CC BY-SA 4.0。取得画像は 1,280 × 720px。
+- 3点ともWikimedia Commonsの個別ファイルページで商用利用・加工条件を確認し、外部直リンクを避けてローカル保存する。
 
 ## UI木板テクスチャ
 
