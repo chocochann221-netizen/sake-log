@@ -84,5 +84,17 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
     credit: "Photo: Ocdp / Wikimedia Commons / CC0",
     position: "50% 45%"
+  },
+  "山梨県": {
+    src: "assets/yamanashi-houtou.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Houtou.jpg",
+    title: "Houtou.jpg",
+    heading: "ほうとう",
+    caption: "平たい麺とかぼちゃなどの野菜を味噌仕立てで煮込む、山梨の温かな郷土食。",
+    author: "Jungle",
+    license: "CC BY-SA 3.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+    credit: "Photo: Jungle / Wikimedia Commons / CC BY-SA 3.0",
+    position: "50% 50%"
   }
 };

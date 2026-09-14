@@ -91,6 +91,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: 663highland / Wikimedia Commons / CC BY 2.5",
     position: "50% center"
   },
+  "山梨県": {
+    src: "assets/yamanashi-kawaguchi-fuji.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Mount_Fuji_from_Lake_Kawaguchi_(2015-10-26).jpg",
+    title: "Mount Fuji from Lake Kawaguchi (2015-10-26).jpg",
+    author: "Alpsdake",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    credit: "Photo: Alpsdake / Wikimedia Commons / CC BY-SA 4.0",
+    position: "50% center"
+  },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",
