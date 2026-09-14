@@ -32,6 +32,7 @@
 | 石川県 | 金沢駅・鼓門 | Kanazawa-STA Tsuzumi-mon.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg | `assets/ishikawa-kanazawa-station.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 福井県 | 東尋坊の断崖と日本海 | 東尋坊（素材ID 625） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_625.html | `assets/fukui-tojinbo.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 富山県 | 雨晴海岸・女岩・立山連峰 | 雨晴海岸（女岩・立山連峰）20250215-IMG 2900.jpg | くろふね | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:%E9%9B%A8%E6%99%B4%E6%B5%B7%E5%B2%B8%EF%BC%88%E5%A5%B3%E5%B2%A9%E3%83%BB%E7%AB%8B%E5%B1%B1%E9%80%A3%E5%B3%B0%EF%BC%8920250215-IMG_2900.jpg | `assets/toyama-amaharashi.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
+| 新潟県 | 佐渡島・万畳敷 | Find47 Niigata-Sado-shima island, Manjojiki-m.jpg | Roys | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Find47_Niigata-Sado-shima_island,_Manjojiki-m.jpg | `assets/niigata-sado-manjojiki.jpg` / `prefecture-hero-images.js` | 候補2で採用確定・実装済み |
 
 ### 福井ヒーロー利用メモ
 
@@ -80,6 +81,7 @@
 | 石川県 | 石川の手仕事・輪島塗 | 輪島塗（素材ID 1111111409） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111409.html | `assets/ishikawa-wajima-lacquer.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 福井県 | 福井の手仕事・越前和紙 | 越前和紙（素材ID 1897） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_1897.html | `assets/fukui-echizen-washi.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 富山県 | 富山の暮らし・五箇山相倉集落 | Ainokura (World Heritage Site), Gokayama, Nanto City, Toyama Pref.jpg | 黒ゆり | CC BY-SA 3.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Ainokura_(World_Heritage_Site),_Gokayama,_Nanto_City,_Toyama_Pref.jpg | `assets/toyama-gokayama.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
+| 新潟県 | 新潟の風景・三条市北五百川の棚田 | Rice Field Terrace, Kitaimogawa, Sanjō, Niigata, Japan, September 2022.jpg | Tail furry | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Rice_Field_Terrace,_Kitaimogawa,_Sanj%C5%8D,_Niigata,_Japan,_September_2022.jpg | `assets/niigata-kitaimogawa-terrace.jpg` / `prefecture-guide.html` | 候補2で採用確定・実装済み |
 
 ### 奈良「地域」写真利用メモ
 
@@ -112,6 +114,7 @@
 | 石川県 | 加能ガニ | 加能ガニ（素材ID 1111111513） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111513.html | `assets/ishikawa-kano-crab.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 福井県 | 越前おろしそば | 越前おろしそば（素材ID 3456） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_3456.html | `assets/fukui-oroshi-soba.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 富山県 | ます寿し | 笹ごと切ったます寿し.JPG | Sougenma | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:%E7%AC%B9%E3%81%94%E3%81%A8%E5%88%87%E3%81%A3%E3%81%9F%E3%81%BE%E3%81%99%E5%AF%BF%E3%81%97.JPG | `assets/toyama-masuzushi.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
+| 新潟県 | へぎそば | Hegi soba, Kojima-ya, Niigata station.jpg | Yuki Shimazu | CC BY-SA 2.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Hegi_soba,_Kojima-ya,_Niigata_station.jpg | `assets/niigata-hegi-soba.jpg` / `prefecture-food-images.js` | 候補1で採用確定・実装済み |
 
 ### 奈良「食」写真利用メモ
 

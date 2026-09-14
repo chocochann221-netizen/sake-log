@@ -71,6 +71,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: くろふね / Wikimedia Commons / CC BY 4.0",
     position: "50% center"
   },
+  "新潟県": {
+    src: "assets/niigata-sado-manjojiki.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Find47_Niigata-Sado-shima_island,_Manjojiki-m.jpg",
+    title: "Find47 Niigata-Sado-shima island, Manjojiki-m.jpg",
+    author: "Roys",
+    license: "CC BY 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    credit: "Photo: Roys / FIND/47 / Wikimedia Commons / CC BY 4.0",
+    position: "50% 67%"
+  },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",

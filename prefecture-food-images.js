@@ -60,5 +60,17 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
     credit: "Photo: Sougenma / Wikimedia Commons / CC BY-SA 4.0",
     position: "50% center"
+  },
+  "新潟県": {
+    src: "assets/niigata-hegi-soba.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Hegi_soba,_Kojima-ya,_Niigata_station.jpg",
+    title: "Hegi soba, Kojima-ya, Niigata station.jpg",
+    heading: "へぎそば",
+    caption: "布海苔をつなぎに使い、ひと口ずつ端正に盛る。新潟の水と食文化を映す郷土のそば。",
+    author: "Yuki Shimazu",
+    license: "CC BY-SA 2.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+    credit: "Photo: Yuki Shimazu / Wikimedia Commons / CC BY-SA 2.0",
+    position: "50% 61%"
   }
 };
