@@ -81,6 +81,16 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Roys / FIND/47 / Wikimedia Commons / CC BY 4.0",
     position: "50% 67%"
   },
+  "長野県": {
+    src: "assets/nagano-taisho-pond.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:150920_Taisho-ike_Kamikochi_Japan03n.jpg",
+    title: "150920 Taisho-ike Kamikochi Japan03n.jpg",
+    author: "663highland",
+    license: "CC BY 2.5",
+    licenseUrl: "https://creativecommons.org/licenses/by/2.5/",
+    credit: "Photo: 663highland / Wikimedia Commons / CC BY 2.5",
+    position: "50% center"
+  },
   "大阪府": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Osaka%20Dotonbori%20yoru%2000.jpg?width=1280",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg",

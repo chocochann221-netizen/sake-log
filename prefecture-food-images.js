@@ -72,5 +72,17 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
     credit: "Photo: Yuki Shimazu / Wikimedia Commons / CC BY-SA 2.0",
     position: "50% 61%"
+  },
+  "長野県": {
+    src: "assets/nagano-oyaki.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Oyaki_001.jpg",
+    title: "Oyaki 001.jpg",
+    heading: "野沢菜のおやき",
+    caption: "小麦やそばの皮で山里の野菜を包む、信州の素朴な郷土食。燗酒にも寄り添う味。",
+    author: "Ocdp",
+    license: "CC0 1.0",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    credit: "Photo: Ocdp / Wikimedia Commons / CC0",
+    position: "50% 45%"
   }
 };
