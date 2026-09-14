@@ -14,15 +14,15 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     position: "50% center"
   },
   "東京都": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sushi%20food%20in%20Tokyo%2C%20Japan.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Sushi_food_in_Tokyo,_Japan.jpg",
-    title: "Sushi food in Tokyo, Japan.jpg",
+    src: "assets/tokyo-edomae-sushi-retouched.png",
+    sourcePage: "https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4",
+    title: "A chef prepares sushi on a wooden counter (retouched)",
     heading: "江戸前の寿司",
-    caption: "江戸の海と町の知恵から育ち、東京の食文化を象徴する一皿。",
-    author: "Joli Rumi",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: Joli Rumi / Wikimedia Commons / CC BY-SA 4.0",
+    caption: "江戸の海と町の知恵から育ち、東京の食文化を象徴する職人の仕事。",
+    author: "Stephen Pontes",
+    license: "Unsplash License（手前の箸をAI補修で除去）",
+    licenseUrl: "https://unsplash.com/license",
+    credit: "Photo: Stephen Pontes / Unsplash / Retouched by 和酒ログ",
     position: "50% center"
   },
   "福井県": {
