@@ -89,7 +89,7 @@
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用確定・クレジット表示済み |
-| 東京都 | 江戸前の寿司 | Sushi food in Tokyo, Japan.jpg | Joli Rumi | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Sushi_food_in_Tokyo,_Japan.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
+| 東京都 | 江戸前の寿司・職人の仕事 | A chef prepares sushi on a wooden counter（箸除去補修版） | Stephen Pontes | Unsplash License（商用利用・加工可） | https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4 | `assets/tokyo-edomae-sushi-retouched.png` / `prefecture-food-images.js` | 採用確定・加工明記・クレジット表示済み |
 | 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 
 ### 奈良「食」写真利用メモ
@@ -98,6 +98,15 @@
 - 原典は Wikimedia Commons。撮影者 ZhengZhou、CC BY-SA 4.0。
 - 画面上に `Photo: ZhengZhou / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
 - 将来、運営者が自ら撮影した複数個を端正に並べた柿の葉寿司写真が用意できた場合は、表示確認後に権利台帳と実装を同時更新して差し替える。
+
+### 東京「食」写真利用メモ
+
+- 檜のカウンターで鮨職人がウニの握りを仕上げる実写。東京都ページの「食」写真として2026-09-14に採用確定。
+- 原典はUnsplash。撮影者 Stephen Pontes、Unsplash License。商用・非商用利用および加工が可能で、許諾・クレジットは必須ではない。
+- 元画像は 7,728 × 5,152px。原典を保持し、実装には 1,536 × 1,024px の加工版 `assets/tokyo-edomae-sushi-retouched.png` を使用する。
+- 加工内容は、画面手前を斜めに横切る黒い箸のみをAI補修で除去し、周囲の檜カウンターと前景のボケを補完したもの。鮨職人、手元、ウニの握り、木箱、基本構図と色調は維持する方針。
+- 画面上には透明性のため `Photo: Stephen Pontes / Unsplash / Retouched by 和酒ログ` を表示し、原典ページとUnsplash Licenseへ到達できるようにする。
+- 旧採用写真 `Sushi food in Tokyo, Japan.jpg`（Joli Rumi / CC BY-SA 4.0）は、江戸前鮨らしさと高級感が不足するため不採用へ変更する。
 
 ### 福井「食」写真利用メモ
 
