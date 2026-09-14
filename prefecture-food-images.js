@@ -48,5 +48,17 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     licenseUrl: "https://www.fuku-e.com/photo/detail_3456.html",
     credit: "写真提供：福井県観光連盟",
     position: "50% center"
+  },
+  "富山県": {
+    src: "assets/toyama-masuzushi.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:%E7%AC%B9%E3%81%94%E3%81%A8%E5%88%87%E3%81%A3%E3%81%9F%E3%81%BE%E3%81%99%E5%AF%BF%E3%81%97.JPG",
+    title: "笹ごと切ったます寿し.JPG",
+    heading: "ます寿し",
+    caption: "笹をひらくと現れる、鮮やかな鱒と米。富山の旅と暮らしに根づく押し寿し。",
+    author: "Sougenma",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    credit: "Photo: Sougenma / Wikimedia Commons / CC BY-SA 4.0",
+    position: "50% center"
   }
 };
