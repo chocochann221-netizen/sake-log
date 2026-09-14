@@ -42,13 +42,13 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "50% center"
   },
   "石川県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tsuzumi-mon%2C%20Kanazawa%20Station%20-%20Kanazawa%2C%20Japan%20-%20DSC09640.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg",
-    title: "Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg",
-    author: "Daderot",
-    license: "CC0 1.0",
-    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
-    credit: "Photo: Daderot / Wikimedia Commons / CC0",
+    src: "assets/ishikawa-kanazawa-station.jpg",
+    sourcePage: "https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg",
+    title: "Kanazawa-STA Tsuzumi-mon.jpg",
+    author: "MaedaAkihiko",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+    credit: "Photo: MaedaAkihiko / Wikimedia Commons / CC BY-SA 4.0",
     position: "50% center"
   },
   "福井県": {

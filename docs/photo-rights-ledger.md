@@ -1,6 +1,6 @@
 # 和酒ログ「知識の蔵」写真権利台帳
 
-最終更新: 2026-09-09
+最終更新: 2026-09-14
 
 ## 運用ルール
 
@@ -29,7 +29,7 @@
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
 | 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
 | 奈良県 | 早朝の奈良公園・鹿と石灯籠 | Deer at nara park 2.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
-| 石川県 | 夕景の金沢駅・鼓門 | Tsuzumi-mon, Kanazawa Station - Kanazawa, Japan - DSC09640.jpg | Daderot | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Tsuzumi-mon,_Kanazawa_Station_-_Kanazawa,_Japan_-_DSC09640.jpg | `prefecture-hero-images.js` | 採用・実装済み |
+| 石川県 | 金沢駅・鼓門 | Kanazawa-STA Tsuzumi-mon.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg | `assets/ishikawa-kanazawa-station.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 福井県 | 東尋坊の断崖・太古の地層 | Tojinbo cliffs, Fukui Prefecture; September 2019 (01).jpg | 雷太（Raita Futo） | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tojinbo_cliffs,_Fukui_Prefecture;_September_2019_(01).jpg | `prefecture-hero-images.js` | 採用・実装済み |
 
 ### 福井ヒーロー利用メモ
@@ -41,10 +41,11 @@
 
 ### 石川ヒーロー利用メモ
 
-- 原画像は 2018-04-15 撮影。夕景の金沢駅・鼓門が写り、伝統的な木組みと現代建築が重なる「石川への入口」というヒーロー方針に合致する。
-- 原典は Wikimedia Commons。撮影者 Daderot、CC0 1.0。商用利用・加工が可能。
-- 画面上には出典管理の透明性を保つため、任意クレジットとして `Photo: Daderot / Wikimedia Commons / CC0` を表示し、原典ページへリンクする。
-- 原画像は 5,472 × 3,648px。ヒーローでは横長にトリミングし、鼓門の木組みが中央に残るよう `background-position: 50% center` とする。
+- 原画像は 2022-07-29 撮影。金沢駅兼六園口の鼓門を正面寄りから写した実写。
+- 原典は Wikimedia Commons。撮影者 MaedaAkihiko、CC BY-SA 4.0。商用利用・加工が可能で、表示と同一条件での継承が必要。
+- 画面上に `Photo: MaedaAkihiko / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
+- 原画像は 5,472 × 3,648px。実装ではローカル保存し、横長ヒーローでも鼓門の木組みが中央に残るよう `background-position: 50% center` とする。
+- 旧採用の Daderot 撮影・夕景の鼓門写真は、今回の利用者確認により不採用へ変更した。
 
 ### 北海道ストーリー利用メモ
 
@@ -75,6 +76,7 @@
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
+| 石川県 | 石川の手仕事・輪島塗 | 輪島塗（素材ID 1111111409） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111409.html | `assets/ishikawa-wajima-lacquer.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 
 ### 奈良「地域」写真利用メモ
 
@@ -84,12 +86,20 @@
 - 原画像は 4,288 × 2,848px。横長表示でも南大門の全体像が伝わる中央配置を基本とする。
 - この写真を奈良県の地域写真として確定し、変更する場合は利用者確認後に権利台帳と実装を同時更新する。
 
+### 石川「地域」写真利用メモ
+
+- 石川県観光連盟の公式写真ライブラリーに掲載された輪島塗の実写。黒漆の器・箱・箸を横構図で撮影している。
+- 写真素材IDは `1111111409`。配布画像は 2,000 × 1,450px、実装取得データは 1,000 × 725px。
+- 石川の紹介PRを目的とした利用、加工、WEB掲載が認められる。素材自体の商品化、転売、譲渡、直接リンクは禁止。
+- 画面上に `写真提供：石川県観光連盟` を表示し、写真詳細ページへリンクする。
+
 ## 都道府県「食」写真
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 東京都 | 江戸前の寿司・職人の仕事 | A chef prepares sushi on a wooden counter（箸除去補修版） | Stephen Pontes | Unsplash License（商用利用・加工可） | https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4 | `assets/tokyo-edomae-sushi-retouched.png` / `prefecture-food-images.js` | 採用確定・加工明記・クレジット表示済み |
+| 石川県 | 加能ガニ | 加能ガニ（素材ID 1111111513） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111513.html | `assets/ishikawa-kano-crab.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 福井県 | 越前がに | Boiled Echizen crab (snow crab) male and female.jpg | さかおり | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Boiled_Echizen_crab_(snow_crab)_male_and_female.jpg | `prefecture-food-images.js` | 採用・クレジット表示済み |
 
 ### 奈良「食」写真利用メモ
@@ -107,6 +117,13 @@
 - 加工内容は、画面手前を斜めに横切る黒い箸のみをAI補修で除去し、周囲の檜カウンターと前景のボケを補完したもの。鮨職人、手元、ウニの握り、木箱、基本構図と色調は維持する方針。
 - 画面上には透明性のため `Photo: Stephen Pontes / Unsplash / Retouched by 和酒ログ` を表示し、原典ページとUnsplash Licenseへ到達できるようにする。
 - 旧採用写真 `Sushi food in Tokyo, Japan.jpg`（Joli Rumi / CC BY-SA 4.0）は、江戸前鮨らしさと高級感が不足するため不採用へ変更する。
+
+### 石川「食」写真利用メモ
+
+- 石川県観光連盟の公式写真ライブラリーに掲載された、黒背景に一杯の加能ガニを正面から配置した実写。
+- 写真素材IDは `1111111513`。配布画像は 2,000 × 1,333px、実装取得データは 1,000 × 666px。
+- 石川の紹介PRを目的とした利用、加工、WEB掲載が認められる。素材自体の商品化、転売、譲渡、直接リンクは禁止。
+- 画面上に `写真提供：石川県観光連盟` を表示し、写真詳細ページへリンクする。
 
 ### 福井「食」写真利用メモ
 
