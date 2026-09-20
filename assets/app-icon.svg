@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">和酒ログ</title>
+  <rect width="512" height="512" fill="#f6f0e3"/>
+  <g fill="none" stroke="#7a421d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M112 376V188L256 104l144 84v188"/>
+    <path d="M164 376V216l92-54 92 54v160"/>
+    <path d="M216 376V254l40-24 40 24v122"/>
+    <path d="M92 392h328"/>
+  </g>
+  <circle cx="276" cy="313" r="8" fill="#d59b4a"/>
+</svg>
