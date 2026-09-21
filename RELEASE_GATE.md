@@ -56,10 +56,10 @@ Designのみ・実装のみでは「完成」としない。
 - [x] 管理RPC anon遮断 — 対象RPC `anon_exec=false`
 - [x] イベントRPC anon遮断 — 未認証アクセス不可
 - [x] Service Role露出監査 — フロントエンドへの露出なし
-- [ ] SECURITY DEFINER最終監査 — 必要RPCのみ公開
+- [x] SECURITY DEFINER管理系監査 — 管理系21 RPCのauthenticated実行権限を撤回済み。一般/イベントRPCは別途継続監査
 - [ ] pg_trgm警告確認 — 対応または現状維持の判断を記録
 - [ ] 漏洩パスワード保護 — 公開時設定を確定
-- [ ] Supabase Security Advisor再実行 — 公開阻害レベルの警告なし
+- [x] Supabase Security Advisor再実行 — 管理系SECURITY DEFINER警告を46件→25件へ削減。残件は一般/イベントRPC、pg_trgm、漏洩パスワード保護等を継続対応
 
 ### Authentication
 - [x] LINE認証コード監査 — state署名・nonce・redirect制限確認済み
