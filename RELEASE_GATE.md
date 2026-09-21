@@ -54,12 +54,12 @@ Designのみ・実装のみでは「完成」としない。
 - [x] 主要テーブルRLS — 本人所有条件確認済み
 - [x] クロスユーザー基本監査 — 他ユーザー主要データの操作を防止
 - [x] 管理RPC anon遮断 — 対象RPC `anon_exec=false`
-- [x] イベントRPC anon遮断 — 未認証アクセス不可
+- [x] Ver.1 DeferredイベントRPC遮断 — イベント系SECURITY DEFINER全23本で `anon_exec=false` / `auth_exec=false`。DB・関数は将来再開用に残置
 - [x] Service Role露出監査 — フロントエンドへの露出なし
 - [x] SECURITY DEFINER管理系監査 — 管理系21 RPCのauthenticated実行権限を撤回済み。一般/イベントRPCは別途継続監査
 - [x] pg_trgm警告対応 — `public` から `extensions` schemaへ移動済み。`extensions.similarity()` smoke test PASS、Security Advisor警告消滅
 - [ ] 漏洩パスワード保護 — 採用決定。Supabase Auth設定で有効化が必要（現在の接続ツールではAuth設定変更APIなし）。有効化後Advisor再確認
-- [x] Supabase Security Advisor再実行 — `pg_trgm` public-schema警告消滅。SECURITY DEFINERは25件、漏洩パスワード保護は設定待ち
+- [x] Supabase Security Advisor再実行 — イベントRPC遮断後、SECURITY DEFINER警告は25件→6件。本体6 RPCのみ継続監査。漏洩パスワード保護は設定待ち
 
 ### Authentication
 - [x] LINE認証コード監査 — state署名・nonce・redirect制限確認済み
