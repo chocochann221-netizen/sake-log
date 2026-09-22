@@ -73,12 +73,12 @@ Designのみ・実装のみでは「完成」としない。
 
 ### Reliability / Recovery
 - [x] オフライン処理 — 保存開始前に遮断。入力draft保持、再接続時にpending cleanup/recoveryを実行
-- [ ] 二重保存防止 — 重複レコードを生成しない
-- [ ] 保存途中終了 / 下書き復元 — 安全に復帰・再操作可能
-- [ ] 認識失敗処理 — 手動修正へ進める
-- [ ] APIエラー処理 — 行き止まりにならない
-- [ ] バックアップ確認
-- [ ] 復元テスト — 実際に復元可能
+- [x] 二重保存防止 — busy/disabled + client_request_id + DB UNIQUE(user_id, client_request_id)で重複防止
+- [x] 保存途中終了 / 下書き復元 — pending照合・rollback queue・7日draft復元を確認。写真Blobは再選択
+- [x] 認識失敗処理 — rate limit / network / timeout / その他を分岐。写真・入力を保持し、再試行または手入力・「確認中」で保存可能
+- [x] APIエラー処理 — 通信失敗を共通文言化。401はrefresh→再送、失敗時は再ログイン誘導。Storage 5xx/408/429は1回再試行
+- [ ] バックアップ確認 — Runbook作成済み。Dashboardで実バックアップ/復元点の目視確認が必要
+- [ ] 復元テスト — `docs/backup-recovery-runbook.md` に手順確定。公開前に復元演習＋Smoke Testが必要
 
 ### Product Design → Implementation
 - [ ] Final Design反映 — Design Freeze後に実装
