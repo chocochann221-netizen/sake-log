@@ -56,6 +56,7 @@ Designのみ・実装のみでは「完成」としない。
 - [x] 管理RPC anon遮断 — 対象RPC `anon_exec=false`
 - [x] Ver.1 DeferredイベントRPC遮断 — イベント系SECURITY DEFINER全23本で `anon_exec=false` / `auth_exec=false`。DB・関数は将来再開用に残置
 - [x] Service Role露出監査 — フロントエンドへの露出なし
+- [x] 内部専用テーブル権限 — `brewery_links` / `line_account_links` はRLS維持＋anon/authenticatedの直接権限を撤回。service_roleのみ直接アクセス
 - [x] SECURITY DEFINER最終監査 — 管理系・Deferredイベント系を遮断。本体6 RPCも個別監査済み：未使用3本遮断、`is_admin`をSECURITY INVOKER化、必要2本のみSECURITY DEFINER + authenticatedを意図的維持
 - [x] pg_trgm警告対応 — `public` から `extensions` schemaへ移動済み。`extensions.similarity()` smoke test PASS、Security Advisor警告消滅
 - [ ] 漏洩パスワード保護 — 採用決定。Supabase Auth設定で有効化が必要（現在の接続ツールではAuth設定変更APIなし）。有効化後Advisor再確認
