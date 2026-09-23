@@ -52,14 +52,14 @@ jobs:
           dump_file="/tmp/sake-log-db-$ts.dump"
           remote_key="backups/db/$day_path/sake-log-db-$ts.dump"
 
-          # Pass the secret as DATABASE_URL inside the container explicitly.
-          # --network host avoids Docker DNS/IPv6 surprises with Supabase pooler URLs.
-          docker run --rm \
+          # Feed the connection URI through stdin instead of Docker -e.
+          # This avoids GitHub secret/argument propagation quirks while keeping
+          # the URI out of logs and command-line arguments.
+          printf '%s' "$SUPABASE_DB_URL" | docker run --rm -i \
             --network host \
-            -e DATABASE_URL="$SUPABASE_DB_URL" \
             -v /tmp:/backup \
             postgres:17 \
-            sh -ceu 'test -n "$DATABASE_URL"; pg_dump --dbname="$DATABASE_URL" --format=custom --compress=9 --no-owner --no-acl --file="/backup/'"$(basename "$dump_file")"'"'
+            sh -ceu 'IFS= read -r DATABASE_URL; test -n "$DATABASE_URL"; exec pg_dump --dbname="$DATABASE_URL" --format=custom --compress=9 --no-owner --no-acl --file="/backup/'"$(basename "$dump_file")"'"'
 
           # Verify that the custom archive is readable and reject tiny output.
           docker run --rm \
