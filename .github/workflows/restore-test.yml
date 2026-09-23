@@ -1,0 +1,149 @@
+name: Sake-log Restore Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sakelog-restore-test
+  cancel-in-progress: false
+
+jobs:
+  restore-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      B2_BUCKET: sake-log-backup-221
+      B2_ENDPOINT: https://s3.us-west-004.backblazeb2.com
+      AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      AWS_DEFAULT_REGION: us-west-004
+
+    steps:
+      - name: Validate B2 secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AWS_ACCESS_KEY_ID"
+          test -n "$AWS_SECRET_ACCESS_KEY"
+          aws s3api head-bucket --bucket "$B2_BUCKET" --endpoint-url "$B2_ENDPOINT"
+
+      - name: Download latest database backup
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          key="$(aws s3api list-objects-v2 --bucket "$B2_BUCKET" --prefix "backups/db/" --endpoint-url "$B2_ENDPOINT" --query "reverse(sort_by(Contents[?ends_with(Key, '.dump')], &LastModified))[0].Key" --output text)"
+          if [ -z "$key" ] || [ "$key" = "None" ]; then
+            echo "No PostgreSQL .dump backup found" >&2
+            exit 1
+          fi
+          aws s3 cp "s3://$B2_BUCKET/$key" /tmp/sakelog-restore.dump --endpoint-url "$B2_ENDPOINT"
+          test -s /tmp/sakelog-restore.dump
+          size="$(stat -c%s /tmp/sakelog-restore.dump)"
+          sha256="$(sha256sum /tmp/sakelog-restore.dump | awk '{print $1}')"
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "size=$size" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Validate PostgreSQL archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -v /tmp:/backup postgres:17 pg_restore --list /backup/sakelog-restore.dump >/tmp/restore-list.txt
+          test -s /tmp/restore-list.txt
+
+      - name: Start isolated PostgreSQL 17
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name sakelog-restore-db \
+            -e POSTGRES_PASSWORD=restore_test_only \
+            -e POSTGRES_DB=restore_test \
+            postgres:17
+          for i in {1..30}; do
+            if docker exec sakelog-restore-db pg_isready -U postgres -d restore_test >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs sakelog-restore-db
+          exit 1
+
+      - name: Restore into isolated database
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker cp /tmp/sakelog-restore.dump sakelog-restore-db:/tmp/sakelog-restore.dump
+          # Supabase-managed roles/extensions may not exist in vanilla Postgres.
+          # Restore the portable application schema/data while ignoring ownership/ACL.
+          docker exec sakelog-restore-db pg_restore \
+            --username=postgres \
+            --dbname=restore_test \
+            --no-owner --no-acl \
+            --exit-on-error \
+            /tmp/sakelog-restore.dump
+
+      - name: Verify restored database
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          table_count="$(docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE';")"
+          if [ "$table_count" -lt 1 ]; then
+            echo "No public tables restored" >&2
+            exit 1
+          fi
+
+          required_tables="profiles drinking_records sake_photos recognition_results corrections"
+          for table in $required_tables; do
+            exists="$(docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "select to_regclass('public.$table') is not null;")"
+            if [ "$exists" != "t" ]; then
+              echo "Required table missing after restore: $table" >&2
+              exit 1
+            fi
+          done
+
+          counts_json="{"
+          first=1
+          for table in $required_tables; do
+            count="$(docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "select count(*) from public.$table;")"
+            if [ "$first" -eq 0 ]; then counts_json="$counts_json,"; fi
+            counts_json="$counts_json\\\"$table\\\":$count"
+            first=0
+          done
+          counts_json="$counts_json}"
+
+          rls_count="$(docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity;")"
+          function_count="$(docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public';")"
+
+          echo "table_count=$table_count" >> "$GITHUB_OUTPUT"
+          echo "rls_count=$rls_count" >> "$GITHUB_OUTPUT"
+          echo "function_count=$function_count" >> "$GITHUB_OUTPUT"
+          echo "counts_json=$counts_json" >> "$GITHUB_OUTPUT"
+
+      - name: Write and upload restore report
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          ts="$(date -u +%Y%m%dT%H%M%SZ)"
+          cat >"/tmp/restore-test-$ts.json" <<EOF
+          {"timestamp":"$ts","status":"PASS","source_object":"${{ steps.backup.outputs.key }}","source_bytes":${{ steps.backup.outputs.size }},"source_sha256":"${{ steps.backup.outputs.sha256 }}","public_table_count":${{ steps.verify.outputs.table_count }},"rls_table_count":${{ steps.verify.outputs.rls_count }},"public_function_count":${{ steps.verify.outputs.function_count }},"key_table_counts":${{ steps.verify.outputs.counts_json }},"environment":"ephemeral-github-actions-postgres-17"}
+          EOF
+          aws s3 cp "/tmp/restore-test-$ts.json" \
+            "s3://$B2_BUCKET/reports/restore-test/$ts.json" \
+            --endpoint-url "$B2_ENDPOINT" \
+            --content-type application/json
+          echo "Restore test PASS"
+          echo "Source: ${{ steps.backup.outputs.key }}"
+          echo "SHA256: ${{ steps.backup.outputs.sha256 }}"
+
+      - name: Destroy isolated database
+        if: always()
+        shell: bash
+        run: |
+          docker rm -f sakelog-restore-db >/dev/null 2>&1 || true
+          rm -f /tmp/sakelog-restore.dump /tmp/restore-list.txt
