@@ -79,11 +79,19 @@ jobs:
           docker cp /tmp/sakelog-restore.dump sakelog-restore-db:/tmp/sakelog-restore.dump
           # Supabase-managed roles/extensions may not exist in vanilla Postgres.
           # Restore the portable application schema/data while ignoring ownership/ACL.
+          # A plain postgres:17 image does not ship Supabase-only extensions
+          # (for example supabase_vault). Build a filtered TOC that skips only
+          # extension objects, then restore the actual application schema/data.
+          docker exec sakelog-restore-db pg_restore --list /tmp/sakelog-restore.dump \
+            | grep -Ev ' EXTENSION | COMMENT - EXTENSION ' \
+            > /tmp/sakelog-restore.list
+          docker cp /tmp/sakelog-restore.list sakelog-restore-db:/tmp/sakelog-restore.list
           docker exec sakelog-restore-db pg_restore \
             --username=postgres \
             --dbname=restore_test \
             --no-owner --no-acl \
             --exit-on-error \
+            --use-list=/tmp/sakelog-restore.list \
             /tmp/sakelog-restore.dump
 
       - name: Verify restored database
