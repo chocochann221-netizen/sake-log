@@ -70,23 +70,19 @@ jobs:
           password = urllib.parse.unquote(u.password or "")
           with open("/tmp/sakelog-pgpass", "w") as fp:
               fp.write(f"{host}:{port}:{db}:{user}:{password}\\n")
-          with open("/tmp/sakelog-pgconn", "w") as fp:
-              fp.write(f"{host}\\n{port}\\n{db}\\n{user}\\n")
+          with open("/tmp/sakelog-pgconn.env", "w") as fp:
+              fp.write(f"PGHOST={host}\\nPGPORT={port}\\nPGDATABASE={db}\\nPGUSER={user}\\n")
           os.chmod("/tmp/sakelog-pgpass", 0o600)
           PY
-          mapfile -t pgconn < /tmp/sakelog-pgconn
           docker run --rm \
             -v /tmp:/backup \
+            --env-file /tmp/sakelog-pgconn.env \
             -e PGPASSFILE=/backup/sakelog-pgpass \
             postgres:17 \
             pg_dump \
-              --host="${pgconn[0]}" \
-              --port="${pgconn[1]}" \
-              --dbname="${pgconn[2]}" \
-              --username="${pgconn[3]}" \
               --format=custom --compress=9 --no-owner --no-acl \
               --file="/backup/$(basename "$dump_file")"
-          rm -f /tmp/sakelog-pgpass /tmp/sakelog-pgconn
+          rm -f /tmp/sakelog-pgpass /tmp/sakelog-pgconn.env
 
           # Verify that the custom archive is readable and reject tiny output.
           docker run --rm \
