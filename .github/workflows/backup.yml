@@ -52,15 +52,16 @@ jobs:
           dump_file="/tmp/sake-log-db-$ts.dump"
           remote_key="backups/db/$day_path/sake-log-db-$ts.dump"
 
-          # Match Supabase PostgreSQL 17 so pg_dump is never older than the server.
+          # Pass the secret as DATABASE_URL inside the container explicitly.
+          # --network host avoids Docker DNS/IPv6 surprises with Supabase pooler URLs.
           docker run --rm \
-            -e SUPABASE_DB_URL \
+            --network host \
+            -e DATABASE_URL="$SUPABASE_DB_URL" \
             -v /tmp:/backup \
             postgres:17 \
-            sh -ceu 'pg_dump "$SUPABASE_DB_URL" --format=custom --compress=9 --no-owner --no-acl --file="/backup/'"$(basename "$dump_file")"'"'
+            sh -ceu 'test -n "$DATABASE_URL"; pg_dump --dbname="$DATABASE_URL" --format=custom --compress=9 --no-owner --no-acl --file="/backup/'"$(basename "$dump_file")"'"'
 
-          # A successful pg_dump is not enough: verify that the custom archive can
-          # actually be read by pg_restore and reject suspiciously tiny output.
+          # Verify that the custom archive is readable and reject tiny output.
           docker run --rm \
             -v /tmp:/backup \
             postgres:17 \
