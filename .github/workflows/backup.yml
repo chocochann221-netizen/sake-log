@@ -55,11 +55,38 @@ jobs:
           # Feed the connection URI through stdin instead of Docker -e.
           # This avoids GitHub secret/argument propagation quirks while keeping
           # the URI out of logs and command-line arguments.
-          printf '%s' "$SUPABASE_DB_URL" | docker run --rm -i \
-            --network host \
+          # Use a temporary pgpass file rather than piping a no-newline URI
+          # into read(1). Parse the URI on the runner, keep credentials out of
+          # logs, and pass only connection fields plus PGPASSFILE to pg_dump.
+          python3 - <<'PY'
+          import os, urllib.parse
+          u = urllib.parse.urlparse(os.environ["SUPABASE_DB_URL"])
+          if u.scheme not in ("postgres", "postgresql") or not u.hostname or not u.username:
+              raise SystemExit("SUPABASE_DB_URL is not a valid PostgreSQL URI")
+          host = u.hostname
+          port = u.port or 5432
+          db = (u.path or "/postgres").lstrip("/") or "postgres"
+          user = urllib.parse.unquote(u.username)
+          password = urllib.parse.unquote(u.password or "")
+          with open("/tmp/sakelog-pgpass", "w") as fp:
+              fp.write(f"{host}:{port}:{db}:{user}:{password}\\n")
+          with open("/tmp/sakelog-pgconn", "w") as fp:
+              fp.write(f"{host}\\n{port}\\n{db}\\n{user}\\n")
+          os.chmod("/tmp/sakelog-pgpass", 0o600)
+          PY
+          mapfile -t pgconn < /tmp/sakelog-pgconn
+          docker run --rm \
             -v /tmp:/backup \
+            -e PGPASSFILE=/backup/sakelog-pgpass \
             postgres:17 \
-            sh -ceu 'IFS= read -r DATABASE_URL; test -n "$DATABASE_URL"; exec pg_dump --dbname="$DATABASE_URL" --format=custom --compress=9 --no-owner --no-acl --file="/backup/'"$(basename "$dump_file")"'"'
+            pg_dump \
+              --host="${pgconn[0]}" \
+              --port="${pgconn[1]}" \
+              --dbname="${pgconn[2]}" \
+              --username="${pgconn[3]}" \
+              --format=custom --compress=9 --no-owner --no-acl \
+              --file="/backup/$(basename "$dump_file")"
+          rm -f /tmp/sakelog-pgpass /tmp/sakelog-pgconn
 
           # Verify that the custom archive is readable and reject tiny output.
           docker run --rm \
