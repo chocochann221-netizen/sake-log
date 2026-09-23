@@ -83,8 +83,12 @@ jobs:
           # (for example supabase_vault). Build a filtered TOC that skips only
           # extension objects, then restore the actual application schema/data.
           docker exec sakelog-restore-db pg_restore --list /tmp/sakelog-restore.dump \
-            | grep -Ev ' EXTENSION | COMMENT - EXTENSION | SCHEMA - vault | vault\\.' \
+            | awk 'BEGIN{IGNORECASE=1} !/ EXTENSION / && !/ COMMENT - EXTENSION / && !/SCHEMA.*vault/ && !/(TABLE|SEQUENCE|FUNCTION|ACL|DEFAULT ACL|TABLE DATA).* vault /' \
             > /tmp/sakelog-restore.list
+          if grep -iE 'vault|supabase_vault' /tmp/sakelog-restore.list; then
+            echo "Supabase Vault entries remain in filtered restore list" >&2
+            exit 1
+          fi
           docker cp /tmp/sakelog-restore.list sakelog-restore-db:/tmp/sakelog-restore.list
           docker exec sakelog-restore-db pg_restore \
             --username=postgres \
