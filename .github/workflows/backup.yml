@@ -22,16 +22,19 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
       AWS_DEFAULT_REGION: us-west-004
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate B2 secrets
+      - name: Validate backup secrets
         shell: bash
         run: |
           set -euo pipefail
           test -n "$AWS_ACCESS_KEY_ID"
           test -n "$AWS_SECRET_ACCESS_KEY"
+          test -n "$SUPABASE_DB_URL"
 
       - name: Test B2 access
         shell: bash
@@ -39,13 +42,100 @@ jobs:
           set -euo pipefail
           aws s3api head-bucket --bucket "$B2_BUCKET" --endpoint-url "$B2_ENDPOINT"
 
-      - name: Backup marker
+      - name: Create PostgreSQL backup
+        id: dump
         shell: bash
         run: |
           set -euo pipefail
           ts="$(date -u +%Y%m%dT%H%M%SZ)"
-          printf '{"timestamp":"%s","stage":"b2-connectivity","status":"PASS"}\n' "$ts" > "/tmp/b2-connectivity-$ts.json"
-          aws s3 cp "/tmp/b2-connectivity-$ts.json" "s3://$B2_BUCKET/reports/connectivity/$ts.json" --endpoint-url "$B2_ENDPOINT"
+          day_path="$(date -u +%Y/%m/%d)"
+          dump_file="/tmp/sake-log-db-$ts.dump"
+          remote_key="backups/db/$day_path/sake-log-db-$ts.dump"
 
-      # DB dump and Supabase Storage copy are enabled after their dedicated
-      # Supabase backup credentials are registered as GitHub Actions secrets.
+          # Match Supabase PostgreSQL 17 so pg_dump is never older than the server.
+          docker run --rm \
+            -e SUPABASE_DB_URL \
+            -v /tmp:/backup \
+            postgres:17 \
+            sh -ceu 'pg_dump "$SUPABASE_DB_URL" --format=custom --compress=9 --no-owner --no-acl --file="/backup/'"$(basename "$dump_file")"'"'
+
+          # A successful pg_dump is not enough: verify that the custom archive can
+          # actually be read by pg_restore and reject suspiciously tiny output.
+          docker run --rm \
+            -v /tmp:/backup \
+            postgres:17 \
+            pg_restore --list "/backup/$(basename "$dump_file")" >/tmp/restore-list.txt
+
+          size="$(stat -c%s "$dump_file")"
+          if [ "$size" -lt 10240 ]; then
+            echo "Backup is unexpectedly small: $size bytes" >&2
+            exit 1
+          fi
+
+          sha256="$(sha256sum "$dump_file" | awk '{print $1}')"
+          printf '{"timestamp":"%s","type":"postgres-custom","bytes":%s,"sha256":"%s","status":"PASS"}\n' \
+            "$ts" "$size" "$sha256" > "/tmp/sake-log-db-$ts.json"
+
+          echo "timestamp=$ts" >> "$GITHUB_OUTPUT"
+          echo "dump_file=$dump_file" >> "$GITHUB_OUTPUT"
+          echo "manifest_file=/tmp/sake-log-db-$ts.json" >> "$GITHUB_OUTPUT"
+          echo "remote_key=$remote_key" >> "$GITHUB_OUTPUT"
+          echo "size=$size" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Upload PostgreSQL backup to B2
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws s3 cp "${{ steps.dump.outputs.dump_file }}" \
+            "s3://$B2_BUCKET/${{ steps.dump.outputs.remote_key }}" \
+            --endpoint-url "$B2_ENDPOINT"
+
+          manifest_key="${{ steps.dump.outputs.remote_key }}.json"
+          aws s3 cp "${{ steps.dump.outputs.manifest_file }}" \
+            "s3://$B2_BUCKET/$manifest_key" \
+            --endpoint-url "$B2_ENDPOINT" \
+            --content-type application/json
+
+      - name: Verify uploaded backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_size="$(aws s3api head-object \
+            --bucket "$B2_BUCKET" \
+            --key "${{ steps.dump.outputs.remote_key }}" \
+            --endpoint-url "$B2_ENDPOINT" \
+            --query ContentLength \
+            --output text)"
+
+          local_size="${{ steps.dump.outputs.size }}"
+          if [ "$remote_size" != "$local_size" ]; then
+            echo "Uploaded object size mismatch: local=$local_size remote=$remote_size" >&2
+            exit 1
+          fi
+
+          echo "Verified B2 database backup: ${{ steps.dump.outputs.remote_key }} ($remote_size bytes)"
+          echo "SHA256: ${{ steps.dump.outputs.sha256 }}"
+
+      - name: Backup report
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          ts="${{ steps.dump.outputs.timestamp }}"
+          printf '{"timestamp":"%s","stage":"database-backup","status":"PASS","bytes":%s,"sha256":"%s","object":"%s"}\n' \
+            "$ts" \
+            "${{ steps.dump.outputs.size }}" \
+            "${{ steps.dump.outputs.sha256 }}" \
+            "${{ steps.dump.outputs.remote_key }}" \
+            > "/tmp/db-backup-$ts.json"
+
+          aws s3 cp "/tmp/db-backup-$ts.json" \
+            "s3://$B2_BUCKET/reports/database/$ts.json" \
+            --endpoint-url "$B2_ENDPOINT" \
+            --content-type application/json
+
+      # Supabase Storage object backup is intentionally separate from the
+      # PostgreSQL dump. Database backups contain Storage metadata, not object
+      # bytes. Add the Storage copy only after dedicated credentials and a
+      # restore test are in place.
