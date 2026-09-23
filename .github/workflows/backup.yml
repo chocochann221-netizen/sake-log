@@ -1,0 +1,51 @@
+name: Sake-log Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 18 * * *" # 03:15 JST
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sakelog-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      B2_BUCKET: sake-log-backup-221
+      B2_ENDPOINT: https://s3.us-west-004.backblazeb2.com
+      AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      AWS_DEFAULT_REGION: us-west-004
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate B2 secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AWS_ACCESS_KEY_ID"
+          test -n "$AWS_SECRET_ACCESS_KEY"
+
+      - name: Test B2 access
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws s3api head-bucket --bucket "$B2_BUCKET" --endpoint-url "$B2_ENDPOINT"
+
+      - name: Backup marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          ts="$(date -u +%Y%m%dT%H%M%SZ)"
+          printf '{"timestamp":"%s","stage":"b2-connectivity","status":"PASS"}\n' "$ts" > "/tmp/b2-connectivity-$ts.json"
+          aws s3 cp "/tmp/b2-connectivity-$ts.json" "s3://$B2_BUCKET/reports/connectivity/$ts.json" --endpoint-url "$B2_ENDPOINT"
+
+      # DB dump and Supabase Storage copy are enabled after their dedicated
+      # Supabase backup credentials are registered as GitHub Actions secrets.
