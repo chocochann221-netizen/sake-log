@@ -77,6 +77,11 @@ jobs:
         run: |
           set -euo pipefail
           docker cp /tmp/sakelog-restore.dump sakelog-restore-db:/tmp/sakelog-restore.dump
+          # Recreate portable extensions that exist in the stock PostgreSQL image.
+          # Supabase keeps pg_trgm in the "extensions" schema, so match that layout
+          # before restoring indexes that reference extensions.gin_trgm_ops.
+          docker exec sakelog-restore-db psql -U postgres -d restore_test -v ON_ERROR_STOP=1 -c 'CREATE SCHEMA IF NOT EXISTS extensions;'
+          docker exec sakelog-restore-db psql -U postgres -d restore_test -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;'
           # Supabase-managed roles/extensions may not exist in vanilla Postgres.
           # Restore the portable application schema/data while ignoring ownership/ACL.
           # A plain postgres:17 image does not ship Supabase-only extensions
