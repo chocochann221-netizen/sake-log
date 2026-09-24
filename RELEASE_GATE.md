@@ -77,8 +77,8 @@ Designのみ・実装のみでは「完成」としない。
 - [x] 保存途中終了 / 下書き復元 — pending照合・rollback queue・7日draft復元を確認。写真Blobは再選択
 - [x] 認識失敗処理 — rate limit / network / timeout / その他を分岐。写真・入力を保持し、再試行または手入力・「確認中」で保存可能
 - [x] APIエラー処理 — 通信失敗を共通文言化。401はrefresh→再送、失敗時は再ログイン誘導。Storage 5xx/408/429は1回再試行
-- [ ] バックアップ確認 — Runbook作成済み。Dashboardで実バックアップ/復元点の目視確認が必要
-- [ ] 復元テスト — `docs/backup-recovery-runbook.md` に手順確定。公開前に復元演習＋Smoke Testが必要
+- [x] バックアップ確認 — GitHub Actions #9でPostgreSQL custom dump作成→Backblaze B2保存→サイズ検証までPASS。B2上の実オブジェクトも目視確認済み
+- [x] 復元テスト — Sake-log Restore Test #8でB2最新dumpを隔離PostgreSQL 17へ実復元し、主要テーブル・件数・RLS・関数検査、PASSレポート保存、一時DB破棄まで成功
 
 ### Product Design → Implementation
 - [ ] Final Design反映 — Design Freeze後に実装
