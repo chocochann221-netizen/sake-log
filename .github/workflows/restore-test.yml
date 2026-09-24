@@ -84,15 +84,14 @@ jobs:
           docker exec sakelog-restore-db psql -U postgres -d restore_test -v ON_ERROR_STOP=1 -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;'
           # Recreate the Supabase API roles referenced by RLS policies/grants.
           # They are isolated test roles only and have no login capability.
-          docker exec sakelog-restore-db psql -U postgres -d restore_test -v ON_ERROR_STOP=1 <<'SQL'
-          DO $
-          BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF;
-            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
-            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
-          END
-          $;
-          SQL
+          for role in anon authenticated service_role; do
+            if ! docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "SELECT 1 FROM pg_roles WHERE rolname='$role'" | grep -q 1; then
+              docker exec sakelog-restore-db psql -U postgres -d restore_test -v ON_ERROR_STOP=1 -c "CREATE ROLE $role NOLOGIN;"
+            fi
+          done
+          for role in anon authenticated service_role; do
+            docker exec sakelog-restore-db psql -U postgres -d restore_test -Atc "SELECT rolname FROM pg_roles WHERE rolname='$role'" | grep -qx "$role"
+          done
           # Supabase-managed roles/extensions may not exist in vanilla Postgres.
           # Restore the portable application schema/data while ignoring ownership/ACL.
           # A plain postgres:17 image does not ship Supabase-only extensions
