@@ -59,8 +59,8 @@ Designのみ・実装のみでは「完成」としない。
 - [x] 内部専用テーブル権限 — `brewery_links` / `line_account_links` はRLS維持＋anon/authenticatedの直接権限を撤回。service_roleのみ直接アクセス
 - [x] SECURITY DEFINER最終監査 — 管理系・Deferredイベント系を遮断。本体6 RPCも個別監査済み：未使用3本遮断、`is_admin`をSECURITY INVOKER化、必要2本のみSECURITY DEFINER + authenticatedを意図的維持
 - [x] pg_trgm警告対応 — `public` から `extensions` schemaへ移動済み。`extensions.similarity()` smoke test PASS、Security Advisor警告消滅
-- [ ] 漏洩パスワード保護 — 採用決定。Supabase Auth設定で有効化が必要（現在の接続ツールではAuth設定変更APIなし）。有効化後Advisor再確認
-- [x] Supabase Security Advisor再実行 — SECURITY DEFINER警告は46→25→6→2件。残る2件（AI認識quota / 本人記録削除）は用途・auth.uid()制約を確認し意図的維持。漏洩パスワード保護のみ設定待ち
+- [x] 漏洩パスワード保護 — Supabase Dashboardで確認。`Prevent use of leaked passwords` はPro plan以上限定のため現プランでは利用不可。Ver.1公開ブロッカーから除外し、Pro移行時に有効化する
+- [x] Supabase Security Advisor再実行 — SECURITY DEFINER警告は46→25→6→2件。残る2件（AI認識quota / 本人記録削除）は用途・auth.uid()制約を確認し意図的維持。漏洩パスワード保護は現プラン対象外と確認済み
 
 ### Authentication
 - [x] LINE認証コード監査 — state署名・nonce・redirect制限確認済み
