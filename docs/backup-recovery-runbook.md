@@ -1,6 +1,6 @@
 # 和酒ログ Ver.1 バックアップ・復元 運用手順書
 
-最終更新: 2026-09-23
+最終更新: 2026-09-25
 対象: Sake-log / Supabase project `mtshsijgfmottgkbgnir`
 目的: 利用者の酒ログと写真を、障害・誤操作・削除事故から復旧できる状態に保つ。
 
@@ -175,7 +175,19 @@ DB削除とStorage削除のタイミング差、rollback、過去backup由来の
 
 利用者・記録件数が増え、24時間分のデータ損失を許容できなくなった時点で、Supabase Proの日次backupやPITRを再評価する。
 
-## 9. インシデント記録テンプレート
+## 9. 復元演習実績
+
+2026-09-25時点で、公開前の隔離復元演習を完了。
+
+- PostgreSQL backup: GitHub Actions `Sake-log Backup #9` PASS。custom dumpをBackblaze B2へ保存し、実オブジェクトを確認。
+- PostgreSQL restore: `Sake-log Restore Test #8` PASS。B2最新dumpを隔離PostgreSQL 17へ復元し、主要テーブル・件数・RLS・関数を検査。PASSレポート保存後、一時DBを破棄。
+- Storage backup: `Sake-log Storage Backup #1/#2` PASS。Supabase Storage `sake-photos` をB2へコピーし、object件数と総容量を照合。
+- Storage restore: `Sake-log Storage Restore Test #1` PASS。最新PASSバックアップを隔離GitHub Runnerへ復元し、件数・総容量一致および0byte objectなしを確認。検証後に隔離領域を削除。
+- 復元演習では本番DB・本番Storageへの書き戻しを行っていない。
+
+この実績により、RELEASE_GATEの「バックアップ確認」「復元テスト」はPASS扱いとする。なお、日次自動化・保持世代運用・本番障害時の実復旧は別の運用項目として継続管理する。
+
+## 10. インシデント記録テンプレート
 
 - 発生日:
 - 検知日時:
