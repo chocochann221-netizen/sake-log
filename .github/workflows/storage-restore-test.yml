@@ -1,0 +1,82 @@
+name: Sake-log Storage Restore Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  storage-restore-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      B2_BUCKET: sake-log-backup-221
+      B2_ENDPOINT: https://s3.us-west-004.backblazeb2.com
+
+    steps:
+      - name: Validate B2 secrets
+        env:
+          B2_ID: ${{ secrets.B2_KEY_ID }}
+          B2_SECRET: ${{ secrets.B2_APPLICATION_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$B2_ID" && test -n "$B2_SECRET"
+
+      - name: Find latest successful storage backup
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          AWS_DEFAULT_REGION: us-west-004
+        run: |
+          set -euo pipefail
+          latest="$(aws s3api list-objects-v2 --bucket "$B2_BUCKET" --prefix "reports/storage-backup/" --endpoint-url "$B2_ENDPOINT" --output json | jq -r '[.Contents[]?.Key | select(endswith(".json"))] | sort | last // empty')"
+          test -n "$latest"
+          aws s3 cp "s3://$B2_BUCKET/$latest" /tmp/storage-backup-report.json --endpoint-url "$B2_ENDPOINT" --only-show-errors
+          jq -e '.status == "PASS"' /tmp/storage-backup-report.json >/dev/null
+          prefix="$(jq -r '.b2_prefix' /tmp/storage-backup-report.json)"
+          expected_count="$(jq -r '.object_count' /tmp/storage-backup-report.json)"
+          expected_bytes="$(jq -r '.total_bytes' /tmp/storage-backup-report.json)"
+          test -n "$prefix" && test "$expected_count" -gt 0 && test "$expected_bytes" -gt 0
+          echo "BACKUP_PREFIX=$prefix" >> "$GITHUB_ENV"
+          echo "EXPECTED_COUNT=$expected_count" >> "$GITHUB_ENV"
+          echo "EXPECTED_BYTES=$expected_bytes" >> "$GITHUB_ENV"
+
+      - name: Restore files into isolated workspace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          AWS_DEFAULT_REGION: us-west-004
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sakelog-storage-restore
+          aws s3 sync "s3://$B2_BUCKET/$BACKUP_PREFIX" /tmp/sakelog-storage-restore --endpoint-url "$B2_ENDPOINT" --only-show-errors
+
+      - name: Verify restored files
+        run: |
+          set -euo pipefail
+          count="$(find /tmp/sakelog-storage-restore -type f | wc -l | tr -d ' ')"
+          bytes="$(find /tmp/sakelog-storage-restore -type f -printf '%s\n' | awk '{s+=$1} END{print s+0}')"
+          test "$count" -eq "$EXPECTED_COUNT"
+          test "$bytes" -eq "$EXPECTED_BYTES"
+          empty="$(find /tmp/sakelog-storage-restore -type f -size 0 | wc -l | tr -d ' ')"
+          test "$empty" -eq 0
+          echo "RESTORED_COUNT=$count" >> "$GITHUB_ENV"
+          echo "RESTORED_BYTES=$bytes" >> "$GITHUB_ENV"
+
+      - name: Write and upload restore report
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          AWS_DEFAULT_REGION: us-west-004
+        run: |
+          set -euo pipefail
+          ts="$(date -u +%Y%m%dT%H%M%SZ)"
+          report="/tmp/storage-restore-$ts.json"
+          printf '{"timestamp":"%s","status":"PASS","source_prefix":"%s","expected_count":%s,"restored_count":%s,"expected_bytes":%s,"restored_bytes":%s,"target":"isolated-github-runner"}\n' "$ts" "$BACKUP_PREFIX" "$EXPECTED_COUNT" "$RESTORED_COUNT" "$EXPECTED_BYTES" "$RESTORED_BYTES" > "$report"
+          aws s3 cp "$report" "s3://$B2_BUCKET/reports/storage-restore/$ts.json" --endpoint-url "$B2_ENDPOINT" --content-type application/json --only-show-errors
+          echo "Storage restore PASS: $RESTORED_COUNT objects / $RESTORED_BYTES bytes"
+
+      - name: Destroy isolated restore workspace
+        if: always()
+        run: rm -rf /tmp/sakelog-storage-restore /tmp/storage-backup-report.json
