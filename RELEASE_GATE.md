@@ -1,6 +1,6 @@
 # 和酒ログ Ver.1 Release Gate
 
-最終更新: 2026-09-21  
+最終更新: 2026-09-25  
 対象: Webプレ公開 / Android Ver.1  
 対象外（Deferred）: Appleログイン / iOS / イベント機能
 
@@ -77,8 +77,8 @@ Designのみ・実装のみでは「完成」としない。
 - [x] 保存途中終了 / 下書き復元 — pending照合・rollback queue・7日draft復元を確認。写真Blobは再選択
 - [x] 認識失敗処理 — rate limit / network / timeout / その他を分岐。写真・入力を保持し、再試行または手入力・「確認中」で保存可能
 - [x] APIエラー処理 — 通信失敗を共通文言化。401はrefresh→再送、失敗時は再ログイン誘導。Storage 5xx/408/429は1回再試行
-- [x] バックアップ確認 — GitHub Actions #9でPostgreSQL custom dump作成→Backblaze B2保存→サイズ検証までPASS。B2上の実オブジェクトも目視確認済み
-- [x] 復元テスト — Sake-log Restore Test #8でB2最新dumpを隔離PostgreSQL 17へ実復元し、主要テーブル・件数・RLS・関数検査、PASSレポート保存、一時DB破棄まで成功
+- [x] バックアップ確認 — PostgreSQL: GitHub Actions #9でcustom dump→Backblaze B2保存→サイズ検証PASS。Storage: Sake-log Storage Backup #1/#2でSupabase `sake-photos`→B2保存→件数・総容量照合PASS
+- [x] 復元テスト — DB: Sake-log Restore Test #8でB2最新dumpを隔離PostgreSQL 17へ実復元し検証PASS。Storage: Sake-log Storage Restore Test #1でB2最新PASSバックアップを隔離GitHub Runnerへ復元し、件数・総容量・0byteなしを検証PASS。いずれも本番へ書き戻さず隔離領域を破棄
 
 ### Product Design → Implementation
 - [ ] Final Design反映 — Design Freeze後に実装
