@@ -64,11 +64,11 @@ Designのみ・実装のみでは「完成」としない。
 
 ### Authentication
 - [x] LINE認証コード監査 — state署名・nonce・redirect制限確認済み
-- [ ] 正式公開URL確定 — Ver.1正式URLを1つに確定
-- [ ] Supabase Site URL / Redirect URLs — 正式URLへ設定
-- [ ] Google OAuth本番設定 — 正式URL環境で認証可能
-- [ ] LINE本番設定 — Callback・CORS・redirect整合
-- [ ] メール認証本番設定 — 正式URLへ正常復帰
+- [x] 正式公開URL確定 — Ver.1 Web正式URLを `https://sake-log-git.pages.dev` に確定
+- [x] Supabase Site URL / Redirect URLs — Dashboardで確認。Site URL=`https://sake-log-git.pages.dev`、Redirect URLsにも同URL登録済み（旧Netlify URLは移行互換用に残置）
+- [ ] Google OAuth本番設定 — Provider Enabled、Client ID/Secret、Supabase Callback URL設定をDashboardで確認済み。正式URLからの実ログインUAT待ち
+- [ ] LINE本番設定 — Custom OIDC `custom:line` Enabled、Issuer/Discovery/Client ID/Secret/Scope/Callback設定をDashboardで確認済み。正式URLからの実ログインUAT待ち
+- [ ] メール認証本番設定 — Email Provider Enabled、Site URL/Redirect URL設定確認済み。正式URLへの実復帰UAT待ち
 - [ ] 同一ユーザー再ログイン — 既存データへ正常復帰
 
 ### Reliability / Recovery
