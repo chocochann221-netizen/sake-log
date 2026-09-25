@@ -1,0 +1,64 @@
+name: Sake-log Storage Backup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  storage-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_S3_ENDPOINT: https://mtshsijgfmottgkbgnir.supabase.co/storage/v1/s3
+      SUPABASE_S3_REGION: ap-northeast-1
+      B2_BUCKET: sake-log-backup-221
+      B2_ENDPOINT: https://s3.us-west-004.backblazeb2.com
+
+    steps:
+      - name: Validate secrets
+        env:
+          S3_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+          S3_SECRET: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
+          B2_ID: ${{ secrets.B2_KEY_ID }}
+          B2_SECRET: ${{ secrets.B2_APPLICATION_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$S3_ID" && test -n "$S3_SECRET"
+          test -n "$B2_ID" && test -n "$B2_SECRET"
+
+      - name: Download sake photos
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-northeast-1
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sake-photos
+          aws s3 sync s3://sake-photos /tmp/sake-photos --endpoint-url "$SUPABASE_S3_ENDPOINT" --only-show-errors
+          count="$(find /tmp/sake-photos -type f | wc -l | tr -d ' ')"
+          bytes="$(find /tmp/sake-photos -type f -printf '%s\n' | awk '{s+=$1} END{print s+0}')"
+          test "$count" -gt 0
+          echo "SOURCE_COUNT=$count" >> "$GITHUB_ENV"
+          echo "SOURCE_BYTES=$bytes" >> "$GITHUB_ENV"
+
+      - name: Upload and verify in B2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          AWS_DEFAULT_REGION: us-west-004
+        run: |
+          set -euo pipefail
+          ts="$(date -u +%Y%m%dT%H%M%SZ)"
+          prefix="backups/storage/$ts/sake-photos"
+          aws s3 sync /tmp/sake-photos "s3://$B2_BUCKET/$prefix" --endpoint-url "$B2_ENDPOINT" --only-show-errors
+          json="$(aws s3api list-objects-v2 --bucket "$B2_BUCKET" --prefix "$prefix/" --endpoint-url "$B2_ENDPOINT" --output json)"
+          count="$(jq '[.Contents[]?] | length' <<<"$json")"
+          bytes="$(jq '[.Contents[]?.Size] | add // 0' <<<"$json")"
+          test "$count" -eq "$SOURCE_COUNT"
+          test "$bytes" -eq "$SOURCE_BYTES"
+          report="/tmp/storage-backup.json"
+          printf '{"timestamp":"%s","status":"PASS","source_bucket":"sake-photos","object_count":%s,"total_bytes":%s,"b2_prefix":"%s"}\n' "$ts" "$count" "$bytes" "$prefix" > "$report"
+          aws s3 cp "$report" "s3://$B2_BUCKET/reports/storage-backup/$ts.json" --endpoint-url "$B2_ENDPOINT" --content-type application/json --only-show-errors
+          echo "Storage backup PASS: $count objects / $bytes bytes"
