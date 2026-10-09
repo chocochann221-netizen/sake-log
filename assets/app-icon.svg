@@ -1,11 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
   <title id="title">和酒ログ</title>
-  <rect width="512" height="512" fill="#f6f0e3"/>
-  <g fill="none" stroke="#7a421d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M112 376V188L256 104l144 84v188"/>
-    <path d="M164 376V216l92-54 92 54v160"/>
-    <path d="M216 376V254l40-24 40 24v122"/>
-    <path d="M92 392h328"/>
+  <desc id="description">静かな藍色の背景に、窓の灯りが映る徳利と盃</desc>
+  <rect width="512" height="512" fill="#0c2238"/>
+
+  <!-- Tokkuri: a quiet sake silhouette with generous negative space. -->
+  <path
+    d="M206 84h68v31c0 21 10 39 27 52 38 29 59 74 59 123v51c0 50-40 91-90 91h-60c-50 0-90-41-90-91v-51c0-49 21-94 59-123 17-13 27-31 27-52V84Z"
+    fill="#f6f0e3"
+  />
+  <path d="M198 84c0-12 10-22 22-22h40c12 0 22 10 22 22v19h-84V84Z" fill="#f6f0e3"/>
+
+  <!-- The four panes are the discreet LOG HOUSE signature. -->
+  <g fill="#d59b4a">
+    <rect x="224" y="174" width="34" height="34" rx="5"/>
+    <rect x="266" y="174" width="34" height="34" rx="5"/>
+    <rect x="224" y="216" width="34" height="34" rx="5"/>
+    <rect x="266" y="216" width="34" height="34" rx="5"/>
   </g>
-  <circle cx="276" cy="313" r="8" fill="#d59b4a"/>
+  <circle cx="310" cy="262" r="5" fill="#d59b4a"/>
+
+  <!-- Ochoko: clearly separated at small sizes, slightly overlapping the bottle. -->
+  <path
+    d="M299 314h127l-12 77c-5 34-34 59-68 59h-1c-34 0-63-25-68-59l-12-77h34Z"
+    fill="#f6f0e3"
+    stroke="#0c2238"
+    stroke-width="12"
+    stroke-linejoin="round"
+  />
+  <path d="M291 314c0-12 10-22 22-22h99c12 0 22 10 22 22s-10 22-22 22h-99c-12 0-22-10-22-22Z" fill="#d59b4a" stroke="#0c2238" stroke-width="12"/>
+  <path d="M320 385c17 10 39 10 56 0" fill="none" stroke="#d59b4a" stroke-width="10" stroke-linecap="round"/>
 </svg>
