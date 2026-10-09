@@ -19,14 +19,15 @@
   </g>
   <circle cx="310" cy="262" r="5" fill="#d59b4a"/>
 
-  <!-- Ochoko: clearly separated at small sizes, slightly overlapping the bottle. -->
+  <!-- Ochoko: a low, flared sake cup with a small foot. -->
   <path
-    d="M299 314h127l-12 77c-5 34-34 59-68 59h-1c-34 0-63-25-68-59l-12-77h34Z"
+    d="M292 326h132l-13 58c-6 27-30 46-58 46h-2c-28 0-52-19-58-46l-13-58h12Z"
     fill="#f6f0e3"
     stroke="#0c2238"
     stroke-width="12"
     stroke-linejoin="round"
   />
-  <path d="M291 314c0-12 10-22 22-22h99c12 0 22 10 22 22s-10 22-22 22h-99c-12 0-22-10-22-22Z" fill="#d59b4a" stroke="#0c2238" stroke-width="12"/>
-  <path d="M320 385c17 10 39 10 56 0" fill="none" stroke="#d59b4a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M292 326c0-12 10-21 22-21h76c12 0 22 9 22 21s-10 21-22 21h-76c-12 0-22-9-22-21Z" fill="#f6f0e3" stroke="#0c2238" stroke-width="12"/>
+  <rect x="316" y="318" width="72" height="16" rx="8" fill="#d59b4a"/>
+  <path d="M337 420h30v23h-30Z" fill="#f6f0e3"/>
 </svg>
