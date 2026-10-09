@@ -20,7 +20,7 @@
 <script>
 const esc=s=>String(s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const p=new URLSearchParams(location.search);const prefecture=p.get("prefecture")||p.get("name")||"奈良県";const data=window.WASHULOG_BREWERY_SOURCE.getPrefecture(prefecture);
-document.title=prefecture+"の酒蔵 | 和酒ログ";document.getElementById("title").textContent=prefecture+"の酒蔵";document.getElementById("back").href="prefecture-guide.html?name="+encodeURIComponent(prefecture);
+document.title=prefecture+"の酒蔵 | 和酒ログ";document.getElementById("title").textContent=prefecture+"の酒蔵";document.getElementById("back").href="prefecture-guide.html?name="+encodeURIComponent(prefecture)+"&ui=2";
 const input=document.getElementById("search"),list=document.getElementById("list"),count=document.getElementById("count"),source=document.getElementById("source");
 function render(){const term=input.value.trim().toLowerCase();const all=data?.breweries||[];const rows=all.filter(b=>[b.name,b.brands,b.place,b.note].join(" ").toLowerCase().includes(term));count.textContent=rows.length+"蔵を掲載";list.innerHTML=rows.length?rows.map((b,i)=>`<article class="brewery"><div class="seal">${String(i+1).padStart(2,"0")}</div><div><h2>${esc(b.name)}</h2><div class="brands">${esc(b.brands)}</div><div class="place">${esc(b.place)}</div><p class="note">${esc(b.note)}</p>${b.url?`<a class="official" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer">公式サイト →</a>`:""}</div></article>`).join(""):`<div class="empty">${data?"該当する酒蔵がありません。":"この地域の酒蔵情報は準備中です。"}</div>`;source.innerHTML=data?.source?`掲載情報の確認先：<a href="${esc(data.source)}" target="_blank" rel="noopener noreferrer">${esc(data.sourceLabel)}</a>`:"";}
 input.addEventListener("input",render);render();
