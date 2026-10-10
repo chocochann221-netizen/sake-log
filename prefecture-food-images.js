@@ -1,16 +1,17 @@
-// 和酒ログ 都道府県「食」写真台帳（実装用）
-// 各県1枚。採用前に docs/photo-rights-ledger.md と原典の利用条件を照合する。
+// 和酒ログ 都道府県「食」画像台帳（実装用）
+// DL-013により、確定県から写実的な合成イラストへ置き換える。
 window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
   "奈良県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Kakinoha%20%28persimmon%20leaf%29%20sushi%20in%20Nara.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg",
-    title: "Kakinoha (persimmon leaf) sushi in Nara.jpg",
+    src: "assets/nara-kakinoha-sushi-illustration.jpg",
+    sourcePage: "",
+    title: "柿の葉寿司の食卓",
     heading: "奈良の食",
     caption: "柿の葉寿司や奈良漬など、奈良の食と日本酒の相性を味わう。",
-    author: "ZhengZhou",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: ZhengZhou / Wikimedia Commons / CC BY-SA 4.0",
+    author: "和酒ログ",
+    license: "AI生成・合成イメージ",
+    licenseUrl: "",
+    credit: "合成イメージ",
+    mediaType: "composite-illustration",
     position: "50% center"
   },
   "東京都": {

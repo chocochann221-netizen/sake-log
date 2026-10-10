@@ -1,5 +1,5 @@
-// 和酒ログ 都道府県ヒーロー写真台帳（実装用）
-// 採用前に docs/photo-rights-ledger.md と原典の利用条件を照合する。
+// 和酒ログ 都道府県ヒーロー画像台帳（実装用）
+// DL-013により、確定県から写実的な合成イラストへ置き換える。
 window.WASHULOG_PREFECTURE_HERO_IMAGES = {
   "北海道": {
     src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Hokkaido-Drift%20ice%2C%20Shiretoko%20Peninsula-xl.jpg?width=1280",
@@ -32,14 +32,15 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "50% center"
   },
   "奈良県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Deer%20at%20nara%20park%202.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg",
-    title: "Deer at nara park 2.jpg",
-    author: "Ian G Shingler",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
-    position: "50% center"
+    src: "assets/nara-hero-illustration.jpg",
+    sourcePage: "",
+    title: "鹿・石灯籠・古寺・朝霧",
+    author: "和酒ログ",
+    license: "AI生成・合成イメージ",
+    licenseUrl: "",
+    credit: "合成イメージ",
+    mediaType: "composite-illustration",
+    position: "58% center"
   },
   "石川県": {
     src: "assets/ishikawa-kanazawa-station.jpg",
