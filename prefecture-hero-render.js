@@ -84,6 +84,33 @@
     });
   }
 
+  // 東京は奈良と対照的な第2基準県。旧実写ページを経由させず、
+  // 同じ縦スクロール構造へ確定済みの合成イラストを直接接続する。
+  if (prefecture === '東京都') {
+    const esc = value => String(value || '').replace(/[&<>\"]/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;'
+    })[char]);
+    const data = window.WASHULOG_BREWERY_SOURCE?.getPrefecture(prefecture);
+    const breweries = data?.breweries || [];
+    const breweryRows = breweries.slice(0, 2).map((brewery, index) => `
+      <a class="timber-brewery" href="${esc(brewery.url)}" target="_blank" rel="noopener noreferrer">
+        <span class="timber-seal">${['一', '二'][index]}</span>
+        <span class="timber-main"><span><strong>${esc(brewery.name)}</strong><span class="timber-meta" style="border:0;padding:0">${esc(brewery.brands)}</span></span><span class="timber-detail"><b>${esc(brewery.place)}</b><span class="timber-note" style="border:0;padding:0">${esc(brewery.note)}</span></span></span>
+        <span class="timber-arrow">→</span>
+      </a>`).join('');
+    const body = document.getElementById('body');
+    const intro = document.getElementById('intro');
+    if (intro) intro.style.display = 'none';
+    if (body) {
+      body.className = 'wrap editorial-body';
+      body.innerHTML = `
+        <section class="editorial-intro">街の光と暮らしが重なる東京で、<br>酒に出会う。</section>
+        <figure class="editorial-figure"><img src="assets/tokyo-yanaka-nezu-illustration.jpg" alt="夕暮れの谷中・根津の町並みを描いた合成イラスト"><figcaption class="editorial-caption"><h2>東京の町</h2><p>古い町並みと大都市の時間が、同じ空の下で重なる。</p><span class="editorial-credit">合成イメージ</span></figcaption></figure>
+        <figure class="editorial-figure"><img src="assets/tokyo-edomae-sushi-illustration.jpg" alt="江戸前寿司を仕上げる職人の手元を描いた合成イラスト"><figcaption class="editorial-caption"><h2>東京の食</h2><p>江戸の海と町の知恵から育ち、東京の食文化を象徴する職人の仕事。</p><span class="editorial-credit">合成イメージ</span></figcaption></figure>
+        <section class="editorial-breweries"><h2>東京の酒蔵</h2><p>都市と山のあいだで酒を醸す、個性豊かな酒蔵たち。</p><div class="featured-brewery-list">${breweryRows}</div><a class="editorial-all" href="brewery-list.html?prefecture=${encodeURIComponent(prefecture)}&ui=3">すべての酒蔵　→</a></section>`;
+    }
+  }
+
   if (hero.note) {
     const note = document.createElement('div');
     note.className = 'hero-design-note';
