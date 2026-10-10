@@ -22,13 +22,14 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "50% center"
   },
   "東京都": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Tokyo%20%2816204487106%29.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg",
-    title: "Tokyo (16204487106).jpg",
-    author: "Moyan Brenn",
-    license: "CC BY 2.0",
-    licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-    credit: "Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0",
+    src: "assets/tokyo-shibuya-rain-illustration.jpg",
+    sourcePage: "",
+    title: "雨夜の渋谷スクランブル交差点",
+    author: "和酒ログ",
+    license: "AI生成・合成イメージ",
+    licenseUrl: "",
+    credit: "合成イメージ",
+    mediaType: "composite-illustration",
     position: "50% center"
   },
   "奈良県": {

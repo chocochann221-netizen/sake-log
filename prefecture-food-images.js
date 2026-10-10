@@ -15,15 +15,16 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     position: "50% center"
   },
   "東京都": {
-    src: "assets/tokyo-edomae-sushi-retouched.png",
-    sourcePage: "https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4",
-    title: "A chef prepares sushi on a wooden counter (retouched)",
-    heading: "江戸前の寿司",
+    src: "assets/tokyo-edomae-sushi-illustration.jpg",
+    sourcePage: "",
+    title: "江戸前寿司を仕上げる手仕事",
+    heading: "東京の食",
     caption: "江戸の海と町の知恵から育ち、東京の食文化を象徴する職人の仕事。",
-    author: "Stephen Pontes",
-    license: "Unsplash License（手前の箸をAI補修で除去）",
-    licenseUrl: "https://unsplash.com/license",
-    credit: "Photo: Stephen Pontes / Unsplash / Retouched by 和酒ログ",
+    author: "和酒ログ",
+    license: "AI生成・合成イメージ",
+    licenseUrl: "",
+    credit: "合成イメージ",
+    mediaType: "composite-illustration",
     position: "50% center"
   },
   "石川県": {
