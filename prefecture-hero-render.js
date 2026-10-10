@@ -1,6 +1,6 @@
 // 和酒ログ 都道府県ヒーロー表示レイヤー
 // prefecture-guide.html 本体を大きく変更せず、確定済み47県ヒーローデータを表示へ接続する。
-// 写真URLは権利確認後に WASHULOG_PREFECTURE_HERO_IMAGES へ追加する前提。
+// 画像種別（合成イラスト／権利確認済み写真）は画像台帳側で管理する。
 (function () {
   const heroes = window.WASHULOG_PREFECTURE_HERO || {};
   const images = window.WASHULOG_PREFECTURE_HERO_IMAGES || {};
@@ -21,7 +21,7 @@
   if (image && image.src) {
     heroSection.style.backgroundImage = `linear-gradient(180deg,rgba(9,20,16,.08),rgba(9,20,16,.76)),url("${String(image.src).replace(/"/g, '%22')}")`;
     heroSection.style.backgroundPosition = image.position || 'center';
-    heroSection.classList.add('has-real-photo');
+    heroSection.classList.add(image.mediaType === 'composite-illustration' ? 'has-composite-illustration' : 'has-real-photo');
   }
 
   if (visual) {
@@ -38,15 +38,50 @@
   journey.textContent = hero.flow || '';
   wrap.appendChild(journey);
 
-  if (image && image.credit && image.sourcePage) {
-    const credit = document.createElement('a');
+  if (image && image.credit) {
+    const credit = document.createElement(image.sourcePage ? 'a' : 'span');
     credit.className = 'hero-credit';
-    credit.href = image.sourcePage;
-    credit.target = '_blank';
-    credit.rel = 'noopener noreferrer';
+    if (image.sourcePage) {
+      credit.href = image.sourcePage;
+      credit.target = '_blank';
+      credit.rel = 'noopener noreferrer';
+    }
     credit.textContent = image.credit;
-    credit.setAttribute('aria-label', '写真の出典とライセンスを確認する');
+    credit.setAttribute('aria-label', image.sourcePage ? '画像の出典とライセンスを確認する' : image.credit);
     wrap.appendChild(credit);
+  }
+
+  // 奈良は47都道府県の基準画面。旧実写定義がキャッシュに残っても、
+  // 確定済みの合成イラスト以外へ戻らないよう表示レイヤーで固定する。
+  if (prefecture === '奈良県') {
+    document.querySelectorAll('a[href*="brewery-list.html?prefecture="]').forEach(link => {
+      const url = new URL(link.href, location.href);
+      url.searchParams.set('ui', '3');
+      link.href = url.pathname.replace(/^\//, '') + url.search;
+    });
+    const figures = document.querySelectorAll('.editorial-figure');
+    const fixed = [
+      { src: 'assets/nara-nandaimon-illustration.jpg', alt: '朝霧に包まれた奈良の南大門の合成イラスト' },
+      { src: 'assets/nara-kakinoha-sushi-illustration.jpg', alt: '奈良の柿の葉寿司の合成イラスト' }
+    ];
+    figures.forEach((figure, index) => {
+      if (!fixed[index]) return;
+      const oldImage = figure.querySelector('img');
+      if (!oldImage) return;
+      const nextImage = oldImage.cloneNode(false);
+      nextImage.src = fixed[index].src;
+      nextImage.alt = fixed[index].alt;
+      nextImage.removeAttribute('loading');
+      const link = oldImage.closest('a');
+      if (link) link.replaceWith(nextImage); else oldImage.replaceWith(nextImage);
+      const oldCredit = figure.querySelector('.editorial-credit');
+      if (oldCredit) {
+        const label = document.createElement('span');
+        label.className = 'editorial-credit';
+        label.textContent = '合成イメージ';
+        oldCredit.replaceWith(label);
+      }
+    });
   }
 
   if (hero.note) {
