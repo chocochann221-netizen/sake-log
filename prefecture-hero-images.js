@@ -31,16 +31,6 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     credit: "Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0",
     position: "50% center"
   },
-  "奈良県": {
-    src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Deer%20at%20nara%20park%202.jpg?width=1280",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg",
-    title: "Deer at nara park 2.jpg",
-    author: "Ian G Shingler",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0",
-    position: "50% center"
-  },
   "石川県": {
     src: "assets/ishikawa-kanazawa-station.jpg",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg",
