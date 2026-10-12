@@ -1,7 +1,34 @@
 // 和酒ログ 都道府県別酒蔵データ（県ページ・一覧ページ共通）
 // 全国酒蔵マスターとの統合まで、確認済みデータをここで共通利用する。
 window.WASHULOG_PREFECTURE_BREWERIES = {
-"奈良県":{storyTitle:"奈良の酒の歴史",story:"三輪をはじめ、古代から続く酒造りの歩みと、信仰や寺社との深いつながりがあります。",breweries:[{name:"今西酒造",brands:"みむろ杉・三諸杉",place:"桜井市・三輪",note:"三輪山の麓で、土地の水と歴史に向き合いながら酒を醸す蔵。",url:"https://imanishisyuzou.com/"},{name:"今西清兵衛商店",brands:"春鹿",place:"奈良市・福智院町",note:"奈良町で酒造りを続け、南都諸白の伝統を現在へつなぐ蔵。",url:"https://www.harushika.com/"},{name:"千代酒造",brands:"篠峯・櫛羅",place:"御所市・櫛羅",note:"葛城山の麓で、米と水の個性を丁寧に引き出す酒造りを続ける。",url:"https://chiyoshuzo.co.jp/"},{name:"油長酒造",brands:"風の森・水端",place:"御所市",note:"奈良に受け継がれた酒造りを見つめ直し、現代の一杯へつなぐ蔵。",url:"https://yucho-sake.jp/"},{name:"美吉野醸造",brands:"花巴",place:"吉野郡吉野町・六田",note:"吉野の山あいで、土地の気候や微生物と向き合いながら酒を醸す。",url:"https://www.hanatomoe.com/"},{name:"梅乃宿酒造",brands:"梅乃宿",place:"葛城市",note:"1893年創醸。大和の地で、日本酒と果実酒の新しい楽しみ方を届ける。",url:"https://www.umenoyado.com/"}],source:"https://yamato-umazake.com/brewery-introduction/",sourceLabel:"奈良県酒造組合"},
+"奈良県":{storyTitle:"奈良の酒の歴史",story:"三輪をはじめ、古代から続く酒造りの歩みと、信仰や寺社との深いつながりがあります。",breweries:[
+{name:"今西清兵衛商店",brands:"春鹿",place:"奈良市・奈良町",note:"",url:"https://www.harushika.com/shopping/"},
+{name:"奈良豊澤酒造",brands:"豊祝",place:"奈良市",note:"",url:"https://yamato-umazake.com/brewery-introduction/"},
+{name:"倉本酒造",brands:"KURAMOTO・金嶽",place:"奈良市・都祁",note:"",url:"https://kuramoto-sake.com/"},
+{name:"上田酒造",brands:"嬉長",place:"生駒市",note:"",url:"https://ueda-syuzou.com/"},
+{name:"菊司醸造",brands:"菊司",place:"生駒市",note:"",url:"https://kikutsukasa.pro/"},
+{name:"中本酒造店",brands:"山鶴",place:"生駒市",note:"",url:"https://yamaturu.com/"},
+{name:"稲田酒造",brands:"黒松稲天",place:"天理市",note:"",url:"https://inaten.com/"},
+{name:"中谷酒造",brands:"萬穣・朝香",place:"大和郡山市",note:"",url:"https://www.sake-asaka.co.jp/"},
+{name:"喜多酒造",brands:"御代菊",place:"橿原市",note:"",url:"https://miyokiku.com/product/"},
+{name:"河合酒造",brands:"出世男",place:"橿原市・今井町",note:"",url:"https://www.syusseotoko.jp/collections/all"},
+{name:"澤田酒造",brands:"歓喜光",place:"香芝市",note:"",url:"https://shop.kankiko.jp/"},
+{name:"大倉本家",brands:"大倉・金鼓",place:"香芝市",note:"",url:"https://kinko-ookura.com/index.html"},
+{name:"梅乃宿酒造",brands:"梅乃宿",place:"葛城市",note:"",url:"https://www.umenoyado.com/"},
+{name:"長龍酒造",brands:"吉野杉の樽酒・長龍",place:"北葛城郡広陵町",note:"",url:"https://www.choryo.co.jp/"},
+{name:"油長酒造",brands:"風の森・鷹長・水端",place:"御所市",note:"",url:"https://yucho-sake.jp/store/"},
+{name:"葛城酒造",brands:"百楽門",place:"御所市",note:"",url:"https://yamato-umazake.com/brewery-introduction/"},
+{name:"千代酒造",brands:"篠峯・櫛羅",place:"御所市",note:"",url:"https://chiyoshuzo.co.jp/shop/"},
+{name:"山本本家",brands:"松の友",place:"五條市",note:"",url:"https://yamato-umazake.com/brewery-introduction/"},
+{name:"五條酒造",brands:"五神",place:"五條市",note:"",url:"https://sake-goshin.com/"},
+{name:"今西酒造",brands:"みむろ杉・三諸杉・今西",place:"桜井市・三輪",note:"",url:"https://imanishisyuzou.com/mimurosugi_roman/"},
+{name:"西内酒造",brands:"談山",place:"桜井市",note:"",url:"https://nara-tanzan.com/"},
+{name:"芳村酒造",brands:"千代乃松",place:"宇陀市・大宇陀",note:"",url:"https://yamato-umazake.com/brewery-introduction/"},
+{name:"久保本家酒造",brands:"睡龍・初霞",place:"宇陀市・大宇陀",note:"",url:"https://kubohonke.com/"},
+{name:"北村酒造",brands:"猩々",place:"吉野郡吉野町",note:"",url:"https://www.kitamurasyuzou.co.jp/"},
+{name:"北岡本店",brands:"八咫烏",place:"吉野郡吉野町",note:"",url:"https://kitaoka.ritornello.co.jp/c/26"},
+{name:"藤村酒造",brands:"万代老松",place:"吉野郡下市町",note:"稼働状況は要再確認。",url:"https://japansake.or.jp/sakagura/jp/nara/fujimura-shuzou/"}
+],source:"https://yamato-umazake.com/brewery-introduction/",sourceLabel:"奈良県酒造組合 26蔵（和酒ログ監査済みマスター）"},
 "東京都":{storyTitle:"都市と山のあいだの酒造り",story:"23区の中心部から西多摩の山あいまで、景色の大きく異なる土地で東京の酒が造られています。",breweries:[{name:"小澤酒造",brands:"澤乃井",place:"青梅市",note:"多摩川上流の山あいで、地域の水とともに酒造りを続ける蔵。",url:"https://www.sawanoi-sake.com/"},{name:"石川酒造",brands:"多満自慢",place:"福生市",note:"福生で日本酒とビールを醸し、酒蔵のある風景をひらく蔵。",url:"https://www.tamajiman.co.jp/"},{name:"田村酒造場",brands:"嘉泉",place:"福生市",note:"江戸後期から福生の地で酒を醸し、敷地の井戸水を仕込みに用いる。",url:"https://www.seishu-kasen.com/"},{name:"豊島屋酒造",brands:"金婚・屋守",place:"東村山市",note:"江戸の酒文化を受け継ぎながら、東村山で酒造りを続ける蔵。",url:"https://www.toshimayasyuzou.co.jp/"},{name:"野口酒造店",brands:"國府鶴",place:"府中市",note:"武蔵国の国府が置かれた府中で、地名の記憶を銘柄に残す蔵。",url:"https://www.noguchi-brewery.co.jp/"},{name:"東京港醸造",brands:"江戸開城",place:"港区・芝",note:"都心の小さな醸造所で、年間を通して東京の酒を造る。",url:"https://tokyoportbrewery.wkmty.com/"}],source:"https://www.tokyosake.or.jp/brewery/",sourceLabel:"東京都酒造組合"},
 "石川県":{storyTitle:"加賀から能登へ、手仕事が息づく土地",story:"金沢の工芸、白山の水、能登の暮らし。手で受け継がれてきた文化のそばで、石川の酒造りも続いています。",breweries:[{name:"福光屋",brands:"福正宗・加賀鳶",place:"金沢市",note:"金沢で長く酒造りを続け、米と水だけで醸す純米蔵として土地の酒を届ける。",url:"https://www.fukumitsuya.co.jp/"},{name:"菊姫",brands:"菊姫",place:"白山市・鶴来",note:"白山の麓、鶴来で米と熟成に向き合い、力強い酒を醸す蔵。",url:"https://www.kikuhime.co.jp/"},{name:"車多酒造",brands:"天狗舞",place:"白山市",note:"白山の伏流水を背景に、山廃仕込を大切にしながら酒を醸す。",url:"https://www.tengumai.co.jp/"},{name:"吉田酒造店",brands:"手取川・吉田蔵u",place:"白山市・安吉町",note:"手取川扇状地の水と地域の米を軸に、次の世代へ続く酒造りを探る。",url:"https://tedorigawa.com/"},{name:"宗玄酒造",brands:"宗玄",place:"珠洲市・宝立町",note:"奥能登・珠洲で酒造りを続け、地域の米と能登杜氏の技をつなぐ。",url:"https://www.sogen-shuzou.com/"},{name:"数馬酒造",brands:"竹葉",place:"鳳珠郡能登町",note:"能登の米と水、人のつながりを大切に、地域とともに酒を醸す。",url:"https://chikuha.co.jp/"}],source:"https://www.ishikawa-sake.jp/",sourceLabel:"石川県酒造組合連合会"},
 "福井県":{storyTitle:"越前と若狭、水の道に沿う酒造り",story:"白山山系の雪解け水と、日本海へ続く川。越前から若狭まで、それぞれの土地の水を映す酒が醸されています。",breweries:[

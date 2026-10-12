@@ -28,7 +28,6 @@
 |---|---|---|---|---|---|---|---|
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
 | 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
-| 奈良県 | 早朝の奈良公園・鹿と石灯籠 | Deer at nara park 2.jpg | Ian G Shingler | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Deer_at_nara_park_2.jpg | `prefecture-hero-images.js` | 採用確定・実装済み |
 | 石川県 | 金沢駅・鼓門 | Kanazawa-STA Tsuzumi-mon.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg | `assets/ishikawa-kanazawa-station.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 福井県 | 東尋坊の断崖と日本海 | 東尋坊（素材ID 625） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_625.html | `assets/fukui-tojinbo.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 富山県 | 雨晴海岸・女岩・立山連峰 | 雨晴海岸（女岩・立山連峰）20250215-IMG 2900.jpg | くろふね | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:%E9%9B%A8%E6%99%B4%E6%B5%B7%E5%B2%B8%EF%BC%88%E5%A5%B3%E5%B2%A9%E3%83%BB%E7%AB%8B%E5%B1%B1%E9%80%A3%E5%B3%B0%EF%BC%8920250215-IMG_2900.jpg | `assets/toyama-amaharashi.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
@@ -67,33 +66,16 @@
 - 撮影者は Moyan Brenn。画面上に `Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0` を表示する。
 - 原画像は3,840 × 2,239px。横長ヒーローでは交差点の密度を残して中央配置する。
 
-### 奈良ヒーロー利用メモ
-
-- 採用確定写真は、早朝の奈良公園で鹿と石灯籠を写した実写。2023-10-01 05:58撮影。
-- 原典は Wikimedia Commons。撮影者 Ian G Shingler、CC BY-SA 4.0。
-- 画面上に `Photo: Ian G Shingler / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
-- 原画像は 5,041 × 3,361px。横長ヒーローでも鹿・石灯籠・森の奥行きが伝わる中央配置を基本とする。
-- 実表示で被写体が判別しやすいことを確認して候補3から変更。この写真を奈良県ヒーローの確定素材とする。
-
 ## 都道府県「地域」写真
 
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
-| 奈良県 | 奈良の風景・東大寺南大門 | 20100716 Nara Todaiji Nandaimon 2252.jpg | Jakub Hałun | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:20100716_Nara_Todaiji_Nandaimon_2252.jpg | `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 石川県 | 石川の手仕事・輪島塗 | 輪島塗（素材ID 1111111409） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111409.html | `assets/ishikawa-wajima-lacquer.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 福井県 | 福井の手仕事・越前和紙 | 越前和紙（素材ID 1897） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_1897.html | `assets/fukui-echizen-washi.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 富山県 | 富山の暮らし・五箇山相倉集落 | Ainokura (World Heritage Site), Gokayama, Nanto City, Toyama Pref.jpg | 黒ゆり | CC BY-SA 3.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Ainokura_(World_Heritage_Site),_Gokayama,_Nanto_City,_Toyama_Pref.jpg | `assets/toyama-gokayama.jpg` / `prefecture-guide.html` | 採用確定・クレジット表示済み |
 | 新潟県 | 新潟の風景・三条市北五百川の棚田 | Rice Field Terrace, Kitaimogawa, Sanjō, Niigata, Japan, September 2022.jpg | Tail furry | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Rice_Field_Terrace,_Kitaimogawa,_Sanj%C5%8D,_Niigata,_Japan,_September_2022.jpg | `assets/niigata-kitaimogawa-terrace.jpg` / `prefecture-guide.html` | 候補2で採用確定・実装済み |
 | 長野県 | 長野の町並み・雨の奈良井宿 | Narai-juku - Naraijuku6558.jpg | lumoplank | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Narai-juku_-_Naraijuku6558.jpg | `assets/nagano-narai-juku.jpg` / `prefecture-guide.html` | 候補1で採用確定・実装済み |
 | 山梨県 | 忍野八海・水車 | A Water Mill at Oshino Hakkai - panoramio.jpg | Koichi Shibata | CC BY-SA 3.0（表示・継承） | https://commons.wikimedia.org/wiki/File:A_Water_Mill_at_Oshino_Hakkai_-_panoramio.jpg | `assets/yamanashi-oshino-watermill.jpg` / `prefecture-guide.html` | 候補1で採用確定・原寸からWeb用最適化して実装済み |
-
-### 奈良「地域」写真利用メモ
-
-- 東大寺南大門を正面から写した実写。2010-07-16撮影。
-- 原典は Wikimedia Commons。撮影者 Jakub Hałun、CC BY-SA 4.0。
-- 画面上に `Photo: Jakub Hałun / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
-- 原画像は 4,288 × 2,848px。横長表示でも南大門の全体像が伝わる中央配置を基本とする。
-- この写真を奈良県の地域写真として確定し、変更する場合は利用者確認後に権利台帳と実装を同時更新する。
 
 ### 石川「地域」写真利用メモ
 
@@ -113,7 +95,6 @@
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
-| 奈良県 | 柿の葉寿司 | Kakinoha (persimmon leaf) sushi in Nara.jpg | ZhengZhou | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kakinoha_(persimmon_leaf)_sushi_in_Nara.jpg | `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 東京都 | 江戸前の寿司・職人の仕事 | A chef prepares sushi on a wooden counter（箸除去補修版） | Stephen Pontes | Unsplash License（商用利用・加工可） | https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4 | `assets/tokyo-edomae-sushi-retouched.png` / `prefecture-food-images.js` | 採用確定・加工明記・クレジット表示済み |
 | 石川県 | 加能ガニ | 加能ガニ（素材ID 1111111513） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111513.html | `assets/ishikawa-kano-crab.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 福井県 | 越前おろしそば | 越前おろしそば（素材ID 3456） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_3456.html | `assets/fukui-oroshi-soba.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
@@ -121,13 +102,6 @@
 | 新潟県 | へぎそば | Hegi soba, Kojima-ya, Niigata station.jpg | Yuki Shimazu | CC BY-SA 2.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Hegi_soba,_Kojima-ya,_Niigata_station.jpg | `assets/niigata-hegi-soba.jpg` / `prefecture-food-images.js` | 候補1で採用確定・実装済み |
 | 長野県 | 野沢菜のおやき | Oyaki 001.jpg | Ocdp | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Oyaki_001.jpg | `assets/nagano-oyaki.jpg` / `prefecture-food-images.js` | 候補1で採用確定・実装済み |
 | 山梨県 | 鉄鍋のほうとう | Houtou.jpg | Jungle | CC BY-SA 3.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Houtou.jpg | `assets/yamanashi-houtou.jpg` / `prefecture-food-images.js` | 候補1で採用確定・原寸からWeb用最適化して実装済み |
-
-### 奈良「食」写真利用メモ
-
-- Ver.1は `Kakinoha (persimmon leaf) sushi in Nara.jpg` を確定素材として使用する。
-- 原典は Wikimedia Commons。撮影者 ZhengZhou、CC BY-SA 4.0。
-- 画面上に `Photo: ZhengZhou / Wikimedia Commons / CC BY-SA 4.0` を表示し、原典ページへリンクする。
-- 将来、運営者が自ら撮影した複数個を端正に並べた柿の葉寿司写真が用意できた場合は、表示確認後に権利台帳と実装を同時更新して差し替える。
 
 ### 東京「食」写真利用メモ
 
