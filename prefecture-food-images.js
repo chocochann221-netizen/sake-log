@@ -28,15 +28,16 @@ window.WASHULOG_PREFECTURE_FOOD_IMAGES = {
     position: "50% center"
   },
   "石川県": {
-    src: "assets/ishikawa-kano-crab.jpg",
-    sourcePage: "https://www.hot-ishikawa.jp/photo/detail_1111111513.html",
-    title: "加能ガニ（素材ID 1111111513）",
+    src: "assets/ishikawa-kano-crab-illustration.jpg",
+    sourcePage: "",
+    title: "冬の食卓の加能ガニ",
     heading: "加能ガニ",
     caption: "冬の日本海が育てる、石川を代表する味覚。端正な甘みを土地の酒と味わう。",
-    author: "石川県観光連盟または写真素材提供者",
-    license: "石川県観光写真利用規約（石川紹介PR目的・加工可）",
-    licenseUrl: "https://www.hot-ishikawa.jp/photo/list.html",
-    credit: "写真提供：石川県観光連盟",
+    author: "和酒ログ",
+    license: "AI生成・合成イメージ",
+    licenseUrl: "",
+    credit: "合成イメージ",
+    mediaType: "composite-illustration",
     position: "50% center"
   },
   "福井県": {

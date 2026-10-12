@@ -111,6 +111,39 @@
     }
   }
 
+  // 石川も奈良・東京と同じ正本構造を使う。旧実写リンクや権利表記が
+  // キャッシュに残っても、確定した合成イラスト以外へ戻さない。
+  if (prefecture === '石川県') {
+    document.querySelectorAll('a[href*="brewery-list.html?prefecture="]').forEach(link => {
+      const url = new URL(link.href, location.href);
+      url.searchParams.set('ui', '3');
+      link.href = url.pathname.replace(/^\//, '') + url.search;
+    });
+    const figures = document.querySelectorAll('.editorial-figure');
+    const fixed = [
+      { src: 'assets/ishikawa-wajima-lacquer-illustration.jpg', alt: '輪島塗の手仕事を描いた合成イラスト' },
+      { src: 'assets/ishikawa-kano-crab-illustration.jpg', alt: '石川の冬の食卓と加能ガニを描いた合成イラスト' }
+    ];
+    figures.forEach((figure, index) => {
+      if (!fixed[index]) return;
+      const oldImage = figure.querySelector('img');
+      if (!oldImage) return;
+      const nextImage = oldImage.cloneNode(false);
+      nextImage.src = fixed[index].src;
+      nextImage.alt = fixed[index].alt;
+      nextImage.removeAttribute('loading');
+      const link = oldImage.closest('a');
+      if (link) link.replaceWith(nextImage); else oldImage.replaceWith(nextImage);
+      const oldCredit = figure.querySelector('.editorial-credit');
+      if (oldCredit) {
+        const label = document.createElement('span');
+        label.className = 'editorial-credit';
+        label.textContent = '合成イメージ';
+        oldCredit.replaceWith(label);
+      }
+    });
+  }
+
   if (hero.note) {
     const note = document.createElement('div');
     note.className = 'hero-design-note';

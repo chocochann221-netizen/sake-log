@@ -44,13 +44,14 @@ window.WASHULOG_PREFECTURE_HERO_IMAGES = {
     position: "58% center"
   },
   "石川県": {
-    src: "assets/ishikawa-kanazawa-station.jpg",
-    sourcePage: "https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg",
-    title: "Kanazawa-STA Tsuzumi-mon.jpg",
-    author: "MaedaAkihiko",
-    license: "CC BY-SA 4.0",
-    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
-    credit: "Photo: MaedaAkihiko / Wikimedia Commons / CC BY-SA 4.0",
+    src: "assets/ishikawa-kanazawa-station-illustration.jpg",
+    sourcePage: "",
+    title: "雨上がりの金沢駅・鼓門",
+    author: "和酒ログ",
+    license: "AI生成・合成イメージ",
+    licenseUrl: "",
+    credit: "合成イメージ",
+    mediaType: "composite-illustration",
     position: "50% center"
   },
   "福井県": {
