@@ -13,3 +13,15 @@
 - 酒蔵データ: `prefecture-brewery-data.js`（26蔵）
 
 旧実写ストーリー、旧実写URL、6蔵のみの全件一覧は現行正本ではない。
+
+## 東京都
+
+- 県トップ実装: `prefecture-guide.html`
+- ヒーロー描画: `prefecture-hero-render.js`
+- ヒーロー画像: `assets/tokyo-shibuya-rain-illustration.jpg`
+- 地域画像: `assets/tokyo-yanaka-nezu-illustration.jpg`
+- 食画像: `assets/tokyo-edomae-sushi-illustration.jpg`
+- 酒蔵一覧実装: `brewery-list.html`
+- 酒蔵データ: `prefecture-brewery-data.js`（現行10蔵。休蔵中1蔵は一覧対象外）
+
+旧実写画像・旧実写権利情報・6蔵のみの全件一覧・未使用の旧関東データは現行正本ではない。

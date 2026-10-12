@@ -27,7 +27,6 @@
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
 | 北海道 | オホーツクの流氷・知床 | Hokkaido-Drift ice, Shiretoko Peninsula-xl.jpg | kkawamura | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:Hokkaido-Drift_ice,_Shiretoko_Peninsula-xl.jpg | `prefecture-hero-images.js` / `prefecture-hokkaido-story.js` | 採用・クレジット表示済み |
-| 東京都 | 雨夜の渋谷スクランブル・傘と路面反射 | Tokyo (16204487106).jpg | Moyan Brenn | CC BY 2.0（表示） | https://commons.wikimedia.org/wiki/File:Tokyo_(16204487106).jpg | `prefecture-hero-images.js` | 採用・クレジット表示済み |
 | 石川県 | 金沢駅・鼓門 | Kanazawa-STA Tsuzumi-mon.jpg | MaedaAkihiko | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Kanazawa-STA_Tsuzumi-mon.jpg | `assets/ishikawa-kanazawa-station.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 福井県 | 東尋坊の断崖と日本海 | 東尋坊（素材ID 625） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_625.html | `assets/fukui-tojinbo.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
 | 富山県 | 雨晴海岸・女岩・立山連峰 | 雨晴海岸（女岩・立山連峰）20250215-IMG 2900.jpg | くろふね | CC BY 4.0（表示） | https://commons.wikimedia.org/wiki/File:%E9%9B%A8%E6%99%B4%E6%B5%B7%E5%B2%B8%EF%BC%88%E5%A5%B3%E5%B2%A9%E3%83%BB%E7%AB%8B%E5%B1%B1%E9%80%A3%E5%B3%B0%EF%BC%8920250215-IMG_2900.jpg | `assets/toyama-amaharashi.jpg` / `prefecture-hero-images.js` | 採用確定・実装済み |
@@ -58,14 +57,6 @@
 - アイヌ文化の章は現時点で写真を置かず、装飾利用を避ける。将来写真・資料を採用する場合は、権利だけでなく当事者・施設・資料の文脈を確認する。
 - 北海道ページは「広さ」をスクロール距離で表現し、流氷 → 美瑛 → 札幌 → アイヌ文化 → 函館 → 食・米・酒へ接続する。
 
-### 東京ヒーロー利用メモ
-
-- 決定済みテーマは「雨の夜の渋谷スクランブル交差点」。東京駅案は不採用。
-- 原画像は雨の夕刻の渋谷スクランブル交差点で、傘・人の流れ・濡れた路面・都市の光が写る。
-- 原典は Flickr から Wikimedia Commons へ収録され、FlickreviewR により CC BY 2.0 を確認済み。
-- 撮影者は Moyan Brenn。画面上に `Photo: Moyan Brenn / Wikimedia Commons / CC BY 2.0` を表示する。
-- 原画像は3,840 × 2,239px。横長ヒーローでは交差点の密度を残して中央配置する。
-
 ## 都道府県「地域」写真
 
 | 県 | 用途 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
@@ -95,22 +86,12 @@
 
 | 県 | 料理・食材 | 作品 | 撮影者 | 利用条件 | 出典 | 実装 | 状態 |
 |---|---|---|---|---|---|---|---|
-| 東京都 | 江戸前の寿司・職人の仕事 | A chef prepares sushi on a wooden counter（箸除去補修版） | Stephen Pontes | Unsplash License（商用利用・加工可） | https://unsplash.com/photos/a-chef-prepares-sushi-on-a-wooden-counter-YaXqqEY8uN4 | `assets/tokyo-edomae-sushi-retouched.png` / `prefecture-food-images.js` | 採用確定・加工明記・クレジット表示済み |
 | 石川県 | 加能ガニ | 加能ガニ（素材ID 1111111513） | 石川県観光連盟または写真素材提供者 | 石川県観光写真利用規約（石川紹介PR目的・加工可） | https://www.hot-ishikawa.jp/photo/detail_1111111513.html | `assets/ishikawa-kano-crab.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 福井県 | 越前おろしそば | 越前おろしそば（素材ID 3456） | 福井県観光連盟または写真素材提供者 | 福井県観光連盟 写真素材利用規約（福井県の観光PR目的・必要最小限のトリミング可） | https://www.fuku-e.com/photo/detail_3456.html | `assets/fukui-oroshi-soba.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 富山県 | ます寿し | 笹ごと切ったます寿し.JPG | Sougenma | CC BY-SA 4.0（表示・継承） | https://commons.wikimedia.org/wiki/File:%E7%AC%B9%E3%81%94%E3%81%A8%E5%88%87%E3%81%A3%E3%81%9F%E3%81%BE%E3%81%99%E5%AF%BF%E3%81%97.JPG | `assets/toyama-masuzushi.jpg` / `prefecture-food-images.js` | 採用確定・クレジット表示済み |
 | 新潟県 | へぎそば | Hegi soba, Kojima-ya, Niigata station.jpg | Yuki Shimazu | CC BY-SA 2.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Hegi_soba,_Kojima-ya,_Niigata_station.jpg | `assets/niigata-hegi-soba.jpg` / `prefecture-food-images.js` | 候補1で採用確定・実装済み |
 | 長野県 | 野沢菜のおやき | Oyaki 001.jpg | Ocdp | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Oyaki_001.jpg | `assets/nagano-oyaki.jpg` / `prefecture-food-images.js` | 候補1で採用確定・実装済み |
 | 山梨県 | 鉄鍋のほうとう | Houtou.jpg | Jungle | CC BY-SA 3.0（表示・継承） | https://commons.wikimedia.org/wiki/File:Houtou.jpg | `assets/yamanashi-houtou.jpg` / `prefecture-food-images.js` | 候補1で採用確定・原寸からWeb用最適化して実装済み |
-
-### 東京「食」写真利用メモ
-
-- 檜のカウンターで鮨職人がウニの握りを仕上げる実写。東京都ページの「食」写真として2026-09-14に採用確定。
-- 原典はUnsplash。撮影者 Stephen Pontes、Unsplash License。商用・非商用利用および加工が可能で、許諾・クレジットは必須ではない。
-- 元画像は 7,728 × 5,152px。原典を保持し、実装には 1,536 × 1,024px の加工版 `assets/tokyo-edomae-sushi-retouched.png` を使用する。
-- 加工内容は、画面手前を斜めに横切る黒い箸のみをAI補修で除去し、周囲の檜カウンターと前景のボケを補完したもの。鮨職人、手元、ウニの握り、木箱、基本構図と色調は維持する方針。
-- 画面上には透明性のため `Photo: Stephen Pontes / Unsplash / Retouched by 和酒ログ` を表示し、原典ページとUnsplash Licenseへ到達できるようにする。
-- 旧採用写真 `Sushi food in Tokyo, Japan.jpg`（Joli Rumi / CC BY-SA 4.0）は、江戸前鮨らしさと高級感が不足するため不採用へ変更する。
 
 ### 石川「食」写真利用メモ
 
