@@ -26,6 +26,7 @@ const S = {
   currentEventPhotoRequestId: null,
   selectedRecognitionCandidate: null,
   historyRows: [],
+  authRecovery: false,
 };
 const photoObjectUrls = new Map();
 let freshPhotoPickerConfirmed = false;
@@ -126,6 +127,7 @@ function show(id) {
     "analysisView",
     "profileView",
     "settingsView",
+    "resetPasswordView",
   ]);
   if (protectedViews.has(id) && !S.user) {
     id = "authView";
@@ -257,6 +259,7 @@ async function loadSocialProviders() {
 
 async function consumeOAuthCallback() {
   const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+  const authType = hash.get("type");
 
   const lineLinked = hash.get("line_linked");
   if (lineLinked === "1") {
@@ -340,6 +343,7 @@ async function consumeOAuthCallback() {
     const user = await r.json().catch(() => null);
     if (!r.ok || !user?.id) throw new Error("OAuth user load failed");
     S.user = user;
+    S.authRecovery = authType === "recovery";
     localStorage.setItem("sakelog_user", JSON.stringify(user));
     history.replaceState(null, "", location.pathname + location.search);
     return true;
@@ -465,7 +469,97 @@ $("toggleAuth").onclick = () => {
   $("toggleAuth").textContent = S.signup
     ? "登録済み → ログイン"
     : "初めて使う → 新規登録";
+  $("forgotPasswordBtn").classList.toggle("hidden", S.signup);
   msg($("authMsg"), "");
+};
+
+$("forgotPasswordBtn").onclick = async () => {
+  if (!requireOnline("パスワード再設定メールの送信には通信が必要です。")) return;
+  const email = $("email").value.trim();
+  if (!email) {
+    msg($("authMsg"), "メールアドレスを入力してから押してください。", "err");
+    $("email").focus();
+    return;
+  }
+  $("forgotPasswordBtn").disabled = true;
+  try {
+    const redirectTo = currentAppRedirectUrl();
+    const r = await fetch(
+      BASE + "/auth/v1/recover?redirect_to=" + encodeURIComponent(redirectTo),
+      {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ email }),
+      },
+    );
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok)
+      throw new Error(
+        d.msg || d.message || "再設定メールを送信できませんでした。",
+      );
+    msg(
+      $("authMsg"),
+      "再設定メールを送信しました。メールのリンクから新しいパスワードを設定してください。",
+      "ok",
+    );
+  } catch (e) {
+    msg(
+      $("authMsg"),
+      e.message || "再設定メールを送信できませんでした。",
+      "err",
+    );
+  } finally {
+    $("forgotPasswordBtn").disabled = false;
+  }
+};
+
+$("saveNewPasswordBtn").onclick = async () => {
+  if (!requireOnline("パスワード変更には通信が必要です。")) return;
+  const password = $("newPassword").value;
+  const confirmPassword = $("newPasswordConfirm").value;
+  if (password.length < 8) {
+    msg($("resetPasswordMsg"), "パスワードは8文字以上にしてください。", "err");
+    return;
+  }
+  if (password !== confirmPassword) {
+    msg($("resetPasswordMsg"), "確認用パスワードが一致しません。", "err");
+    return;
+  }
+  $("saveNewPasswordBtn").disabled = true;
+  try {
+    const r = await fetch(BASE + "/auth/v1/user", {
+      method: "PUT",
+      headers: headers(true),
+      body: JSON.stringify({ password }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok)
+      throw new Error(
+        d.msg || d.message || "パスワードを変更できませんでした。",
+      );
+    await fetch(BASE + "/auth/v1/logout", {
+      method: "POST",
+      headers: headers(true),
+    }).catch(() => {});
+    clearSession();
+    S.authRecovery = false;
+    $("newPassword").value = "";
+    $("newPasswordConfirm").value = "";
+    show("authView");
+    msg(
+      $("authMsg"),
+      "パスワードを変更しました。新しいパスワードでログインしてください。",
+      "ok",
+    );
+  } catch (e) {
+    msg(
+      $("resetPasswordMsg"),
+      e.message || "パスワードを変更できませんでした。",
+      "err",
+    );
+  } finally {
+    $("saveNewPasswordBtn").disabled = false;
+  }
 };
 
 $("authBtn").onclick = async () => {
@@ -550,6 +644,7 @@ function clearSession() {
   S.lat = null;
   S.lng = null;
   S.authBusy = false;
+  S.authRecovery = false;
   S.currentSaveRequestId = null;
   S.currentEventPhotoRequestId = null;
   S.selectedRecognitionCandidate = null;
@@ -584,6 +679,10 @@ async function restore() {
 
   if (await consumeOAuthCallback()) {
     $("userEmail").textContent = S.user?.email || "";
+    if (S.authRecovery) {
+      show("resetPasswordView");
+      return;
+    }
     await cleanupPendingRollbacks().catch(() => {});
     await cleanupPendingStorageDeletes().catch(() => {});
     show("homeView");
