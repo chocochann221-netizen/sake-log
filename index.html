@@ -856,8 +856,11 @@
       .auth-email label { margin-top: 13px; color: #6e5d51; font-size: 12px; font-weight: 700; }
       .auth-email input { border-color: #c8b5a2; border-radius: 5px; background: rgba(255,252,246,.8); }
       .auth-email .primary { margin-top: 18px; border-radius: 5px; background: #8d5433; color: #fffaf1; }
+      .auth-help-link { margin: 3px 0 0 !important; padding: 10px 0 !important; border: 0 !important; background: transparent !important; color: #79543a !important; font-size: 12px !important; text-decoration: underline; text-underline-offset: 4px; }
       .auth-mode-toggle { padding: 13px 0 !important; border: 0 !important; background: transparent !important; color: #79543a !important; font-size: 13px !important; text-decoration: underline; text-underline-offset: 4px; }
       .auth-consent { margin-top: 17px; color: #806f63 !important; font-size: 10px !important; }
+      .auth-reset-card { max-width: 520px; margin: 26px auto 0; padding: 35px 28px; }
+      .auth-reset-card .auth-mark { margin-bottom: 28px; }
     </style>
     <link rel="stylesheet" href="design-system.css?v=2" />
   </head>
@@ -924,6 +927,7 @@
             <label for="email">メールアドレス</label><input id="email" type="email" autocomplete="email" />
             <label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" />
             <button id="authBtn" class="btn primary">ログイン</button>
+            <button id="forgotPasswordBtn" class="btn secondary auth-help-link" type="button">パスワードを忘れた方</button>
             <button id="toggleAuth" class="btn secondary auth-mode-toggle">初めて使う → 新規登録</button>
           </div>
           <div id="authMsg"></div>
@@ -936,6 +940,23 @@
             >
             に同意したものとみなします。
           </div>
+        </div>
+      </section>
+      <section id="resetPasswordView" class="page hidden" aria-labelledby="resetPasswordTitle">
+        <div class="card auth-reset-card">
+          <div class="auth-mark" aria-hidden="true"><span>和</span></div>
+          <div class="auth-heading">
+            <h2 id="resetPasswordTitle">新しいパスワードを設定</h2>
+            <p>これから使うパスワードを入力してください。</p>
+          </div>
+          <div class="auth-email">
+            <label for="newPassword">新しいパスワード</label>
+            <input id="newPassword" type="password" autocomplete="new-password" minlength="8" />
+            <label for="newPasswordConfirm">新しいパスワード（確認）</label>
+            <input id="newPasswordConfirm" type="password" autocomplete="new-password" minlength="8" />
+            <button id="saveNewPasswordBtn" class="btn primary" type="button">パスワードを変更する</button>
+          </div>
+          <div id="resetPasswordMsg" aria-live="polite"></div>
         </div>
       </section>
       <section id="homeView" class="page hidden">
@@ -1410,7 +1431,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=543"></script>
+    <script src="app.js?v=544"></script>
     <script src="detail-knowledge.js?v=3"></script>
     <script>
       if ("serviceWorker" in navigator) {
