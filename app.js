@@ -5689,7 +5689,7 @@ async function deleteMyAccount() {
     const r = await authFetch(BASE + "/functions/v1/delete-account", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirm_email: entered.trim() }),
+      body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
     });
     const d = await r.json().catch(() => null);
     if (!r.ok) throw new Error(d?.error || "アカウント削除に失敗しました");
