@@ -513,12 +513,20 @@ $("forgotPasswordBtn").onclick = async () => {
   }
 };
 
+function isStrongPassword(password) {
+  return password.length >= 12 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[^A-Za-z0-9]/.test(password);
+}
+
 $("saveNewPasswordBtn").onclick = async () => {
   if (!requireOnline("パスワード変更には通信が必要です。")) return;
   const password = $("newPassword").value;
   const confirmPassword = $("newPasswordConfirm").value;
-  if (password.length < 8) {
-    msg($("resetPasswordMsg"), "パスワードは8文字以上にしてください。", "err");
+  if (!isStrongPassword(password)) {
+    msg($("resetPasswordMsg"), "パスワードは12文字以上で、英大文字・英小文字・数字・記号を各1文字以上含めてください。", "err");
     return;
   }
   if (password !== confirmPassword) {
@@ -570,8 +578,8 @@ $("authBtn").onclick = async () => {
     msg($("authMsg"), "メールアドレスを入力してください。", "err");
     return;
   }
-  if (S.signup && password.length < 8) {
-    msg($("authMsg"), "新規登録のパスワードは8文字以上にしてください。", "err");
+  if (S.signup && !isStrongPassword(password)) {
+    msg($("authMsg"), "新規登録のパスワードは12文字以上で、英大文字・英小文字・数字・記号を各1文字以上含めてください。", "err");
     return;
   }
   if (!S.signup && password.length < 6) {
