@@ -53,7 +53,7 @@ Designのみ・実装のみでは「完成」としない。
 ### Security / Database
 - [x] 主要テーブルRLS — 本人所有条件確認済み
 - [x] クロスユーザー静的監査 — profiles / drinking_records / sake_photos / recognition_results / corrections / favorites / user_preferences / taste_profiles / menu_scans は所有者条件を再読込。UPDATEは所有者WITH CHECK付き。Storage sake-photosもUUID先頭フォルダ所有者のみCRUD
-- [ ] クロスユーザー実機攻撃UAT — テスト用A/BアカウントでBのUUID・record_id・storage pathをAから直接REST/Storage/RPC操作し、全て403/0件/失敗になることを確認（実ユーザーでは実施しない）
+- [ ] クロスユーザー実機攻撃UAT — `SECURITY_AB_UAT.md` の13項目をテスト専用A/Bで双方向実施。全て403/0件/失敗になることを確認（手順正本化済み）
 - [x] 管理RPC anon遮断 — 対象RPC `anon_exec=false`
 - [x] Ver.1 DeferredイベントRPC遮断 — イベント系SECURITY DEFINER全23本で `anon_exec=false` / `auth_exec=false`。DB・関数は将来再開用に残置
 - [x] Service Role露出監査 — フロントエンドへの露出なし
@@ -62,7 +62,7 @@ Designのみ・実装のみでは「完成」としない。
 - [x] pg_trgm警告対応 — `public` から `extensions` schemaへ移動済み。`extensions.similarity()` smoke test PASS、Security Advisor警告消滅
 - [x] 漏洩パスワード保護 — Supabase公式現行DocsでPro plan以上限定を再確認。現プランでは公開P0から除外
 - [x] フロントパスワード強度 — 新規登録・変更を12文字以上＋英大文字/小文字/数字/記号へ強化
-- [ ] Supabase Authパスワード強度 — Dashboard側でも最低文字数・必須文字種を強化し、API直叩きでも弱い新規パスワードを拒否することを確認
+- [ ] Supabase Authパスワード強度 — Dashboard側でも最低文字数・必須文字種を強化し、API直叩きでも弱い新規パスワードを拒否することを確認（Free plan確認済み。Leaked Password Protectionは利用不可）
 - [x] Supabase Security Advisor再実行 — SECURITY DEFINER警告は46→25→6→2件。残る2件（AI認識quota / 本人記録削除）は用途・auth.uid()制約を確認し意図的維持。漏洩パスワード保護は現プラン対象外と確認済み
 
 ### Authentication
