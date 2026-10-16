@@ -5643,41 +5643,28 @@ function closeDeleteAccountDialog() {
   else dialog?.removeAttribute("open");
 }
 function syncDeleteAccountConfirmation() {
-  const entered = $("deleteAccountEmail")?.value?.trim().toLowerCase() || "";
-  const expected = String(S.user?.email || "").trim().toLowerCase();
+  const entered = $("deleteAccountConfirmText")?.value?.trim() || "";
   const button = $("confirmDeleteAccountBtn");
-  if (button) button.disabled = !expected || entered !== expected;
+  if (button) button.disabled = entered !== "削除";
   msg($("deleteAccountDialogMsg"), "");
 }
 function requestDeleteMyAccount() {
-  if (!S.user?.email) {
-    msg(
-      $("deleteAccountMsg"),
-      "登録情報を確認できませんでした。再ログインしてからお試しください。",
-      "err",
-    );
+  if (!S.user) {
+    msg($("deleteAccountMsg"), "登録情報を確認できませんでした。再ログインしてからお試しください。", "err");
     return;
   }
-  $("deleteAccountEmail").value = "";
-  $("deleteAccountRegisteredEmail").textContent = `登録メール：${S.user.email}`;
+  $("deleteAccountConfirmText").value = "";
   $("deleteAccountConfirmPanel").classList.remove("hidden");
   $("deleteAccountProgressPanel").classList.add("hidden");
   syncDeleteAccountConfirmation();
   const dialog = $("deleteAccountDialog");
   if (typeof dialog?.showModal === "function") dialog.showModal();
   else dialog?.setAttribute("open", "");
-  setTimeout(() => $("deleteAccountEmail")?.focus(), 0);
+  setTimeout(() => $("deleteAccountConfirmText")?.focus(), 0);
 }
 async function deleteMyAccount() {
-  const entered = $("deleteAccountEmail")?.value?.trim() || "";
-  if (
-    entered.toLowerCase() !== String(S.user?.email || "").trim().toLowerCase()
-  ) {
-    msg(
-      $("deleteAccountDialogMsg"),
-      "登録メールアドレスと一致しません。",
-      "err",
-    );
+  if ($("deleteAccountConfirmText")?.value?.trim() !== "削除") {
+    msg($("deleteAccountDialogMsg"), "確認欄に「削除」と入力してください。", "err");
     return;
   }
   if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。"))
@@ -5770,8 +5757,8 @@ if ($("cancelDeleteRecordBtn"))
   $("cancelDeleteRecordBtn").onclick = closeDeleteRecordDialog;
 if ($("confirmDeleteRecordBtn"))
   $("confirmDeleteRecordBtn").onclick = deleteCurrentRecord;
-if ($("deleteAccountEmail"))
-  $("deleteAccountEmail").addEventListener(
+if ($("deleteAccountConfirmText"))
+  $("deleteAccountConfirmText").addEventListener(
     "input",
     syncDeleteAccountConfirmation,
   );
