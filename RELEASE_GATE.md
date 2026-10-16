@@ -1,6 +1,6 @@
 # 和酒ログ Ver.1 Release Gate
 
-最終更新: 2026-09-25  
+最終更新: 2026-10-17  
 対象: Webプレ公開 / Android Ver.1  
 対象外（Deferred）: Appleログイン / iOS / イベント機能
 
@@ -52,18 +52,22 @@ Designのみ・実装のみでは「完成」としない。
 
 ### Security / Database
 - [x] 主要テーブルRLS — 本人所有条件確認済み
-- [x] クロスユーザー基本監査 — 他ユーザー主要データの操作を防止
+- [x] クロスユーザー静的監査 — profiles / drinking_records / sake_photos / recognition_results / corrections / favorites / user_preferences / taste_profiles / menu_scans は所有者条件を再読込。UPDATEは所有者WITH CHECK付き。Storage sake-photosもUUID先頭フォルダ所有者のみCRUD
+- [ ] クロスユーザー実機攻撃UAT — テスト用A/BアカウントでBのUUID・record_id・storage pathをAから直接REST/Storage/RPC操作し、全て403/0件/失敗になることを確認（実ユーザーでは実施しない）
 - [x] 管理RPC anon遮断 — 対象RPC `anon_exec=false`
 - [x] Ver.1 DeferredイベントRPC遮断 — イベント系SECURITY DEFINER全23本で `anon_exec=false` / `auth_exec=false`。DB・関数は将来再開用に残置
 - [x] Service Role露出監査 — フロントエンドへの露出なし
-- [x] 内部専用テーブル権限 — `brewery_links` / `line_account_links` はRLS維持＋anon/authenticatedの直接権限を撤回。service_roleのみ直接アクセス
+- [x] 内部専用テーブル権限 — `brewery_contact_private` / `brewery_links` / `line_account_links` はanon/authenticatedの直接権限なしを本番再読込
 - [x] SECURITY DEFINER最終監査 — 管理系・Deferredイベント系を遮断。本体6 RPCも個別監査済み：未使用3本遮断、`is_admin`をSECURITY INVOKER化、必要2本のみSECURITY DEFINER + authenticatedを意図的維持
 - [x] pg_trgm警告対応 — `public` から `extensions` schemaへ移動済み。`extensions.similarity()` smoke test PASS、Security Advisor警告消滅
-- [x] 漏洩パスワード保護 — Supabase Dashboardで確認。`Prevent use of leaked passwords` はPro plan以上限定のため現プランでは利用不可。Ver.1公開ブロッカーから除外し、Pro移行時に有効化する
+- [x] 漏洩パスワード保護 — Supabase公式現行DocsでPro plan以上限定を再確認。現プランでは公開P0から除外
+- [x] フロントパスワード強度 — 新規登録・変更を12文字以上＋英大文字/小文字/数字/記号へ強化
+- [ ] Supabase Authパスワード強度 — Dashboard側でも最低文字数・必須文字種を強化し、API直叩きでも弱い新規パスワードを拒否することを確認
 - [x] Supabase Security Advisor再実行 — SECURITY DEFINER警告は46→25→6→2件。残る2件（AI認識quota / 本人記録削除）は用途・auth.uid()制約を確認し意図的維持。漏洩パスワード保護は現プラン対象外と確認済み
 
 ### Authentication
-- [x] LINE認証コード監査 — state署名・nonce・redirect制限確認済み
+- [x] LINE認証コード監査 — state署名・nonce・redirect制限確認済み。raw LINE subjectのAuth metadata保存を廃止し既存値も除去
+- [x] 退会API監査 — bearer＋auth.getUserで本人確認、CORS allowlist、DB cascade＋Storage削除、provider非依存の明示確認へ変更。delete-account本番v4再読込済み
 - [x] 正式公開URL確定 — Ver.1 Web正式URLを `https://sake-log-git.pages.dev` に確定
 - [x] Supabase Site URL / Redirect URLs — Dashboardで確認。Site URL=`https://sake-log-git.pages.dev`、Redirect URLsにも同URL登録済み（旧Netlify URLは移行互換用に残置）
 - [ ] Google OAuth本番設定 — Provider Enabled、Client ID/Secret、Supabase Callback URL設定をDashboardで確認済み。正式URLからの実ログインUAT待ち
@@ -89,7 +93,9 @@ Designのみ・実装のみでは「完成」としない。
 ### Gate 2 完了条件
 - [ ] Gate 1 PASS
 - [ ] Product Design FinalとGitHub実装一致
-- [ ] Security Advisor最終確認完了
+- [x] Security Advisor最終確認完了 — 残件は意図的server-only RLS/no-policy、監査済みSECURITY DEFINER 2件、Pro限定leaked-passwordのみ
+- [ ] テスト用A/Bクロスユーザー攻撃UAT完了
+- [ ] Supabase Auth Dashboard側パスワード強度確認完了
 - [ ] 認証本番設定完了
 - [ ] P0技術課題ゼロ
 - [ ] Web Release Candidate作成完了
