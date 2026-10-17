@@ -925,7 +925,7 @@
 
           <div class="auth-email">
             <label for="email">メールアドレス</label><input id="email" type="email" autocomplete="email" />
-            <label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" />
+            <label for="password">パスワード</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" /><button id="togglePasswordVisibility" type="button" class="password-visibility" aria-label="パスワードを表示" aria-pressed="false">表示</button></div><p class="auth-delivery-note">確認メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
             <button id="authBtn" class="btn primary">ログイン</button>
             <button id="forgotPasswordBtn" class="btn secondary auth-help-link" type="button">パスワードを忘れた方</button>
             <button id="toggleAuth" class="btn secondary auth-mode-toggle">初めて使う → 新規登録</button>
