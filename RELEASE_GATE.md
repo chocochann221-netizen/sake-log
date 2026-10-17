@@ -46,6 +46,16 @@ Designのみ・実装のみでは「完成」としない。
 
 **Gate 1 判定: WAIT**
 
+
+### 2026-10-17 最終静的Security read-back
+- Security Advisor再実行: 新規P0なし。
+- INFO 3件（brewery_contact_private / brewery_links / line_account_links）はRLS有効・policyなし・anon/authenticated権限なしのserver-only設計。
+- WARN 2件（consume_ai_recognition_quota / delete_my_drinking_record）はauthenticated向けSECURITY DEFINERとして意図的。所有権/uid検証済み。
+- Leaked Password ProtectionはFree planでは利用不可。フロント側強度チェック済み、Dashboard側Auth強度設定の確認は最終実機Gateに残す。
+- public View/Materialized Viewなし。raw_user_meta_dataによる認可なし。
+- production Edge Function line-login v3 / delete-account v4をGitHubへ正本化・読み戻し済み。
+- 未完了は (1) SECURITY_AB_UAT.md によるテストA/B実通信、(2) Dashboard Authパスワード強度設定確認のみ。
+
 ## Gate 2 — Technical / Implementation
 
 担当: Development / DB・Auth: Supabase / 最終確認: Development + Owner
