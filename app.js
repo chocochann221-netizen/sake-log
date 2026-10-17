@@ -27,6 +27,8 @@ const S = {
   selectedRecognitionCandidate: null,
   historyRows: [],
   authRecovery: false,
+  pendingConfirmationEmail: null,
+  confirmationResendUntil: 0,
 };
 const photoObjectUrls = new Map();
 let freshPhotoPickerConfirmed = false;
@@ -473,6 +475,64 @@ $("toggleAuth").onclick = () => {
   msg($("authMsg"), "");
 };
 
+function showEmailConfirmation(email) {
+  S.pendingConfirmationEmail = email;
+  $("confirmationEmail").textContent = email;
+  $("emailConfirmationPanel").classList.remove("hidden");
+  $("authBtn").classList.add("hidden");
+  $("forgotPasswordBtn").classList.add("hidden");
+  $("toggleAuth").classList.add("hidden");
+  msg($("authMsg"), "登録を受け付けました。確認メールのリンクを開いて登録を完了してください。", "ok");
+}
+
+function resetConfirmationResendButton() {
+  const button = $("resendConfirmationBtn");
+  if (!button) return;
+  const seconds = Math.max(0, Math.ceil((S.confirmationResendUntil - Date.now()) / 1000));
+  if (seconds > 0) {
+    button.disabled = true;
+    button.textContent = seconds + "秒後に再送できます";
+    setTimeout(resetConfirmationResendButton, 1000);
+  } else {
+    button.disabled = false;
+    button.textContent = "確認メールを再送する";
+  }
+}
+
+$("resendConfirmationBtn")?.addEventListener("click", async () => {
+  if (!requireOnline("確認メールの再送には通信が必要です。")) return;
+  const email = S.pendingConfirmationEmail;
+  if (!email || Date.now() < S.confirmationResendUntil) return;
+  S.confirmationResendUntil = Date.now() + 60000;
+  resetConfirmationResendButton();
+  try {
+    const r = await fetch(BASE + "/auth/v1/resend", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ type: "signup", email }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.msg || d.message || "確認メールを再送できませんでした。");
+    msg($("resendConfirmationMsg"), "確認メールを再送しました。迷惑メールフォルダもご確認ください。", "ok");
+  } catch (e) {
+    S.confirmationResendUntil = 0;
+    resetConfirmationResendButton();
+    msg($("resendConfirmationMsg"), e.message || "確認メールを再送できませんでした。", "err");
+  }
+});
+
+$("changeSignupEmailBtn")?.addEventListener("click", () => {
+  S.pendingConfirmationEmail = null;
+  S.confirmationResendUntil = 0;
+  $("emailConfirmationPanel").classList.add("hidden");
+  $("authBtn").classList.remove("hidden");
+  $("toggleAuth").classList.remove("hidden");
+  $("forgotPasswordBtn").classList.toggle("hidden", S.signup);
+  $("email").focus();
+  $("email").select();
+  msg($("authMsg"), "正しいメールアドレスを入力して、もう一度新規登録してください。", "ok");
+});
+
 $("forgotPasswordBtn").onclick = async () => {
   if (!requireOnline("パスワード再設定メールの送信には通信が必要です。")) return;
   const email = $("email").value.trim();
@@ -600,11 +660,7 @@ $("authBtn").onclick = async () => {
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.msg || d.message || "HTTP " + r.status);
     if (S.signup && !d.access_token) {
-      msg(
-        $("authMsg"),
-        "✓ 登録を受け付けました。確認メールが届く場合はメール認証後にログインしてください。",
-        "ok",
-      );
+      showEmailConfirmation(email);
       return;
     }
     saveSession(d);
