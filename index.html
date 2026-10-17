@@ -930,6 +930,19 @@
             <button id="forgotPasswordBtn" class="btn secondary auth-help-link" type="button">パスワードを忘れた方</button>
             <button id="toggleAuth" class="btn secondary auth-mode-toggle">初めて使う → 新規登録</button>
           </div>
+          <div id="emailConfirmationPanel" class="hidden" aria-live="polite">
+            <div class="card auth-confirmation-card">
+              <h3>確認メールを送信しました</h3>
+              <p><strong id="confirmationEmail"></strong> に確認メールを送りました。メール内の「メールアドレスを確認する」を押すと、登録が完了します。</p>
+              <button id="resendConfirmationBtn" class="btn secondary" type="button">確認メールを再送する</button>
+              <button id="changeSignupEmailBtn" class="btn secondary" type="button">メールアドレスを変更する</button>
+              <details class="auth-mail-help">
+                <summary>メールが届かない方</summary>
+                <p>迷惑メールフォルダをご確認ください。入力したメールアドレスに誤りがないか確認し、少し時間をおいてから再送してください。受信拒否設定をご利用の場合は、和酒ログの送信元アドレスを受信できるよう設定してください。</p>
+              </details>
+              <div id="resendConfirmationMsg"></div>
+            </div>
+          </div>
           <div id="authMsg"></div>
           <div class="small auth-consent" style="text-align: center; line-height: 1.7">
             新規登録すると
