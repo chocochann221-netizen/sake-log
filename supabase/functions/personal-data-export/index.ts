@@ -5,6 +5,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const BUCKET = 'personal-data-exports'
 const EXPORT_TTL_HOURS = 72
+const RECENT_AUTH_MAX_AGE_SECONDS = 10 * 60
 // The Edge Function has a 256 MB memory ceiling. Keep enough headroom for
 // database JSON, ZIP metadata, compression buffers, and the final archive.
 const MAX_RAW_FILE_BYTES = 64 * 1024 * 1024
@@ -74,6 +75,37 @@ async function verifyUser(req: Request) {
   })
   if (!response.ok) throw new Error('AUTH_INVALID')
   return await response.json()
+}
+
+function jwtClaims(req: Request) {
+  const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
+  if (!token) throw new Error('AUTH_REQUIRED')
+  const payload = token.split('.')[1]
+  if (!payload) throw new Error('AUTH_INVALID')
+  try {
+    const normalized = payload.replaceAll('-', '+').replaceAll('_', '/')
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+    return JSON.parse(atob(padded)) as Record<string, unknown>
+  } catch {
+    throw new Error('AUTH_INVALID')
+  }
+}
+
+function requireRecentAuthentication(req: Request) {
+  // The platform and verifyUser() validate the token before these claims are used.
+  // `iat` is not sufficient because a background refresh also renews it. Supabase's
+  // `amr[].timestamp` records the actual authentication event and survives refreshes.
+  const claims = jwtClaims(req)
+  const methods = Array.isArray(claims.amr) ? claims.amr : []
+  const latest = Math.max(0, ...methods.map((entry) => {
+    if (!entry || typeof entry !== 'object') return 0
+    const timestamp = Number((entry as Record<string, unknown>).timestamp)
+    return Number.isFinite(timestamp) ? timestamp : 0
+  }))
+  const now = Math.floor(Date.now() / 1000)
+  if (!latest || latest > now + 60 || now - latest > RECENT_AUTH_MAX_AGE_SECONDS) {
+    throw new Error('RECENT_AUTH_REQUIRED')
+  }
 }
 
 async function rows(table: string, userId: string, key = 'user_id', select = '*') {
@@ -290,7 +322,10 @@ Deno.serve(async (req: Request) => {
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
     const action = String(body.action ?? new URL(req.url).searchParams.get('action') ?? 'status')
 
-    if (action === 'create') return json({ request: await createRequest(user) }, 202)
+    if (action === 'create') {
+      requireRecentAuthentication(req)
+      return json({ request: await createRequest(user) }, 202)
+    }
 
     const current = await getRequest(String(user.id), typeof body.request_id === 'string' ? body.request_id : undefined)
     if (!current) return json({ request: null })
@@ -312,7 +347,7 @@ Deno.serve(async (req: Request) => {
     return json({ request: current })
   } catch (error) {
     const code = error instanceof Error ? error.message : 'UNKNOWN'
-    const status = code.startsWith('AUTH_') ? 401 : code === 'NOT_READY' || code === 'EXPIRED' ? 409 : 500
+    const status = code.startsWith('AUTH_') ? 401 : code === 'RECENT_AUTH_REQUIRED' || code === 'NOT_READY' || code === 'EXPIRED' ? 409 : 500
     return json({ error: code }, status)
   }
 })
