@@ -209,6 +209,34 @@ function startLineLogin() {
   location.assign(url.toString());
 }
 
+function saveSessionBeforeDataReauth() {
+  sessionStorage.setItem("sakelog_data_reauth_session", JSON.stringify({
+    token: S.token,
+    refreshToken: S.refreshToken,
+    user: S.user,
+  }));
+}
+
+function restoreSessionBeforeDataReauth() {
+  const raw = sessionStorage.getItem("sakelog_data_reauth_session");
+  sessionStorage.removeItem("sakelog_data_reauth_session");
+  if (!raw) return false;
+  try {
+    const previous = JSON.parse(raw);
+    if (!previous?.token || !previous?.user?.id) return false;
+    S.token = previous.token;
+    S.refreshToken = previous.refreshToken || null;
+    S.user = previous.user;
+    localStorage.setItem("sakelog_token", S.token);
+    if (S.refreshToken) localStorage.setItem("sakelog_refresh_token", S.refreshToken);
+    else localStorage.removeItem("sakelog_refresh_token");
+    localStorage.setItem("sakelog_user", JSON.stringify(S.user));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function startLineLink() {
   if (!S.token || !S.user) {
     alert("先に連携したい和酒ログアカウントへログインしてください。");
@@ -693,9 +721,11 @@ async function restore() {
     if (reauthUserId) {
       localStorage.removeItem("sakelog_data_reauth_user");
       if (reauthUserId === S.user?.id) {
+        sessionStorage.removeItem("sakelog_data_reauth_session");
         S.personalDataStep = "confirm";
         show("personalDataView");
       } else {
+        restoreSessionBeforeDataReauth();
         S.personalDataStep = "identity";
         show("personalDataView");
         setPersonalDataMessage("登録時と異なるアカウントです。元のアカウントで再認証してください。");
@@ -5693,6 +5723,7 @@ async function reauthenticatePersonalData() {
       return;
     }
     localStorage.setItem("sakelog_data_reauth_user", S.user.id);
+    saveSessionBeforeDataReauth();
     if (provider === "google") startOAuth("google");
     else startLineLogin();
   } catch (e) {
@@ -5704,7 +5735,10 @@ async function reauthenticatePersonalData() {
 async function personalDataApi(action, requestId) {
   const r = await authFetch(PERSONAL_DATA_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ...(requestId ? { request_id: requestId } : {}) }) });
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || "開示申請を処理できませんでした。");
+  if (!r.ok) {
+    if (data.error === "RECENT_AUTH_REQUIRED") throw new Error("本人確認の有効時間が切れました。もう一度、本人確認を行ってください。");
+    throw new Error(data.error || "開示申請を処理できませんでした。");
+  }
   return data;
 }
 
