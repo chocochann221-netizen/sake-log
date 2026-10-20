@@ -271,6 +271,18 @@ async function createDownloadUrl(request: ExportRequest) {
   return { download_url: `${SUPABASE_URL}/storage/v1${data.signedURL}`, expires_in_seconds: 300 }
 }
 
+async function expireRequest(request: ExportRequest) {
+  if (request.storage_path) {
+    const encodedPath = request.storage_path.split('/').map(encodeURIComponent).join('/')
+    const removal = await api(`/storage/v1/object/${BUCKET}/${encodedPath}`, { method: 'DELETE' })
+    if (!removal.ok && removal.status !== 404) throw new Error(`DELETE_EXPIRED_EXPORT_${removal.status}`)
+  }
+  return await updateRequest(request.id, {
+    status: 'expired',
+    storage_path: null,
+  })
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   try {
@@ -288,7 +300,7 @@ Deno.serve(async (req: Request) => {
       current.expires_at &&
       new Date(current.expires_at).getTime() <= Date.now()
     ) {
-      const expired = await updateRequest(current.id, { status: 'expired' })
+      const expired = await expireRequest(current)
       return json({ request: expired })
     }
 
