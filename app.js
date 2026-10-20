@@ -27,6 +27,8 @@ const S = {
   selectedRecognitionCandidate: null,
   historyRows: [],
   authRecovery: false,
+  personalDataRequest: null,
+  personalDataStep: "menu",
 };
 const photoObjectUrls = new Map();
 let freshPhotoPickerConfirmed = false;
@@ -126,6 +128,7 @@ function show(id) {
     "detailView",
     "analysisView",
     "profileView",
+    "personalDataView",
     "settingsView",
     "resetPasswordView",
   ]);
@@ -138,6 +141,7 @@ function show(id) {
     ...Array.from(document.querySelectorAll(".page")).map((x) => x.id),
   ].forEach((x) => $(x)?.classList.add("hidden"));
   $(id).classList.remove("hidden");
+  document.body.classList.toggle("personal-data-open", id === "personalDataView");
   const focusedRecordViews = new Set([
     "captureView",
     "frontConfirmView",
@@ -148,6 +152,7 @@ function show(id) {
     "recordView",
     "recordConfirmView",
     "completeView",
+    "personalDataView",
   ]);
   $("bottomNav").classList.toggle(
     "hidden",
@@ -166,6 +171,7 @@ function show(id) {
   if (id === "profileView") {
     loadProfile();
   }
+  if (id === "personalDataView") renderPersonalData();
   if (id === "settingsView") loadSettings();
   if (id === "analysisView") loadAnalysis();
 }
@@ -681,6 +687,19 @@ async function restore() {
     $("userEmail").textContent = S.user?.email || "";
     if (S.authRecovery) {
       show("resetPasswordView");
+      return;
+    }
+    const reauthUserId = localStorage.getItem("sakelog_data_reauth_user");
+    if (reauthUserId) {
+      localStorage.removeItem("sakelog_data_reauth_user");
+      if (reauthUserId === S.user?.id) {
+        S.personalDataStep = "confirm";
+        show("personalDataView");
+      } else {
+        S.personalDataStep = "identity";
+        show("personalDataView");
+        setPersonalDataMessage("登録時と異なるアカウントです。元のアカウントで再認証してください。");
+      }
       return;
     }
     await cleanupPendingRollbacks().catch(() => {});
@@ -5551,6 +5570,7 @@ async function loadProfile() {
      <a class="profile-menu-item" href="knowledge.html"><span><strong>知識の蔵</strong><small>次の一杯を、もう少し楽しむ</small></span><span aria-hidden="true">›</span></a>
      <a class="profile-menu-item" href="terms.html"><span><strong>利用規約</strong><small>和酒ログとの約束</small></span><span aria-hidden="true">›</span></a>
      <a class="profile-menu-item" href="privacy.html"><span><strong>プライバシー</strong><small>写真と記録の取り扱い</small></span><span aria-hidden="true">›</span></a>
+     <button id="profilePersonalDataBtn" class="profile-menu-item" type="button"><span><strong>個人情報について</strong><small>保有データの開示・受け取り</small></span><span aria-hidden="true">›</span></button>
    </div>
    ${lineArea}
    <button id="profileLogoutBtn" class="btn outline" style="margin-top:24px;border-radius:5px">ログアウト</button>
@@ -5563,12 +5583,221 @@ async function loadProfile() {
   $("profileLogBtn").onclick = () => show("historyView");
   $("profileAnalysisBtn").onclick = () => show("analysisView");
   $("profileSettingsBtn").onclick = () => show("settingsView");
+  $("profilePersonalDataBtn").onclick = openPersonalDataMenu;
   $("profileLogoutBtn").onclick = logout;
   const btn = $("deleteAccountBtn");
   if (btn) btn.onclick = requestDeleteMyAccount;
   const lineBtn = $("linkLineBtn");
   if (lineBtn) lineBtn.onclick = startLineLink;
 }
+
+const PERSONAL_DATA_ENDPOINT = BASE + "/functions/v1/personal-data-export";
+
+function personalDataSteps(active) {
+  const steps = ["申請", "本人確認", "受け取り"];
+  const index = steps.indexOf(active);
+  return `<div class="data-steps">${steps.map((label, i) => `<div class="data-step ${i < index ? "is-done" : i === index ? "is-active" : ""}">${label}</div>`).join("")}</div>`;
+}
+
+function setPersonalDataMessage(text) {
+  const el = $("personalDataMsg");
+  if (el) el.textContent = text || "";
+}
+
+function personalDataProvider() {
+  if (String(S.user?.email || "").endsWith("@line.washulog.invalid")) return "line";
+  const providers = S.user?.app_metadata?.providers || [];
+  if (providers.includes("google")) return "google";
+  return "email";
+}
+
+function openPersonalDataMenu() {
+  clearTimeout(S.personalDataPollTimer);
+  S.personalDataStep = "menu";
+  show("personalDataView");
+}
+
+function renderPersonalData() {
+  const body = $("personalDataBody");
+  if (!body) return;
+  clearTimeout(S.personalDataPollTimer);
+  const title = $("personalDataTitle");
+  const step = S.personalDataStep || "menu";
+  title.textContent = step === "menu" ? "個人情報について" : step === "request" ? "保有データの開示" : step === "identity" ? "本人確認" : step === "confirm" ? "申請内容の確認" : step === "received" ? "申請を受け付けました" : "申請状況";
+
+  if (step === "menu") {
+    body.innerHTML = `<p class="data-lead">ご希望の手続きを選んでください</p>
+      <button id="startDisclosureBtn" class="data-panel data-choice" type="button" style="width:100%;text-align:left;color:inherit"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>保有データの開示</h3><p>登録情報や酒ログ、写真などを確認する</p></span></button>
+      <a class="data-panel data-choice" href="privacy.html" style="display:flex;text-decoration:none;color:inherit"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>情報の取り扱い</h3><p>プライバシーポリシーを確認する</p></span></a>
+      <div class="data-notice">開示の際は、誤って第三者へ情報を渡さないため、登録済みの方法による本人確認を行います。</div>`;
+    $("startDisclosureBtn").onclick = () => { S.personalDataStep = "request"; renderPersonalData(); };
+    return;
+  }
+
+  if (step === "request") {
+    body.innerHTML = `<p class="data-lead">和酒ログが保有する、ご本人の情報を確認できます。</p>${personalDataSteps("申請")}
+      <h3 style="color:#f2d766;font-family:serif">1. 開示する情報</h3>
+      <div class="data-panel data-choice"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>すべての保有データ</h3><p>登録情報・酒ログ・写真・位置情報・設定情報など</p></span></div>
+      <h3 style="margin-top:28px;color:#f2d766;font-family:serif">2. 受け取り方法</h3>
+      <div class="data-panel data-choice"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>電子データ</h3><p>準備完了後、この画面からZIPファイルを安全にダウンロードできます。</p></span></div>
+      <div class="data-notice">申請後、登録済みの方法で本人確認を行います。決済事業者が保有するカード情報などは開示対象に含まれません。</div>
+      <label class="data-check"><input id="dataApplicantCheck" type="checkbox" />現在ログイン中のアカウント本人が申請します</label>
+      <button id="toDataIdentityBtn" class="data-primary" type="button" disabled>本人確認へ</button><div id="personalDataMsg" class="data-msg"></div>`;
+    $("dataApplicantCheck").onchange = (e) => { $("toDataIdentityBtn").disabled = !e.target.checked; };
+    $("toDataIdentityBtn").onclick = () => { S.personalDataStep = "identity"; renderPersonalData(); };
+    return;
+  }
+
+  if (step === "identity") {
+    const provider = personalDataProvider();
+    const providerLabel = provider === "google" ? "Google" : provider === "line" ? "LINE" : "メール";
+    body.innerHTML = `<p class="data-lead">誤って第三者へ情報を渡さないため、もう一度ご本人を確認します。</p>${personalDataSteps("本人確認")}
+      <div class="data-panel"><div class="data-lock" aria-hidden="true">▢</div><h3 style="text-align:center">登録済みの方法で再認証</h3><p style="text-align:center">現在の登録方法（${providerLabel}）を使用します。</p>
+      ${provider === "email" ? `<div class="data-password"><label for="dataPassword">現在のパスワード</label><input id="dataPassword" type="password" autocomplete="current-password" /></div>` : ""}
+      <button id="dataReauthBtn" class="data-primary" type="button" style="margin-top:20px">再認証する</button></div>
+      <div class="data-notice">通常、本人確認書類の提出は不要です。不正利用のおそれがある場合のみ、追加確認をお願いすることがあります。</div><div id="personalDataMsg" class="data-msg"></div>`;
+    $("dataReauthBtn").onclick = reauthenticatePersonalData;
+    return;
+  }
+
+  if (step === "confirm") {
+    body.innerHTML = `<p class="data-lead">内容を確認して、開示を申請してください。</p>${personalDataSteps("申請")}
+      <div class="data-panel"><h3 style="text-align:center;color:#f2d766">✓ 本人確認が完了しました</h3></div>
+      <div class="data-panel"><dl class="data-facts"><div class="data-fact"><dt>開示する情報</dt><dd>すべての保有データ</dd></div><div class="data-fact"><dt>受け取り方法</dt><dd>電子データ（ZIP）</dd></div><div class="data-fact"><dt>連絡先</dt><dd>登録済みの連絡先</dd></div></dl></div>
+      <div class="data-notice">申請後、データを準備します。準備ができ次第、この画面から受け取れます。</div>
+      <button id="submitDataRequestBtn" class="data-primary" type="button">この内容で申請する</button><button id="changeDataRequestBtn" class="data-secondary" type="button">内容を変更する</button><div id="personalDataMsg" class="data-msg"></div>`;
+    $("submitDataRequestBtn").onclick = createPersonalDataRequest;
+    $("changeDataRequestBtn").onclick = () => { S.personalDataStep = "request"; renderPersonalData(); };
+    return;
+  }
+
+  renderPersonalDataStatus(step === "received");
+}
+
+async function reauthenticatePersonalData() {
+  if (!requireOnline("本人確認には通信が必要です。")) return;
+  const button = $("dataReauthBtn");
+  button.disabled = true;
+  setPersonalDataMessage("本人確認を進めています…");
+  const provider = personalDataProvider();
+  try {
+    if (provider === "email") {
+      const password = $("dataPassword")?.value || "";
+      if (!password) throw new Error("現在のパスワードを入力してください。");
+      const r = await fetch(BASE + "/auth/v1/token?grant_type=password", { method: "POST", headers: headers(), body: JSON.stringify({ email: S.user.email, password }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d?.access_token || d?.user?.id !== S.user.id) throw new Error("本人確認ができませんでした。パスワードを確認してください。");
+      saveSession(d);
+      S.personalDataStep = "confirm";
+      renderPersonalData();
+      return;
+    }
+    localStorage.setItem("sakelog_data_reauth_user", S.user.id);
+    if (provider === "google") startOAuth("google");
+    else startLineLogin();
+  } catch (e) {
+    button.disabled = false;
+    setPersonalDataMessage(e?.message || "本人確認を完了できませんでした。");
+  }
+}
+
+async function personalDataApi(action, requestId) {
+  const r = await authFetch(PERSONAL_DATA_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ...(requestId ? { request_id: requestId } : {}) }) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || "開示申請を処理できませんでした。");
+  return data;
+}
+
+async function createPersonalDataRequest() {
+  if (!requireOnline("開示申請には通信が必要です。")) return;
+  const button = $("submitDataRequestBtn");
+  button.disabled = true;
+  setPersonalDataMessage("申請を受け付けています…");
+  try {
+    const data = await personalDataApi("create");
+    S.personalDataRequest = data.request;
+    S.personalDataStep = "received";
+    renderPersonalData();
+  } catch (e) {
+    button.disabled = false;
+    setPersonalDataMessage(e?.message || "申請できませんでした。");
+  }
+}
+
+function personalDataStatusLabel(status) {
+  return ({ requested: "申請受付", preparing: "データ準備中", ready: "受け取り可能", downloaded: "受け取り済み", expired: "受取期限切れ", cancelled: "取消済み", failed: "準備に失敗" })[status] || "状況確認中";
+}
+
+function formatPersonalDataDate(value) {
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? "—" : new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric" }).format(d);
+}
+
+function renderPersonalDataStatus(received) {
+  const request = S.personalDataRequest;
+  if (!request) {
+    $("personalDataBody").innerHTML = `<p class="data-lead">申請状況を確認します。</p>${personalDataSteps("受け取り")}<button id="refreshDataRequestBtn" class="data-primary" type="button">申請状況を読み込む</button><div id="personalDataMsg" class="data-msg"></div>`;
+    $("refreshDataRequestBtn").onclick = refreshPersonalDataRequest;
+    return;
+  }
+  const status = personalDataStatusLabel(request.status);
+  const ready = ["ready", "downloaded"].includes(request.status);
+  const cancellable = ["requested", "preparing"].includes(request.status);
+  $("personalDataBody").innerHTML = `${received ? `<div class="data-success" aria-hidden="true">✓</div><p class="data-lead">開示申請を受け付けました</p>` : `<p class="data-lead">申請状況</p>`}${personalDataSteps("受け取り")}
+    <div class="data-panel"><p>現在の状況</p><div class="data-status">${escapeHtml(status)}</div><dl class="data-facts"><div class="data-fact"><dt>受付番号</dt><dd>${escapeHtml(request.reference_code)}</dd></div><div class="data-fact"><dt>申請日</dt><dd>${escapeHtml(formatPersonalDataDate(request.requested_at))}</dd></div><div class="data-fact"><dt>開示する情報</dt><dd>すべての保有データ</dd></div><div class="data-fact"><dt>受け取り方法</dt><dd>電子データ</dd></div>${request.expires_at ? `<div class="data-fact"><dt>受取期限</dt><dd>${escapeHtml(formatPersonalDataDate(request.expires_at))}</dd></div>` : ""}</dl></div>
+    <div class="data-notice">${ready ? "データの準備ができました。ダウンロードリンクは発行後5分間有効です。" : cancellable ? "データを準備しています。この画面を閉じても処理は続きます。" : request.status === "failed" ? "準備中に問題が発生しました。新しく申請し直してください。" : "申請状況を確認できます。"}</div>
+    ${ready ? `<button id="downloadDataBtn" class="data-primary" type="button">データを受け取る</button>` : cancellable ? `<button id="refreshDataRequestBtn" class="data-primary" type="button">申請状況を更新する</button><button id="cancelDataRequestBtn" class="data-secondary" type="button">申請を取り消す</button>` : `<button id="newDataRequestBtn" class="data-primary" type="button">新しく申請する</button>`}<button id="backDataMenuBtn" class="data-link" type="button">個人情報に関する手続きへ戻る</button><div id="personalDataMsg" class="data-msg"></div>`;
+  if ($("refreshDataRequestBtn")) $("refreshDataRequestBtn").onclick = refreshPersonalDataRequest;
+  if ($("downloadDataBtn")) $("downloadDataBtn").onclick = downloadPersonalData;
+  if ($("cancelDataRequestBtn")) $("cancelDataRequestBtn").onclick = cancelPersonalDataRequest;
+  if ($("newDataRequestBtn")) $("newDataRequestBtn").onclick = () => { S.personalDataRequest = null; S.personalDataStep = "request"; renderPersonalData(); };
+  $("backDataMenuBtn").onclick = openPersonalDataMenu;
+  if (cancellable) S.personalDataPollTimer = setTimeout(refreshPersonalDataRequest, 5000);
+}
+
+async function refreshPersonalDataRequest() {
+  try {
+    const data = await personalDataApi("status", S.personalDataRequest?.id);
+    S.personalDataRequest = data.request;
+    S.personalDataStep = "status";
+    renderPersonalData();
+  } catch (e) { setPersonalDataMessage(e?.message || "状況を更新できませんでした。"); }
+}
+
+async function downloadPersonalData() {
+  const button = $("downloadDataBtn");
+  button.disabled = true;
+  setPersonalDataMessage("安全な受け取りURLを発行しています…");
+  try {
+    const data = await personalDataApi("download", S.personalDataRequest?.id);
+    S.personalDataRequest = data.request;
+    const link = document.createElement("a");
+    link.href = data.download_url;
+    link.download = `${S.personalDataRequest.reference_code}.zip`;
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    S.personalDataRequest.status = "downloaded";
+    S.personalDataStep = "status";
+    renderPersonalData();
+  } catch (e) { button.disabled = false; setPersonalDataMessage(e?.message || "受け取りURLを発行できませんでした。"); }
+}
+
+async function cancelPersonalDataRequest() {
+  if (!confirm("この開示申請を取り消しますか？")) return;
+  try {
+    const data = await personalDataApi("cancel", S.personalDataRequest?.id);
+    S.personalDataRequest = data.request;
+    S.personalDataStep = "status";
+    renderPersonalData();
+  } catch (e) { setPersonalDataMessage(e?.message || "申請を取り消せませんでした。"); }
+}
+
+$("personalDataBackBtn").onclick = () => {
+  if (S.personalDataStep === "menu") show("profileView");
+  else openPersonalDataMenu();
+};
 
 const PHOTO_DEVICE_SETTING = "sakelog_save_photo_to_device";
 const LANGUAGE_SETTING = "sakelog_language";
