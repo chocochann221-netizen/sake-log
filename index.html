@@ -815,6 +815,46 @@
       .profile-link-area .btn { border-radius: 5px; }
       .profile-danger { margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(74,50,35,.2); }
       .profile-danger .btn { border-radius: 5px; }
+      .data-screen { min-height: calc(100vh - 58px); margin: -18px -18px 0; padding: 0 18px 110px; background: #061014; color: #fffaf0; }
+      .data-shell { max-width: 620px; margin: 0 auto; }
+      body.personal-data-open > #appHeader, body.personal-data-open > #networkBanner { display: none; }
+      .data-header { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; min-height: 68px; padding: 0; border-bottom: 1px solid #d7b64d; background: #061014; }
+      .data-header h2 { margin: 0; color: #f2d766; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 22px; font-weight: 500; text-align: center; }
+      .data-back { width: 42px; height: 42px; border: 0; background: transparent; color: #f4d96c; font-size: 27px; }
+      .data-body { padding: 30px 0 10px; }
+      .data-lead { margin: 0 0 24px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 22px; line-height: 1.75; text-align: center; }
+      .data-steps { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 12px 30px; color: #b9b9b6; font-size: 13px; text-align: center; }
+      .data-step { position: relative; padding-top: 24px; }
+      .data-step::before { content: ""; position: absolute; top: 5px; left: calc(50% - 7px); width: 13px; height: 13px; border-radius: 50%; background: #aeb2b2; }
+      .data-step + .data-step::after { content: ""; position: absolute; top: 11px; right: 50%; width: 100%; height: 1px; background: #b4b4af; transform: translateX(-7px); }
+      .data-step.is-active, .data-step.is-done { color: #f2d766; }
+      .data-step.is-active::before { background: #f2d766; box-shadow: 0 0 12px rgba(242,215,102,.45); }
+      .data-step.is-done::before { content: "✓"; z-index: 1; color: #061014; background: #f2d766; font-size: 10px; font-weight: 900; line-height: 13px; }
+      .data-panel { margin-top: 16px; padding: 22px 18px; border: 1px solid #d1ad33; background: linear-gradient(135deg, rgba(75,42,17,.55), rgba(27,18,12,.72)); box-shadow: inset 0 0 0 5px #061014, inset 0 0 0 6px rgba(225,193,74,.78); }
+      .data-panel h3 { margin: 0 0 9px; color: #fff; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 22px; font-weight: 500; }
+      .data-panel p { margin: 0; color: #e9e3d9; font-size: 13px; line-height: 1.8; }
+      .data-choice { display: flex; gap: 16px; align-items: flex-start; }
+      .data-choice-mark { flex: 0 0 27px; width: 27px; height: 27px; margin-top: 3px; border: 2px solid #f1d368; border-radius: 50%; box-shadow: inset 0 0 0 6px #271b10; background: #f1d368; }
+      .data-notice { margin: 18px 0; padding: 15px 16px; border: 1px solid #cda92e; color: #ece5d9; font-size: 12px; line-height: 1.8; }
+      .data-check { display: flex; gap: 11px; align-items: center; margin: 20px 2px; color: #fff; font-size: 14px; line-height: 1.6; }
+      .data-check input { width: 24px; height: 24px; margin: 0; accent-color: #e2bd3b; }
+      .data-primary, .data-secondary { width: 100%; min-height: 58px; border-radius: 8px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 20px; }
+      .data-primary { border: 1px solid #fff0a3; background: #e6bd42; color: #111; box-shadow: inset 0 0 0 3px rgba(255,239,153,.38); font-weight: 700; }
+      .data-primary:disabled { opacity: .48; }
+      .data-secondary { margin-top: 12px; border: 1px solid #dfc34e; background: transparent; color: #fff9e8; }
+      .data-link { display: block; margin: 22px auto 0; border: 0; background: transparent; color: #f0d45f; text-decoration: underline; text-underline-offset: 5px; }
+      .data-lock { margin: 5px auto 17px; color: #f4d27a; font-size: 48px; text-align: center; }
+      .data-password { margin-top: 18px; }
+      .data-password label { display: block; margin-bottom: 7px; color: #eadfce; font-size: 12px; }
+      .data-password input { width: 100%; border: 1px solid #b89d48; background: #fffdf8; color: #241a14; }
+      .data-success { margin: 5px auto 18px; color: #f5d657; font-size: 64px; line-height: 1; text-align: center; }
+      .data-status { color: #f1d45d; font-family: "Yu Mincho", serif; font-size: 30px; }
+      .data-facts { margin: 18px 0 0; border-top: 1px solid rgba(235,207,85,.55); }
+      .data-fact { display: grid; grid-template-columns: 118px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(235,207,85,.2); font-size: 13px; }
+      .data-fact dt { color: #d9cdbb; }
+      .data-fact dd { margin: 0; overflow-wrap: anywhere; color: #fff; }
+      .data-msg { min-height: 24px; margin-top: 14px; color: #f3db76; font-size: 12px; line-height: 1.6; text-align: center; }
+      @media (max-width: 420px) { .data-lead { font-size: 19px; } .data-fact { grid-template-columns: 98px 1fr; } }
       .settings-screen { max-width: 620px; margin: 0 auto; padding: 24px 18px 110px; color: #2b211a; }
       .settings-back { padding: 8px 0; border: 0; background: transparent; color: #79543a; font-weight: 800; }
       .settings-heading { margin-top: 15px; padding-bottom: 19px; border-bottom: 1px solid rgba(74,50,35,.26); }
@@ -865,7 +905,7 @@
     <link rel="stylesheet" href="design-system.css?v=2" />
   </head>
   <body>
-    <header>
+    <header id="appHeader">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">和</span
         ><span>和酒ログ</span>
@@ -1343,6 +1383,12 @@
         </div>
         </div>
       </section>
+      <section id="personalDataView" class="page hidden">
+        <div class="data-screen"><div class="data-shell">
+          <header class="data-header"><button id="personalDataBackBtn" class="data-back" type="button" aria-label="戻る">‹</button><h2 id="personalDataTitle">個人情報について</h2><span></span></header>
+          <div id="personalDataBody" class="data-body" aria-live="polite"></div>
+        </div></div>
+      </section>
       <section id="settingsView" class="page hidden">
         <div class="settings-screen">
           <button id="settingsBackBtn" class="settings-back" type="button">← マイページへ戻る</button>
@@ -1431,7 +1477,7 @@
         >
       </div>
     </nav>
-    <script src="app.js?v=544"></script>
+    <script src="app.js?v=545"></script>
     <script src="detail-knowledge.js?v=3"></script>
     <script>
       if ("serviceWorker" in navigator) {
