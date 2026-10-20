@@ -925,23 +925,10 @@
 
           <div class="auth-email">
             <label for="email">メールアドレス</label><input id="email" type="email" autocomplete="email" />
-            <label for="password">パスワード</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" /><button id="togglePasswordVisibility" type="button" class="password-visibility" aria-label="パスワードを表示" aria-pressed="false">表示</button></div><p class="auth-delivery-note">確認メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
+            <label for="password">パスワード</label><input id="password" type="password" autocomplete="current-password" />
             <button id="authBtn" class="btn primary">ログイン</button>
             <button id="forgotPasswordBtn" class="btn secondary auth-help-link" type="button">パスワードを忘れた方</button>
             <button id="toggleAuth" class="btn secondary auth-mode-toggle">初めて使う → 新規登録</button>
-          </div>
-          <div id="emailConfirmationPanel" class="hidden" aria-live="polite">
-            <div class="card auth-confirmation-card">
-              <h3>確認メールを送信しました</h3>
-              <p><strong id="confirmationEmail"></strong> に確認メールを送りました。メール内の「メールアドレスを確認する」を押すと、登録が完了します。</p>
-              <button id="resendConfirmationBtn" class="btn secondary" type="button">確認メールを再送する</button>
-              <button id="changeSignupEmailBtn" class="btn secondary" type="button">メールアドレスを変更する</button>
-              <details class="auth-mail-help">
-                <summary>メールが届かない方</summary>
-                <p>迷惑メールフォルダをご確認ください。入力したメールアドレスに誤りがないか確認し、少し時間をおいてから再送してください。受信拒否設定をご利用の場合は、和酒ログの送信元アドレスを受信できるよう設定してください。</p>
-              </details>
-              <div id="resendConfirmationMsg"></div>
-            </div>
           </div>
           <div id="authMsg"></div>
           <div class="small auth-consent" style="text-align: center; line-height: 1.7">
@@ -1408,9 +1395,10 @@
           <div class="delete-dialog-kicker">ACCOUNT</div>
           <h2 id="deleteAccountDialogTitle">アカウントを削除しますか？</h2>
           <p class="delete-dialog-copy">飲酒記録・ラベル・料理・思い出の写真など、あなたに紐づくデータが削除されます。この操作は元に戻せません。</p>
-          <label class="account-delete-email">確認のため「削除」と入力
-            <input id="deleteAccountConfirmText" type="text" autocomplete="off" />
+          <label class="account-delete-email">確認のため登録メールアドレスを入力
+            <input id="deleteAccountEmail" type="email" autocomplete="email" inputmode="email" />
           </label>
+          <p id="deleteAccountRegisteredEmail" class="account-delete-registered"></p>
           <div class="delete-dialog-actions">
             <button id="confirmDeleteAccountBtn" class="delete-dialog-delete" type="button" disabled>アカウントと記録を削除する</button>
             <button id="cancelDeleteAccountBtn" class="delete-dialog-cancel" type="button">削除せず戻る</button>
