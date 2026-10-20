@@ -27,8 +27,6 @@ const S = {
   selectedRecognitionCandidate: null,
   historyRows: [],
   authRecovery: false,
-  pendingConfirmationEmail: null,
-  confirmationResendUntil: 0,
 };
 const photoObjectUrls = new Map();
 let freshPhotoPickerConfirmed = false;
@@ -475,64 +473,6 @@ $("toggleAuth").onclick = () => {
   msg($("authMsg"), "");
 };
 
-function showEmailConfirmation(email) {
-  S.pendingConfirmationEmail = email;
-  $("confirmationEmail").textContent = email;
-  $("emailConfirmationPanel").classList.remove("hidden");
-  $("authBtn").classList.add("hidden");
-  $("forgotPasswordBtn").classList.add("hidden");
-  $("toggleAuth").classList.add("hidden");
-  msg($("authMsg"), "登録を受け付けました。確認メールのリンクを開いて登録を完了してください。", "ok");
-}
-
-function resetConfirmationResendButton() {
-  const button = $("resendConfirmationBtn");
-  if (!button) return;
-  const seconds = Math.max(0, Math.ceil((S.confirmationResendUntil - Date.now()) / 1000));
-  if (seconds > 0) {
-    button.disabled = true;
-    button.textContent = seconds + "秒後に再送できます";
-    setTimeout(resetConfirmationResendButton, 1000);
-  } else {
-    button.disabled = false;
-    button.textContent = "確認メールを再送する";
-  }
-}
-
-$("resendConfirmationBtn")?.addEventListener("click", async () => {
-  if (!requireOnline("確認メールの再送には通信が必要です。")) return;
-  const email = S.pendingConfirmationEmail;
-  if (!email || Date.now() < S.confirmationResendUntil) return;
-  S.confirmationResendUntil = Date.now() + 60000;
-  resetConfirmationResendButton();
-  try {
-    const r = await fetch(BASE + "/auth/v1/resend", {
-      method: "POST",
-      headers: headers(),
-      body: JSON.stringify({ type: "signup", email }),
-    });
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(d.msg || d.message || "確認メールを再送できませんでした。");
-    msg($("resendConfirmationMsg"), "確認メールを再送しました。迷惑メールフォルダもご確認ください。", "ok");
-  } catch (e) {
-    S.confirmationResendUntil = 0;
-    resetConfirmationResendButton();
-    msg($("resendConfirmationMsg"), e.message || "確認メールを再送できませんでした。", "err");
-  }
-});
-
-$("changeSignupEmailBtn")?.addEventListener("click", () => {
-  S.pendingConfirmationEmail = null;
-  S.confirmationResendUntil = 0;
-  $("emailConfirmationPanel").classList.add("hidden");
-  $("authBtn").classList.remove("hidden");
-  $("toggleAuth").classList.remove("hidden");
-  $("forgotPasswordBtn").classList.toggle("hidden", S.signup);
-  $("email").focus();
-  $("email").select();
-  msg($("authMsg"), "正しいメールアドレスを入力して、もう一度新規登録してください。", "ok");
-});
-
 $("forgotPasswordBtn").onclick = async () => {
   if (!requireOnline("パスワード再設定メールの送信には通信が必要です。")) return;
   const email = $("email").value.trim();
@@ -573,20 +513,12 @@ $("forgotPasswordBtn").onclick = async () => {
   }
 };
 
-function isStrongPassword(password) {
-  return password.length >= 12 &&
-    /[a-z]/.test(password) &&
-    /[A-Z]/.test(password) &&
-    /[0-9]/.test(password) &&
-    /[^A-Za-z0-9]/.test(password);
-}
-
 $("saveNewPasswordBtn").onclick = async () => {
   if (!requireOnline("パスワード変更には通信が必要です。")) return;
   const password = $("newPassword").value;
   const confirmPassword = $("newPasswordConfirm").value;
-  if (!isStrongPassword(password)) {
-    msg($("resetPasswordMsg"), "パスワードは12文字以上で、英大文字・英小文字・数字・記号を各1文字以上含めてください。", "err");
+  if (password.length < 8) {
+    msg($("resetPasswordMsg"), "パスワードは8文字以上にしてください。", "err");
     return;
   }
   if (password !== confirmPassword) {
@@ -638,8 +570,8 @@ $("authBtn").onclick = async () => {
     msg($("authMsg"), "メールアドレスを入力してください。", "err");
     return;
   }
-  if (S.signup && !isStrongPassword(password)) {
-    msg($("authMsg"), "新規登録のパスワードは12文字以上で、英大文字・英小文字・数字・記号を各1文字以上含めてください。", "err");
+  if (S.signup && password.length < 8) {
+    msg($("authMsg"), "新規登録のパスワードは8文字以上にしてください。", "err");
     return;
   }
   if (!S.signup && password.length < 6) {
@@ -660,7 +592,11 @@ $("authBtn").onclick = async () => {
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.msg || d.message || "HTTP " + r.status);
     if (S.signup && !d.access_token) {
-      showEmailConfirmation(email);
+      msg(
+        $("authMsg"),
+        "✓ 登録を受け付けました。確認メールが届く場合はメール認証後にログインしてください。",
+        "ok",
+      );
       return;
     }
     saveSession(d);
@@ -5699,28 +5635,41 @@ function closeDeleteAccountDialog() {
   else dialog?.removeAttribute("open");
 }
 function syncDeleteAccountConfirmation() {
-  const entered = $("deleteAccountConfirmText")?.value?.trim() || "";
+  const entered = $("deleteAccountEmail")?.value?.trim().toLowerCase() || "";
+  const expected = String(S.user?.email || "").trim().toLowerCase();
   const button = $("confirmDeleteAccountBtn");
-  if (button) button.disabled = entered !== "削除";
+  if (button) button.disabled = !expected || entered !== expected;
   msg($("deleteAccountDialogMsg"), "");
 }
 function requestDeleteMyAccount() {
-  if (!S.user) {
-    msg($("deleteAccountMsg"), "登録情報を確認できませんでした。再ログインしてからお試しください。", "err");
+  if (!S.user?.email) {
+    msg(
+      $("deleteAccountMsg"),
+      "登録情報を確認できませんでした。再ログインしてからお試しください。",
+      "err",
+    );
     return;
   }
-  $("deleteAccountConfirmText").value = "";
+  $("deleteAccountEmail").value = "";
+  $("deleteAccountRegisteredEmail").textContent = `登録メール：${S.user.email}`;
   $("deleteAccountConfirmPanel").classList.remove("hidden");
   $("deleteAccountProgressPanel").classList.add("hidden");
   syncDeleteAccountConfirmation();
   const dialog = $("deleteAccountDialog");
   if (typeof dialog?.showModal === "function") dialog.showModal();
   else dialog?.setAttribute("open", "");
-  setTimeout(() => $("deleteAccountConfirmText")?.focus(), 0);
+  setTimeout(() => $("deleteAccountEmail")?.focus(), 0);
 }
 async function deleteMyAccount() {
-  if ($("deleteAccountConfirmText")?.value?.trim() !== "削除") {
-    msg($("deleteAccountDialogMsg"), "確認欄に「削除」と入力してください。", "err");
+  const entered = $("deleteAccountEmail")?.value?.trim() || "";
+  if (
+    entered.toLowerCase() !== String(S.user?.email || "").trim().toLowerCase()
+  ) {
+    msg(
+      $("deleteAccountDialogMsg"),
+      "登録メールアドレスと一致しません。",
+      "err",
+    );
     return;
   }
   if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。"))
@@ -5732,7 +5681,7 @@ async function deleteMyAccount() {
     const r = await authFetch(BASE + "/functions/v1/delete-account", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
+      body: JSON.stringify({ confirm_email: entered.trim() }),
     });
     const d = await r.json().catch(() => null);
     if (!r.ok) throw new Error(d?.error || "アカウント削除に失敗しました");
@@ -5813,8 +5762,8 @@ if ($("cancelDeleteRecordBtn"))
   $("cancelDeleteRecordBtn").onclick = closeDeleteRecordDialog;
 if ($("confirmDeleteRecordBtn"))
   $("confirmDeleteRecordBtn").onclick = deleteCurrentRecord;
-if ($("deleteAccountConfirmText"))
-  $("deleteAccountConfirmText").addEventListener(
+if ($("deleteAccountEmail"))
+  $("deleteAccountEmail").addEventListener(
     "input",
     syncDeleteAccountConfirmation,
   );
