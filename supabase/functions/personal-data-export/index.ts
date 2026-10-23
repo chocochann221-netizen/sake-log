@@ -50,6 +50,7 @@ type ExportRequest = {
   storage_path: string | null
   expires_at: string | null
   requested_at: string
+  error_code?: string | null
 }
 
 function json(data: unknown, status = 200) {
@@ -307,7 +308,11 @@ async function expireRequest(request: ExportRequest) {
   if (request.storage_path) {
     const encodedPath = request.storage_path.split('/').map(encodeURIComponent).join('/')
     const removal = await api(`/storage/v1/object/${BUCKET}/${encodedPath}`, { method: 'DELETE' })
-    if (!removal.ok && removal.status !== 404) throw new Error(`DELETE_EXPIRED_EXPORT_${removal.status}`)
+    if (!removal.ok) {
+      const detail = await removal.text().catch(() => '')
+      const missing = removal.status === 404 || (removal.status === 400 && /not[ _-]?found|does not exist/i.test(detail))
+      if (!missing) throw new Error(`DELETE_EXPIRED_EXPORT_${removal.status}`)
+    }
   }
   return await updateRequest(request.id, {
     status: 'expired',
@@ -315,12 +320,43 @@ async function expireRequest(request: ExportRequest) {
   })
 }
 
+async function cleanupExpiredRequests() {
+  const now = new Date().toISOString()
+  const query = new URLSearchParams({
+    select: '*',
+    status: 'in.(ready,downloaded)',
+    expires_at: `lte.${now}`,
+    order: 'expires_at.asc',
+    limit: '100',
+  })
+  const response = await api(`/rest/v1/personal_data_export_requests?${query}`)
+  if (!response.ok) throw new Error(`READ_EXPIRED_REQUESTS_${response.status}`)
+  const requests = await response.json() as ExportRequest[]
+  let deleted = 0
+  const failed: string[] = []
+  for (const request of requests) {
+    try {
+      await expireRequest(request)
+      deleted += 1
+    } catch {
+      failed.push(request.id)
+    }
+  }
+  return { scanned: requests.length, deleted, failed }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   try {
-    const user = await verifyUser(req)
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
     const action = String(body.action ?? new URL(req.url).searchParams.get('action') ?? 'status')
+
+    // This action is called hourly by Supabase Cron with the project's legacy
+    // anon JWT. Platform-level verify_jwt still rejects unsigned requests. The
+    // operation is intentionally limited to already-expired archives.
+    if (action === 'cleanup_expired') return json(await cleanupExpiredRequests())
+
+    const user = await verifyUser(req)
 
     if (action === 'create') {
       requireRecentAuthentication(req)
