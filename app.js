@@ -5658,9 +5658,11 @@ function renderPersonalData() {
   if (step === "menu") {
     body.innerHTML = `<p class="data-lead">ご希望の手続きを選んでください</p>
       <button id="startDisclosureBtn" class="data-panel data-choice" type="button" style="width:100%;text-align:left;color:inherit"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>保有データの開示</h3><p>登録情報や酒ログ、写真などを確認する</p></span></button>
+      <button id="checkDataStatusBtn" class="data-panel data-choice" type="button" style="width:100%;text-align:left;color:inherit"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>申請状況を確認</h3><p>受付番号、準備状況、受取期限を確認する</p></span></button>
       <a class="data-panel data-choice" href="privacy.html" style="display:flex;text-decoration:none;color:inherit"><span class="data-choice-mark" aria-hidden="true"></span><span><h3>情報の取り扱い</h3><p>プライバシーポリシーを確認する</p></span></a>
-      <div class="data-notice">開示の際は、誤って第三者へ情報を渡さないため、登録済みの方法による本人確認を行います。</div>`;
+      <div class="data-notice">開示の際は、誤って第三者へ情報を渡さないため、登録済みの方法による本人確認を行います。</div><div id="personalDataMsg" class="data-msg"></div>`;
     $("startDisclosureBtn").onclick = () => { S.personalDataStep = "request"; renderPersonalData(); };
+    $("checkDataStatusBtn").onclick = refreshPersonalDataRequest;
     return;
   }
 
@@ -5770,8 +5772,9 @@ function formatPersonalDataDate(value) {
 function renderPersonalDataStatus(received) {
   const request = S.personalDataRequest;
   if (!request) {
-    $("personalDataBody").innerHTML = `<p class="data-lead">申請状況を確認します。</p>${personalDataSteps("受け取り")}<button id="refreshDataRequestBtn" class="data-primary" type="button">申請状況を読み込む</button><div id="personalDataMsg" class="data-msg"></div>`;
-    $("refreshDataRequestBtn").onclick = refreshPersonalDataRequest;
+    $("personalDataBody").innerHTML = `<p class="data-lead">現在、有効な開示申請はありません。</p>${personalDataSteps("受け取り")}<div class="data-notice">新しく申請すると、受付番号と準備状況をこの画面で確認できます。</div><button id="newDataRequestBtn" class="data-primary" type="button">開示を申請する</button><button id="backDataMenuBtn" class="data-link" type="button">個人情報に関する手続きへ戻る</button><div id="personalDataMsg" class="data-msg"></div>`;
+    $("newDataRequestBtn").onclick = () => { S.personalDataStep = "request"; renderPersonalData(); };
+    $("backDataMenuBtn").onclick = openPersonalDataMenu;
     return;
   }
   const status = personalDataStatusLabel(request.status);
@@ -5779,7 +5782,7 @@ function renderPersonalDataStatus(received) {
   const cancellable = ["requested", "preparing"].includes(request.status);
   $("personalDataBody").innerHTML = `${received ? `<div class="data-success" aria-hidden="true">✓</div><p class="data-lead">開示申請を受け付けました</p>` : `<p class="data-lead">申請状況</p>`}${personalDataSteps("受け取り")}
     <div class="data-panel"><p>現在の状況</p><div class="data-status">${escapeHtml(status)}</div><dl class="data-facts"><div class="data-fact"><dt>受付番号</dt><dd>${escapeHtml(request.reference_code)}</dd></div><div class="data-fact"><dt>申請日</dt><dd>${escapeHtml(formatPersonalDataDate(request.requested_at))}</dd></div><div class="data-fact"><dt>開示する情報</dt><dd>すべての保有データ</dd></div><div class="data-fact"><dt>受け取り方法</dt><dd>電子データ</dd></div>${request.expires_at ? `<div class="data-fact"><dt>受取期限</dt><dd>${escapeHtml(formatPersonalDataDate(request.expires_at))}</dd></div>` : ""}</dl></div>
-    <div class="data-notice">${ready ? "データの準備ができました。ダウンロードリンクは発行後5分間有効です。" : cancellable ? "データを準備しています。この画面を閉じても処理は続きます。" : request.status === "failed" ? "準備中に問題が発生しました。新しく申請し直してください。" : "申請状況を確認できます。"}</div>
+    <div class="data-notice">${ready ? "データの準備ができました。ダウンロードリンクは発行後5分間有効です。" : cancellable ? "データを準備しています。この画面を閉じても処理は続きます。" : request.status === "failed" ? personalDataFailureMessage(request.error_code) : request.status === "expired" ? "受取期限を過ぎたため、保管していたZIPファイルを削除しました。必要な場合は新しく申請してください。" : "申請状況を確認できます。"}</div>
     ${ready ? `<button id="downloadDataBtn" class="data-primary" type="button">データを受け取る</button>` : cancellable ? `<button id="refreshDataRequestBtn" class="data-primary" type="button">申請状況を更新する</button><button id="cancelDataRequestBtn" class="data-secondary" type="button">申請を取り消す</button>` : `<button id="newDataRequestBtn" class="data-primary" type="button">新しく申請する</button>`}<button id="backDataMenuBtn" class="data-link" type="button">個人情報に関する手続きへ戻る</button><div id="personalDataMsg" class="data-msg"></div>`;
   if ($("refreshDataRequestBtn")) $("refreshDataRequestBtn").onclick = refreshPersonalDataRequest;
   if ($("downloadDataBtn")) $("downloadDataBtn").onclick = downloadPersonalData;
@@ -5796,6 +5799,12 @@ async function refreshPersonalDataRequest() {
     S.personalDataStep = "status";
     renderPersonalData();
   } catch (e) { setPersonalDataMessage(e?.message || "状況を更新できませんでした。"); }
+}
+
+function personalDataFailureMessage(errorCode) {
+  if (errorCode === "EXPORT_TOO_LARGE") return "写真を含むデータ量が一度の作成上限を超えました。登録データは変更されていません。お問い合わせから受取方法をご相談ください。";
+  if (String(errorCode || "").startsWith("READ_STORAGE_")) return "一部の写真を確認できず、データを準備できませんでした。登録データは変更されていません。新しく申請するか、お問い合わせください。";
+  return "データの準備中に問題が発生しました。登録データは変更されていません。新しく申請し直してください。";
 }
 
 async function downloadPersonalData() {
