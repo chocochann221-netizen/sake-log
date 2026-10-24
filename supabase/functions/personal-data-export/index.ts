@@ -333,13 +333,17 @@ async function cleanupExpiredRequests() {
   if (!response.ok) throw new Error(`READ_EXPIRED_REQUESTS_${response.status}`)
   const requests = await response.json() as ExportRequest[]
   let deleted = 0
-  const failed: string[] = []
+  let failed = 0
   for (const request of requests) {
     try {
       await expireRequest(request)
       deleted += 1
-    } catch {
-      failed.push(request.id)
+    } catch (error) {
+      failed += 1
+      console.error('Failed to delete expired personal data export', {
+        request_id: request.id,
+        error: error instanceof Error ? error.message : 'UNKNOWN',
+      })
     }
   }
   return { scanned: requests.length, deleted, failed }
