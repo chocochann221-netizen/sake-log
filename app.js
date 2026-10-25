@@ -31,8 +31,26 @@ const S = {
   personalDataStep: "menu",
 };
 const photoObjectUrls = new Map();
+const previewObjectUrls = new Map();
+function previewObjectUrl(file, key) {
+  if (previewObjectUrls.has(key)) URL.revokeObjectURL(previewObjectUrls.get(key));
+  const url = URL.createObjectURL(file);
+  previewObjectUrls.set(key, url);
+  return url;
+}
+function clearPhotoPreviews() {
+  for (const url of previewObjectUrls.values()) URL.revokeObjectURL(url);
+  previewObjectUrls.clear();
+  for (const id of ["preview", "frontConfirmPreview", "backPreview", "backConfirmPreview", "foodPreview", "memoryPreview"]) $(id)?.removeAttribute("src");
+}
 let freshPhotoPickerConfirmed = false;
 let recordEditState = null;
+let sessionEpoch = 0;
+let sessionController = new AbortController();
+let refreshInFlight = null;
+function assertSession(epoch) {
+  if (epoch !== sessionEpoch || !S.token) throw new Error("ログイン状態が変わりました。もう一度操作してください。");
+}
 const cfgKey = () => localStorage.getItem("sakelog_pubkey") || PUBLISHABLE_KEY;
 const msg = (el, text, type = "ok") =>
   (el.innerHTML = text
@@ -79,25 +97,16 @@ window.addEventListener("online", async () => {
 window.addEventListener("offline", () => updateNetworkState());
 updateNetworkState();
 
-window.addEventListener("error", (e) => {
-  console.error("JavaScript error:", e.error || e.message);
+function reportUnexpectedError() {
   const el = $("recordMsg") || $("editMsg");
-  if (el) {
-    el.innerHTML =
-      '<div class="msg err">システムエラー：' +
-      escapeHtml(e.message || "JavaScriptエラーが発生しました") +
-      "</div>";
-  }
-});
-
-window.addEventListener("unhandledrejection", (e) => {
-  console.error("Unhandled promise rejection:", e.reason);
-  const text =
-    e.reason?.message || String(e.reason || "処理エラーが発生しました");
-  const el = $("recordMsg") || $("editMsg");
-  if (el) {
-    el.innerHTML =
-      '<div class="msg err">処理エラー：' + escapeHtml(text) + "</div>";
+  if (el) msg(el, "処理を完了できませんでした。入力内容を確認し、通信状態が戻ってから再試行してください。", "err");
+}
+window.addEventListener("error", reportUnexpectedError);
+window.addEventListener("unhandledrejection", reportUnexpectedError);
+window.addEventListener("storage", (event) => {
+  if (event.key === "sakelog_user" || (event.key === "sakelog_token" && !event.newValue)) {
+    // Discard this document's private state when another tab changes accounts.
+    location.reload();
   }
 });
 
@@ -181,6 +190,7 @@ function headers(auth = false) {
   return h;
 }
 function saveSession(d) {
+  if (d.user?.id && S.user?.id && d.user.id !== S.user.id) clearSession({ preserveReauth: true });
   S.token = d.access_token || S.token;
   S.refreshToken = d.refresh_token || S.refreshToken;
   S.user = d.user || S.user;
@@ -194,18 +204,26 @@ function currentAppRedirectUrl() {
   return location.origin + location.pathname;
 }
 
-function startOAuth(provider) {
-  const redirectTo = currentAppRedirectUrl();
+async function startOAuth(provider) {
+  const encode = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const verifier = encode(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = encode(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier))));
+  sessionStorage.setItem("sakelog_oauth_verifier", verifier);
   const url = new URL(BASE + "/auth/v1/authorize");
   url.searchParams.set("provider", provider);
-  url.searchParams.set("redirect_to", redirectTo);
+  url.searchParams.set("redirect_to", currentAppRedirectUrl());
+  url.searchParams.set("code_challenge", challenge);
+  url.searchParams.set("code_challenge_method", "s256");
   location.assign(url.toString());
 }
 
 function startLineLogin() {
+  const challenge = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, "0")).join("");
+  sessionStorage.setItem("sakelog_line_challenge", challenge);
   const redirectTo = currentAppRedirectUrl();
   const url = new URL(BASE + "/functions/v1/line-login");
   url.searchParams.set("redirect_to", redirectTo);
+  url.searchParams.set("challenge", challenge);
   location.assign(url.toString());
 }
 
@@ -295,10 +313,24 @@ async function consumeOAuthCallback() {
   const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
   const authType = hash.get("type");
 
-  const lineLinked = hash.get("line_linked");
-  if (lineLinked === "1") {
-    localStorage.setItem("sakelog_line_linked_notice", "1");
+  const linkCode = hash.get("line_link_code");
+  if (linkCode) {
+    const linkState = hash.get("line_link_state");
     history.replaceState(null, "", location.pathname + location.search);
+    try {
+      const token = localStorage.getItem("sakelog_token");
+      if (!token) throw new Error("AUTH_REQUIRED");
+      const response = await fetch(BASE + "/functions/v1/line-login", {
+        method: "POST", headers: { apikey: cfgKey(), Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "complete_link", code: linkCode, state: linkState }),
+        signal: AbortSignal.timeout(30000),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.linked) throw new Error("LINK_FAILED");
+      localStorage.setItem("sakelog_line_linked_notice", "1");
+    } catch {
+      msg($("authMsg"), "LINE連携を確認できませんでした。連携を開始したアカウントでログインして再試行してください。", "err");
+    }
     return false;
   }
 
@@ -311,6 +343,13 @@ async function consumeOAuthCallback() {
 
   const lineTokenHash = hash.get("line_token_hash");
   if (lineTokenHash) {
+    const expected = sessionStorage.getItem("sakelog_line_challenge");
+    sessionStorage.removeItem("sakelog_line_challenge");
+    history.replaceState(null, "", location.pathname + location.search);
+    if (!expected || hash.get("line_challenge") !== expected) {
+      msg($("authMsg"), "LINEログインを確認できませんでした。この画面のLINEボタンからやり直してください。", "err");
+      return false;
+    }
     try {
       const r = await fetch(BASE + "/auth/v1/verify", {
         method: "POST",
@@ -345,10 +384,8 @@ async function consumeOAuthCallback() {
   const code = new URLSearchParams(location.search).get("code");
   if (!access && code) {
     try {
-      const verifierKey = Object.keys(localStorage).find((k) =>
-        k.includes("code-verifier"),
-      );
-      const verifier = verifierKey ? localStorage.getItem(verifierKey) : null;
+      const verifier = sessionStorage.getItem("sakelog_oauth_verifier");
+      sessionStorage.removeItem("sakelog_oauth_verifier");
       if (verifier) {
         const r = await fetch(BASE + "/auth/v1/token?grant_type=pkce", {
           method: "POST",
@@ -363,108 +400,107 @@ async function consumeOAuthCallback() {
       }
     } catch {}
   }
-  if (!access) return false;
+  if (!access) {
+    if (code || hash.has("error") || hash.has("error_description")) {
+      const clean = new URL(location.href);
+      clean.hash = ""; clean.searchParams.delete("code");
+      history.replaceState(null, "", clean.pathname + clean.search);
+      msg($("authMsg"), "ログインを完了できませんでした。ログイン画面からもう一度お試しください。", "err");
+    }
+    return false;
+  }
 
-  S.token = access;
-  S.refreshToken = refresh || null;
-  localStorage.setItem("sakelog_token", access);
-  if (refresh) localStorage.setItem("sakelog_refresh_token", refresh);
-
+  // Remove callback credentials even when user verification fails.
+  const clean = new URL(location.href);
+  clean.hash = ""; clean.searchParams.delete("code");
+  history.replaceState(null, "", clean.pathname + clean.search);
   try {
     const r = await fetch(BASE + "/auth/v1/user", {
       headers: { apikey: cfgKey(), Authorization: "Bearer " + access },
+      signal: AbortSignal.timeout(30000),
     });
     const user = await r.json().catch(() => null);
     if (!r.ok || !user?.id) throw new Error("OAuth user load failed");
-    S.user = user;
+    saveSession({ access_token: access, refresh_token: refresh, user });
+    S.refreshToken = refresh || null;
+    if (!refresh) localStorage.removeItem("sakelog_refresh_token");
     S.authRecovery = authType === "recovery";
-    localStorage.setItem("sakelog_user", JSON.stringify(user));
-    history.replaceState(null, "", location.pathname + location.search);
     return true;
   } catch {
     clearSession();
+    msg($("authMsg"), "ログインを確認できませんでした。通信状態を確認し、もう一度ログインしてください。", "err");
     return false;
   }
 }
 async function refreshSession() {
-  if (!S.refreshToken)
-    throw new Error(
-      "ログインの有効期限が切れました。もう一度ログインしてください。",
-    );
-  const r = await fetch(BASE + "/auth/v1/token?grant_type=refresh_token", {
-    method: "POST",
-    headers: { apikey: cfgKey(), "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: S.refreshToken }),
-  });
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok || !d.access_token)
-    throw new Error(d.message || d.msg || "ログインの更新に失敗しました。");
-  saveSession(d);
-  return true;
+  if (refreshInFlight) return refreshInFlight;
+  if (!S.refreshToken) throw new Error("ログインの有効期限が切れました。もう一度ログインしてください。");
+  const epoch = sessionEpoch;
+  const refreshToken = S.refreshToken;
+  const pending = (async () => {
+    const r = await fetch(BASE + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { apikey: cfgKey(), "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      signal: AbortSignal.any([sessionController.signal, AbortSignal.timeout(30000)]),
+    });
+    const d = await r.json().catch(() => ({}));
+    assertSession(epoch);
+    if (!r.ok || !d.access_token) {
+      const error = new Error("ログインの更新に失敗しました。通信状態を確認して再試行してください。");
+      error.sessionInvalid = r.status === 400 || r.status === 401 || r.status === 403;
+      throw error;
+    }
+    if (d.user?.id && S.user?.id && d.user.id !== S.user.id) throw new Error("ログイン状態を確認できませんでした。");
+    saveSession(d);
+    return true;
+  })();
+  refreshInFlight = pending;
+  try { return await pending; }
+  finally { if (refreshInFlight === pending) refreshInFlight = null; }
 }
 async function authFetch(url, options = {}) {
+  const epoch = sessionEpoch;
+  const originalToken = S.token;
   const make = async () => {
+    assertSession(epoch);
     try {
-      return await fetch(url, {
+      const response = await fetch(url, {
         ...options,
-        headers: {
-          ...(options.headers || {}),
-          apikey: cfgKey(),
-          Authorization: "Bearer " + S.token,
-        },
+        signal: AbortSignal.any([sessionController.signal, AbortSignal.timeout(30000), ...(options.signal ? [options.signal] : [])]),
+        headers: { ...(options.headers || {}), apikey: cfgKey(), Authorization: "Bearer " + S.token },
       });
-    } catch (e) {
-      if (
-        e instanceof TypeError ||
-        /fetch|network|offline/i.test(String(e?.message || e))
-      ) {
-        throw new Error(
-          "通信できません。電波状況を確認してもう一度お試しください。",
-        );
-      }
-      throw e;
+      assertSession(epoch);
+      return response;
+    } catch {
+      assertSession(epoch);
+      throw new Error("通信できません。電波状況を確認してもう一度お試しください。");
     }
   };
-  let r = await make();
-  if (r.status === 401) {
-    const t = await r
-      .clone()
-      .text()
-      .catch(() => "");
-    if (
-      /jwt expired|expired|invalid jwt|jwt issued at future|issued at future|not yet valid/i.test(
-        t,
-      )
-    ) {
-      try {
-        await refreshSession();
-      } catch {
-        clearSession();
-        show("authView");
-        throw new Error(
-          "ログインの有効期限が切れました。もう一度ログインしてください。",
-        );
-      }
-      r = await make();
-      if (r.status === 401) {
-        const retryText = await r
-          .clone()
-          .text()
-          .catch(() => "");
-        if (
-          /jwt issued at future|issued at future|not yet valid/i.test(retryText)
-        ) {
-          clearSession();
-          show("authView");
-          throw new Error(
-            "端末の日時がサーバーとずれています。スマホの「日付と時刻」を自動設定にして、もう一度ログインしてください。",
-          );
-        }
-      }
-    }
+  let response = await make();
+  if (response.status !== 401) return response;
+  try {
+    // Another concurrent request may already have refreshed this token.
+    if (S.token === originalToken) await refreshSession();
+  } catch (error) {
+    assertSession(epoch);
+    if (error.sessionInvalid || !S.refreshToken) { clearSession(); show("authView"); }
+    throw new Error(error.sessionInvalid ? "ログインの有効期限が切れました。もう一度ログインしてください。" : "通信状態を確認して、もう一度お試しください。");
   }
-  return r;
+  response = await make();
+  if (response.status === 401) {
+    clearSession(); show("authView");
+    throw new Error("ログインを確認できませんでした。端末の日時と通信状態を確認して、もう一度ログインしてください。");
+  }
+  return response;
 }
+function requestFailure(status) {
+  if (status === 403) return new Error("この操作は許可されていません。ログイン中のアカウントを確認してください。");
+  if (status === 429) return new Error("アクセスが集中しています。しばらく待ってから再試行してください。");
+  if (status === 400 || status === 409) return new Error("内容を保存できませんでした。記録を確認して再試行してください。");
+  return new Error("通信を完了できませんでした。通信状態を確認して再試行してください。");
+}
+
 async function testConnection() {
   const key = $("key").value.trim();
   if (!key.startsWith("sb_publishable_")) {
@@ -596,8 +632,52 @@ $("saveNewPasswordBtn").onclick = async () => {
   }
 };
 
+let confirmationEmail = "";
+let confirmationCooldownUntil = 0;
+let confirmationTimer = null;
+let confirmationBusy = false;
+function updateConfirmationCooldown() {
+  const seconds = Math.max(0, Math.ceil((confirmationCooldownUntil - Date.now()) / 1000));
+  const button = $("resendConfirmationBtn");
+  button.disabled = confirmationBusy || seconds > 0;
+  button.textContent = seconds ? `確認メールを再送（${seconds}秒後）` : "確認メールを再送";
+  if (!seconds) { clearInterval(confirmationTimer); confirmationTimer = null; }
+}
+function showEmailConfirmation(email) {
+  confirmationEmail = email;
+  $("confirmationEmail").textContent = email;
+  $("password").value = "";
+  confirmationCooldownUntil = Date.now() + 60000;
+  clearInterval(confirmationTimer);
+  confirmationTimer = setInterval(updateConfirmationCooldown, 1000);
+  updateConfirmationCooldown();
+  show("emailConfirmationView");
+}
+$("resendConfirmationBtn").onclick = async () => {
+  if (confirmationBusy || Date.now() < confirmationCooldownUntil || !requireOnline()) return;
+  confirmationBusy = true; updateConfirmationCooldown();
+  try {
+    const r = await fetch(BASE + "/auth/v1/resend", {
+      method: "POST", headers: headers(),
+      body: JSON.stringify({ type: "signup", email: confirmationEmail, options: { emailRedirectTo: currentAppRedirectUrl() } }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!r.ok) throw new Error("RESEND_FAILED");
+    showEmailConfirmation(confirmationEmail);
+    msg($("confirmationMsg"), "確認メールを再送しました。受信箱と迷惑メールフォルダをご確認ください。", "ok");
+  } catch {
+    // Rate-limit retries even after an uncertain response.
+    showEmailConfirmation(confirmationEmail);
+    msg($("confirmationMsg"), "再送を確認できませんでした。受信箱と通信状態を確認し、60秒後に再試行してください。", "err");
+  } finally { confirmationBusy = false; updateConfirmationCooldown(); }
+};
+$("changeConfirmationEmailBtn").onclick = () => { show("authView"); $("email").focus(); };
+$("confirmationLoginBtn").onclick = () => {
+  if (S.signup) $("toggleAuth").click();
+  show("authView");
+};
 $("authBtn").onclick = async () => {
-  if (S.authBusy) return;
+  if (S.authBusy || !requireOnline()) return;
   const email = $("email").value.trim(),
     password = $("password").value;
   if (!email) {
@@ -615,7 +695,7 @@ $("authBtn").onclick = async () => {
   S.authBusy = true;
   $("authBtn").disabled = true;
   const path = S.signup
-    ? "/auth/v1/signup"
+    ? "/auth/v1/signup?redirect_to=" + encodeURIComponent(currentAppRedirectUrl())
     : "/auth/v1/token?grant_type=password";
   try {
     const r = await fetch(BASE + path, {
@@ -624,15 +704,12 @@ $("authBtn").onclick = async () => {
       body: JSON.stringify({ email, password }),
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(d.msg || d.message || "HTTP " + r.status);
+    if (!r.ok) throw new Error(r.status === 429 ? "しばらく待ってからもう一度お試しください。" : "ログイン・登録を完了できませんでした。メールアドレス、パスワード、確認メールをご確認ください。");
     if (S.signup && !d.access_token) {
-      msg(
-        $("authMsg"),
-        "✓ 登録を受け付けました。確認メールが届く場合はメール認証後にログインしてください。",
-        "ok",
-      );
+      showEmailConfirmation(email);
       return;
     }
+    if (!d.access_token || !d.user?.id) throw new Error("ログインを確認できませんでした。もう一度お試しください。");
     saveSession(d);
     $("password").value = "";
     $("userEmail").textContent = S.user?.email || "";
@@ -646,7 +723,27 @@ $("authBtn").onclick = async () => {
   }
 };
 
-function clearSession() {
+function clearSession({ preserveReauth = false } = {}) {
+  sessionEpoch++;
+  sessionController.abort();
+  sessionController = new AbortController();
+  refreshInFlight = null;
+  if (!preserveReauth) {
+    sessionStorage.removeItem("sakelog_data_reauth_session");
+    localStorage.removeItem("sakelog_data_reauth_user");
+  }
+  S.historyRows = [];
+  S.savingRecord = false;
+  S.deletingRecord = false;
+  S.detailPhotos = [];
+  S.personalDataRequest = null;
+  S.personalDataStep = "menu";
+  recordEditState = null;
+  resetRecord(false);
+  document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+  for (const id of ["recentList", "historyList", "detailBody", "profileBody", "analysisBody", "personalDataBody", "profileEventStats", "profileEventDiscoveries", "profileEventYearReview", "profileEventPhotos", "profileEventHistory", "recoveryNotice"]) {
+    if ($(id)) $(id).replaceChildren();
+  }
   [
     "sakelog_token",
     "sakelog_refresh_token",
@@ -661,6 +758,9 @@ function clearSession() {
     } catch {}
   }
   photoObjectUrls.clear();
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith(AI_CACHE_PREFIX) || key.startsWith(CONFIRMED_CACHE_PREFIX)) localStorage.removeItem(key);
+  }
 
   S.user = null;
   S.token = null;
@@ -682,30 +782,28 @@ function clearSession() {
   S.currentSaveRequestId = null;
   S.currentEventPhotoRequestId = null;
   S.selectedRecognitionCandidate = null;
-  clearLocalOperation(PENDING_SAVE_STATE_KEY);
-  clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
-
+  // Pending writes remain user-bound for reconciliation after reauthentication.
   if ($("password")) $("password").value = "";
   if ($("userEmail")) $("userEmail").textContent = "";
 }
-async function verifyCurrentUser() {
+async function verifyCurrentUser(retried = false) {
   if (!S.token) return false;
+  const epoch = sessionEpoch;
   const r = await fetch(BASE + "/auth/v1/user", {
     headers: { apikey: cfgKey(), Authorization: "Bearer " + S.token },
+    signal: AbortSignal.any([sessionController.signal, AbortSignal.timeout(30000)]),
   });
-  if (r.status === 401 && S.refreshToken) {
-    try {
-      await refreshSession();
-    } catch {
-      return false;
-    }
-    return verifyCurrentUser();
+  assertSession(epoch);
+  if (r.status === 401 && S.refreshToken && !retried) {
+    await refreshSession();
+    return verifyCurrentUser(true);
   }
-  if (!r.ok) return false;
+  if (r.status === 401 || r.status === 403) return false;
+  if (!r.ok) throw new Error("通信状態を確認して、もう一度お試しください。");
   const user = await r.json().catch(() => null);
+  assertSession(epoch);
   if (!user?.id) return false;
-  S.user = user;
-  localStorage.setItem("sakelog_user", JSON.stringify(user));
+  saveSession({ user });
   return true;
 }
 async function restore() {
@@ -725,7 +823,11 @@ async function restore() {
         S.personalDataStep = "confirm";
         show("personalDataView");
       } else {
-        restoreSessionBeforeDataReauth();
+        if (!restoreSessionBeforeDataReauth()) {
+          clearSession(); show("authView");
+          msg($("authMsg"), "登録時のアカウントでログインし直してください。", "err");
+          return;
+        }
         S.personalDataStep = "identity";
         show("personalDataView");
         setPersonalDataMessage("登録時と異なるアカウントです。元のアカウントで再認証してください。");
@@ -745,7 +847,14 @@ async function restore() {
   S.token = localStorage.getItem("sakelog_token");
   S.refreshToken = localStorage.getItem("sakelog_refresh_token");
   show("authView");
-  if (await verifyCurrentUser()) {
+  let verified = false;
+  try { verified = await verifyCurrentUser(); }
+  catch (error) {
+    if (error.sessionInvalid) clearSession();
+    msg($("authMsg"), "ログインを確認できませんでした。通信状態を確認して再試行してください。", "err");
+    return;
+  }
+  if (verified) {
     $("userEmail").textContent = S.user.email || "";
     await cleanupPendingRollbacks().catch(() => {});
     await cleanupPendingStorageDeletes().catch(() => {});
@@ -766,14 +875,14 @@ async function restore() {
   }
 }
 async function logout() {
-  if (S.token) {
-    await fetch(BASE + "/auth/v1/logout", {
-      method: "POST",
-      headers: { apikey: cfgKey(), Authorization: "Bearer " + S.token },
-    }).catch(() => {});
-  }
+  const token = S.token;
   clearSession();
   show("authView");
+  if (token) await fetch(BASE + "/auth/v1/logout", {
+    method: "POST",
+    headers: { apikey: cfgKey(), Authorization: "Bearer " + token },
+    signal: AbortSignal.timeout(10000),
+  }).catch(() => {});
 }
 $("profileTop").onclick = () => show("profileView");
 
@@ -813,7 +922,7 @@ function recordViewIsVisible() {
 function replaceFrontPhotoWithoutReset(file) {
   if (!file) return;
   S.photo = file;
-  $("preview").src = URL.createObjectURL(file);
+  $("preview").src = previewObjectUrl(file, "front");
   $("preview").classList.remove("hidden");
   S.recognition = null;
   S.selectedRecognitionCandidate = null;
@@ -830,7 +939,7 @@ function replaceFrontPhotoWithoutReset(file) {
 function replaceBackPhotoWithoutReset(file) {
   if (!file) return;
   S.backPhoto = file;
-  $("backPreview").src = URL.createObjectURL(file);
+  $("backPreview").src = previewObjectUrl(file, "back");
   $("backPreview").classList.remove("hidden");
   S.recognition = null;
   S.selectedRecognitionCandidate = null;
@@ -846,6 +955,7 @@ function replaceBackPhotoWithoutReset(file) {
 }
 
 function resetRecord(openView = true) {
+  clearPhotoPreviews();
   S.currentImageCacheKey = null;
   S.currentFrontHash = null;
   S.currentBackHash = null;
@@ -989,7 +1099,7 @@ function attachPhoto(file) {
     resetRecord(false);
   } else if (!startFreshRecord()) return;
   S.photo = file;
-  const frontUrl = URL.createObjectURL(file);
+  const frontUrl = previewObjectUrl(file, "front");
   $("preview").src = frontUrl;
   $("frontConfirmPreview").src = frontUrl;
   $("preview").classList.remove("hidden");
@@ -1020,7 +1130,7 @@ function attachBackPhoto(file) {
     resetRecord();
   } else if (!startFreshRecord()) return;
   S.backPhoto = file;
-  $("backPreview").src = URL.createObjectURL(file);
+  $("backPreview").src = previewObjectUrl(file, "back");
   $("backPreview").classList.remove("hidden");
   updateAnalyzeButton();
   saveRecordDraft();
@@ -1032,14 +1142,14 @@ function attachBackPhoto(file) {
 }
 function attachFoodPhoto(file) {
   S.foodPhoto = file;
-  $("foodPreview").src = URL.createObjectURL(file);
+  $("foodPreview").src = previewObjectUrl(file, "food");
   $("foodPreview").classList.remove("hidden");
   $("foodCameraBtn")?.classList.add("has-photo");
 }
 
 function attachMemoryPhoto(file) {
   S.memoryPhoto = file;
-  $("memoryPreview").src = URL.createObjectURL(file);
+  $("memoryPreview").src = previewObjectUrl(file, "memory");
   $("memoryPreview").classList.remove("hidden");
   $("memoryCameraBtn")?.classList.add("has-photo");
 }
@@ -1461,7 +1571,7 @@ async function rpc(fn, args = {}) {
     body: JSON.stringify(args),
   });
   const d = await r.json().catch(() => null);
-  if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
+  if (!r.ok) throw requestFailure(r.status);
   return d;
 }
 async function learnToSakeMaster(values) {
@@ -1483,7 +1593,7 @@ async function learnToSakeMaster(values) {
     });
     return { ok: true, data: d };
   } catch (e) {
-    console.warn("sake_master learning skipped", e);
+
     return { ok: false, error: e };
   }
 }
@@ -1603,7 +1713,7 @@ async function matchWashuMasterFacts(f) {
     }
     return out.sort((a, b) => b.confidence - a.confidence).slice(0, 5);
   } catch (e) {
-    console.warn("Washu master lookup skipped", e);
+
     return [];
   }
 }
@@ -1664,7 +1774,7 @@ async function loadUpcomingEventsForSake(sakeId) {
     });
     return Array.isArray(rows) ? rows : [];
   } catch (e) {
-    console.warn("upcoming event lookup skipped", e);
+
     return [];
   }
 }
@@ -1903,7 +2013,7 @@ async function saveToSharedDictionary() {
       await insert(DICT_TABLE, obj);
     }
   } catch (e) {
-    console.warn("dictionary save skipped", e);
+
   }
 }
 
@@ -1931,14 +2041,14 @@ function loadAiCache(key) {
       localStorage.removeItem(key);
       return null;
     }
-    return obj.data || null;
+    return obj.userId === S.user?.id ? obj.data || null : null;
   } catch {
     return null;
   }
 }
 function saveAiCache(key, data) {
   try {
-    localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), data }));
+    localStorage.setItem(key, JSON.stringify({ userId: S.user?.id, savedAt: Date.now(), data }));
   } catch {}
 }
 
@@ -1957,7 +2067,7 @@ function loadConfirmedCache(aiKey) {
       localStorage.removeItem(confirmedKey(aiKey));
       return null;
     }
-    return obj.data || null;
+    return obj.userId === S.user?.id ? obj.data || null : null;
   } catch {
     return null;
   }
@@ -1967,7 +2077,7 @@ function saveConfirmedCache(aiKey, data) {
   try {
     localStorage.setItem(
       confirmedKey(aiKey),
-      JSON.stringify({ savedAt: Date.now(), data }),
+      JSON.stringify({ userId: S.user?.id, savedAt: Date.now(), data }),
     );
   } catch {}
 }
@@ -2176,7 +2286,7 @@ async function loadProfileEventStats() {
       <div class="small" style="margin-top:8px">イベントに行くほど、ここに自分だけの日本酒の旅が積み重なります。</div>
     `;
   } catch (e) {
-    console.warn("profile event stats failed", e);
+
     box.innerHTML =
       '<div class="small">イベント記録を読み込めませんでした。</div>';
   }
@@ -2222,7 +2332,7 @@ async function loadProfileEventDiscoveries() {
       }
     `;
   } catch (e) {
-    console.warn("event discovery stats failed", e);
+
     box.innerHTML =
       '<div class="small">イベントでの出会いを読み込めませんでした。</div>';
   }
@@ -2262,7 +2372,7 @@ async function loadProfileEventYearReview() {
       }
     `;
   } catch (e) {
-    console.warn("profile event year review failed", e);
+
     box.innerHTML =
       '<div class="small">今年の振り返りを読み込めませんでした。</div>';
   }
@@ -2361,7 +2471,7 @@ async function loadProfileEventPhotos() {
       </div>
     `;
   } catch (e) {
-    console.warn("profile event photos failed", e);
+
     box.innerHTML =
       '<div class="small">イベント写真を読み込めませんでした。</div>';
   }
@@ -2448,7 +2558,7 @@ async function loadProfileEventHistory() {
         ? past.map((e) => renderEventRow(e, true)).join("")
         : '<div class="small" style="margin-top:6px">参加履歴はまだありません。</div>');
   } catch (e) {
-    console.warn("profile event history failed", e);
+
     box.innerHTML =
       '<div class="small">イベント履歴を読み込めませんでした。</div>';
   }
@@ -2514,7 +2624,7 @@ async function loadMyUpcomingEventList() {
       })
       .join("");
   } catch (e) {
-    console.warn("upcoming event list failed", e);
+
     box.innerHTML = '<div class="small">参加予定を読み込めませんでした。</div>';
   }
 }
@@ -2526,7 +2636,7 @@ async function loadPublishedEvents() {
       "select=id,title,starts_at,ends_at,venue_name,prefecture,city,organizer_display_name,official_url,fee_note,reservation_required&status=eq.published&approval_status=eq.approved&visibility=eq.public&order=starts_at.asc&limit=50",
     );
   } catch (e) {
-    console.warn("event load failed", e);
+
     return [];
   }
 }
@@ -2587,14 +2697,14 @@ async function createSignedStorageUrl(bucket, path, expiresIn = 1800) {
       },
     );
     const d = await r.json().catch(() => null);
-    if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
+    if (!r.ok) throw requestFailure(r.status);
     const signed = d?.signedURL || d?.signedUrl || d?.signed_url;
     if (!signed) return null;
     return /^https?:\/\//i.test(signed)
       ? signed
       : BASE + "/storage/v1" + signed;
   } catch (e) {
-    console.warn("signed storage url skipped", e);
+
     return null;
   }
 }
@@ -2621,7 +2731,7 @@ async function loadCurrentEventPhotos(eventId, limit = 18) {
     }
     return out;
   } catch (e) {
-    console.warn("current event photo load skipped", e);
+
     return [];
   }
 }
@@ -2677,7 +2787,7 @@ async function loadPreviousEventPublicPhotos(previousEventId, limit = 6) {
     }
     return out;
   } catch (e) {
-    console.warn("previous event photo load skipped", e);
+
     return [];
   }
 }
@@ -2726,7 +2836,7 @@ async function loadMyEventDrinkSummary(eventId) {
     }
     return out;
   } catch (e) {
-    console.warn("event drink summary lookup skipped", e);
+
     return [];
   }
 }
@@ -2773,7 +2883,7 @@ async function loadPreviousEventMemory(eventId) {
     });
     return Array.isArray(rows) && rows.length ? rows[0] : null;
   } catch (e) {
-    console.warn("previous event memory lookup skipped", e);
+
     return null;
   }
 }
@@ -2824,7 +2934,7 @@ async function loadMyEventParticipation(eventId) {
     );
     return rows?.[0] || null;
   } catch (e) {
-    console.warn("participation lookup failed", e);
+
     return null;
   }
 }
@@ -3439,12 +3549,14 @@ async function preparePhotoForUpload(file) {
       URL.revokeObjectURL(url);
     }
   } catch (e) {
-    console.warn("photo compression skipped", e);
+
     return file;
   }
 }
 async function uploadPhoto(file) {
+  const epoch = sessionEpoch;
   const body = await preparePhotoForUpload(file);
+  assertSession(epoch);
   const ext =
     body !== file ||
     !/^(image\/jpeg|image\/png|image\/webp)$/i.test(file.type || "")
@@ -3464,7 +3576,7 @@ async function uploadPhoto(file) {
       if (r.ok) return path;
       const detail = await r.text().catch(() => "");
       lastError = new Error(
-        "写真保存エラー HTTP " + r.status + (detail ? " " + detail : ""),
+        "写真を保存できませんでした。通信状態を確認して再試行してください。",
       );
       // 4xxは同じ内容を再送しても改善しないので即終了。
       if (r.status < 500 && r.status !== 408 && r.status !== 429) break;
@@ -3473,6 +3585,8 @@ async function uploadPhoto(file) {
     }
     if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 900));
   }
+  // A timed-out upload may have reached Storage even without a response.
+  queuePendingStorageDelete(path);
   const sizeMb = ((body.size || file.size || 0) / 1024 / 1024).toFixed(1);
   throw new Error(
     (lastError?.message || "写真保存に失敗しました") +
@@ -3501,19 +3615,9 @@ const RECORD_DRAFT_FIELDS = [
   "comment",
 ];
 
-function readRecordDraft() {
-  try {
-    const d = JSON.parse(localStorage.getItem(RECORD_DRAFT_KEY) || "null");
-    return d && typeof d === "object" ? d : null;
-  } catch {
-    return null;
-  }
-}
-function clearRecordDraft() {
-  try {
-    localStorage.removeItem(RECORD_DRAFT_KEY);
-  } catch {}
-}
+function readRecordDraft() { return readLocalOperation(RECORD_DRAFT_KEY); }
+function clearRecordDraft() { clearLocalOperation(RECORD_DRAFT_KEY); }
+
 function saveRecordDraft() {
   if (!S.user) return;
   const values = {};
@@ -3532,7 +3636,7 @@ function saveRecordDraft() {
   }
   try {
     localStorage.setItem(
-      RECORD_DRAFT_KEY,
+      RECORD_DRAFT_KEY + ":" + S.user.id,
       JSON.stringify({
         userId: S.user.id,
         values,
@@ -3632,17 +3736,25 @@ const PENDING_SAVE_STATE_KEY = "sakelog_pending_save_state_v1";
 const PENDING_EVENT_PHOTO_STATE_KEY = "sakelog_pending_event_photo_state_v1";
 
 function readLocalOperation(key) {
+  if (!S.user?.id) return null;
   try {
-    const v = JSON.parse(localStorage.getItem(key) || "null");
-    return v && typeof v === "object" ? v : null;
-  } catch {
-    return null;
-  }
+    const scopedKey = key + ":" + S.user.id;
+    const raw = localStorage.getItem(scopedKey) || localStorage.getItem(key);
+    const value = JSON.parse(raw || "null");
+    if (!value || value.userId !== S.user.id) return null;
+    if (!localStorage.getItem(scopedKey)) {
+      localStorage.setItem(scopedKey, JSON.stringify(value));
+      localStorage.removeItem(key);
+    }
+    return value;
+  } catch { return null; }
 }
 function writeLocalOperation(key, value) {
+  if (!S.user?.id) return;
   try {
-    if (value) localStorage.setItem(key, JSON.stringify(value));
-    else localStorage.removeItem(key);
+    const scopedKey = key + ":" + S.user.id;
+    if (value) localStorage.setItem(scopedKey, JSON.stringify(value));
+    else localStorage.removeItem(scopedKey);
   } catch {}
 }
 function clearLocalOperation(key) {
@@ -3688,7 +3800,7 @@ async function recoverInterruptedOperations() {
             "sake_photos",
             "select=photo_type&drinking_record_id=eq." +
               encodeURIComponent(rec.id),
-          ).catch(() => []);
+          );
           const have = new Set((photos || []).map((x) => x.photo_type));
           const expected = Array.isArray(pendingSave.expectedPhotoTypes)
             ? pendingSave.expectedPhotoTypes
@@ -3717,11 +3829,10 @@ async function recoverInterruptedOperations() {
               '<div class="small" style="margin-top:5px">重複したLOGは作られていません。必要ならもう一度記録してください。</div>',
           );
         }
-      } catch (e) {
-        console.warn("save recovery check skipped", e);
-      } finally {
         clearLocalOperation(PENDING_SAVE_STATE_KEY);
         S.currentSaveRequestId = null;
+      } catch {
+        notices.push("前回の保存状況を確認できませんでした。通信復旧後に再確認します。");
       }
     }
   }
@@ -3752,7 +3863,7 @@ async function recoverInterruptedOperations() {
                 pendingPhoto.storagePath,
               );
             } catch (e) {
-              console.warn("orphan event photo cleanup pending", e);
+              throw e;
             }
           }
           notices.push(
@@ -3760,11 +3871,10 @@ async function recoverInterruptedOperations() {
               '<div class="small" style="margin-top:5px">途中の画像データは可能な範囲で整理しました。必要ならもう一度追加してください。</div>',
           );
         }
-      } catch (e) {
-        console.warn("event photo recovery check skipped", e);
-      } finally {
         clearLocalOperation(PENDING_EVENT_PHOTO_STATE_KEY);
         S.currentEventPhotoRequestId = null;
+      } catch {
+        notices.push("前回の写真の保存状況を確認できませんでした。通信復旧後に再確認します。");
       }
     }
   }
@@ -3784,6 +3894,7 @@ function makeClientRequestId() {
   }
 }
 async function idempotentInsert(table, obj, conflictCols) {
+  const epoch = sessionEpoch;
   const q = "?on_conflict=" + encodeURIComponent(conflictCols);
   const r = await authFetch(BASE + "/rest/v1/" + table + q, {
     method: "POST",
@@ -3794,11 +3905,13 @@ async function idempotentInsert(table, obj, conflictCols) {
     body: JSON.stringify(obj),
   });
   const d = await r.json().catch(() => null);
-  if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
+  assertSession(epoch);
+  if (!r.ok) throw requestFailure(r.status);
   return Array.isArray(d) ? d[0] : d;
 }
 
 async function insert(table, obj) {
+  const epoch = sessionEpoch;
   const r = await authFetch(BASE + "/rest/v1/" + table, {
     method: "POST",
     headers: {
@@ -3808,18 +3921,22 @@ async function insert(table, obj) {
     body: JSON.stringify(obj),
   });
   const d = await r.json().catch(() => null);
-  if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
+  assertSession(epoch);
+  if (!r.ok) throw requestFailure(r.status);
   return Array.isArray(d) ? d[0] : d;
 }
 async function select(table, query = "") {
+  const epoch = sessionEpoch;
   const r = await authFetch(BASE + "/rest/v1/" + table + "?" + query, {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
   });
   const d = await r.json().catch(() => []);
-  if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
+  assertSession(epoch);
+  if (!r.ok) throw requestFailure(r.status);
   return d;
 }
 async function updateRow(table, id, obj) {
+  const epoch = sessionEpoch;
   const r = await authFetch(
     BASE + "/rest/v1/" + table + "?id=eq." + encodeURIComponent(id),
     {
@@ -3832,8 +3949,11 @@ async function updateRow(table, id, obj) {
     },
   );
   const d = await r.json().catch(() => null);
-  if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
-  return Array.isArray(d) ? d[0] : d;
+  assertSession(epoch);
+  if (!r.ok) throw requestFailure(r.status);
+  const row = Array.isArray(d) ? d[0] : d;
+  if (!row) throw new Error("更新対象を確認できませんでした。記録を読み直してください。");
+  return row;
 }
 async function deleteRows(table, query) {
   const r = await authFetch(BASE + "/rest/v1/" + table + "?" + query, {
@@ -3842,7 +3962,7 @@ async function deleteRows(table, query) {
   });
   if (!r.ok) {
     const d = await r.json().catch(() => null);
-    throw new Error((d && d.message) || "HTTP " + r.status);
+    throw requestFailure(r.status);
   }
   return true;
 }
@@ -3867,6 +3987,7 @@ function queuePendingRollback(recordId, storagePaths = []) {
   if (!recordId) return;
   const items = readPendingRollbacks().filter((x) => x?.recordId !== recordId);
   items.push({
+    userId: S.user?.id,
     recordId,
     storagePaths: [...new Set(storagePaths.filter(Boolean))],
     queuedAt: Date.now(),
@@ -3915,13 +4036,16 @@ function queuePendingStorageDelete(path) {
 }
 async function cleanupPendingStorageDeletes() {
   const remaining = [];
+  const epoch = sessionEpoch;
   for (const path of readPendingStorageDeletes()) {
+    if (!S.user?.id || !path.startsWith(S.user.id + "/")) { remaining.push(path); continue; }
     try {
       await deleteStorageObject(path);
     } catch {
       remaining.push(path);
     }
   }
+  assertSession(epoch);
   writePendingStorageDeletes(remaining);
   return remaining.length === 0;
 }
@@ -3934,7 +4058,7 @@ async function rollbackRecord(item) {
       body: JSON.stringify({ p_record_id: item.recordId }),
     });
     const d = await r.json().catch(() => null);
-    if (!r.ok) throw new Error((d && d.message) || "HTTP " + r.status);
+    if (!r.ok) throw requestFailure(r.status);
 
     const paths = [
       ...new Set(
@@ -3954,7 +4078,7 @@ async function rollbackRecord(item) {
     }
     return true;
   } catch (e) {
-    console.warn("record rollback pending", item.recordId, e);
+
     return false;
   }
 }
@@ -3962,8 +4086,10 @@ async function cleanupPendingRollbacks() {
   const items = readPendingRollbacks();
   if (!items.length) return true;
   const remaining = [];
+  const epoch = sessionEpoch;
   for (const item of items) {
-    if (!(await rollbackRecord(item))) remaining.push(item);
+    if (item.userId !== S.user?.id || !(await rollbackRecord(item))) remaining.push(item);
+    assertSession(epoch);
   }
   writePendingRollbacks(remaining);
   return remaining.length === 0;
@@ -4381,6 +4507,7 @@ $("commitRecordBtn").onclick = async () => {
   }
   if (S.savingRecord) return;
   S.savingRecord = true;
+  const epoch = sessionEpoch;
   let brand = $("brand").value.trim();
   if (!brand) {
     if (S.photo || S.backPhoto) {
@@ -4409,7 +4536,9 @@ $("commitRecordBtn").onclick = async () => {
   const uploadedPaths = [];
   try {
     // 前回、通信断などで巻き戻せなかった保存があれば先に掃除する。
-    await cleanupPendingRollbacks();
+    const cleaned = await cleanupPendingRollbacks();
+    assertSession(epoch);
+    if (!cleaned) throw new Error("前回の保存の整理が終わっていません。通信状態を確認して再試行してください。");
 
     if (!S.currentSaveRequestId) S.currentSaveRequestId = makeClientRequestId();
     const expectedPhotoTypes = [
@@ -4532,6 +4661,7 @@ $("commitRecordBtn").onclick = async () => {
       });
     }
     await saveToSharedDictionary();
+    assertSession(epoch);
     saveFrontPhotoToDevice();
 
     msg($("recordConfirmMsg"), "✓ 保存しました。", "ok");
@@ -4540,11 +4670,14 @@ $("commitRecordBtn").onclick = async () => {
     S.currentSaveRequestId = null;
     saveSucceeded = true;
     setTimeout(() => {
+      if (epoch !== sessionEpoch) return;
       setRecordSaveBusy(false);
       showRecordComplete(rec);
     }, 350);
   } catch (e) {
-    let rollbackClean = true;
+    if (epoch !== sessionEpoch) return;
+    // A lost insert response does not prove that the server rejected the row.
+    let rollbackClean = !!rec?.id;
     if (rec?.id) {
       queuePendingRollback(rec.id, uploadedPaths);
       rollbackClean = await cleanupPendingRollbacks();
@@ -4568,12 +4701,12 @@ $("commitRecordBtn").onclick = async () => {
     saveRecordDraft();
     msg(
       $("recordConfirmMsg"),
-      "保存できませんでした: " + (e.message || e) + "。" + suffix,
+      "保存を確認できませんでした。通信状態を確認して再試行してください。" + suffix,
       "err",
     );
   } finally {
-    S.savingRecord = false;
-    if (!saveSucceeded) setRecordSaveBusy(false);
+    if (epoch === sessionEpoch) S.savingRecord = false;
+    if (!saveSucceeded && epoch === sessionEpoch) setRecordSaveBusy(false);
   }
 };
 function showRecordComplete(rec) {
@@ -4746,6 +4879,7 @@ async function loadFrontPhotoMap(recordIds) {
   }
 }
 async function storageObjectUrl(path) {
+  const epoch = sessionEpoch;
   if (!path) return null;
   if (photoObjectUrls.has(path)) return photoObjectUrls.get(path);
   try {
@@ -4755,6 +4889,7 @@ async function storageObjectUrl(path) {
     );
     if (!r.ok) return null;
     const blob = await r.blob();
+    assertSession(epoch);
     const url = URL.createObjectURL(blob);
     photoObjectUrls.set(path, url);
     return url;
@@ -5097,7 +5232,7 @@ function renderRecordEditor(r) {
         .closest(".memory-edit-photo")
         ?.querySelector(".memory-edit-photo-preview");
       if (preview)
-        preview.innerHTML = `<img src="${escapeHtml(URL.createObjectURL(file))}" alt="選択した写真" />`;
+        preview.innerHTML = `<img src="${escapeHtml(previewObjectUrl(file, inputId))}" alt="選択した写真" />`;
       syncRecordEditDirtyState();
     });
   });
@@ -5248,17 +5383,17 @@ function renderRecordEditor(r) {
         openRecordDetail(r.id);
       }, 500);
     } catch (e) {
-      console.warn("record edit failed", e);
+
       if (recordTextUpdated) {
         try {
           await updateRow("drinking_records", r.id, originalRecord);
         } catch (rollbackError) {
-          console.warn("record edit rollback failed", rollbackError);
+
         }
       }
       msg(
         $("editMsg"),
-        "更新できませんでした。変更前の内容を保持しています。通信状況を確認して、もう一度お試しください。",
+        "更新を完了できませんでした。一部の変更が保存された可能性があります。入力内容を控え、通信状態を確認して記録を読み直してください。",
         "err",
       );
     } finally {
@@ -5284,8 +5419,9 @@ function requestDeleteCurrentRecord() {
 }
 async function deleteCurrentRecord() {
   const r = S.detailRecord;
-  if (!r) return;
+  if (!r || S.deletingRecord) return;
   if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。")) return;
+  S.deletingRecord = true;
   const button = $("confirmDeleteRecordBtn");
   button.disabled = true;
   button.setAttribute("aria-busy", "true");
@@ -5298,7 +5434,9 @@ async function deleteCurrentRecord() {
       storagePaths: (photos || []).map((p) => p.storage_path).filter(Boolean),
     };
     queuePendingRollback(item.recordId, item.storagePaths);
-    const clean = await cleanupPendingRollbacks();
+    await cleanupPendingRollbacks();
+    if (readPendingRollbacks().some(item => item.recordId === r.id)) throw new Error("DELETE_PENDING");
+    const clean = !readPendingStorageDeletes().some(path => item.storagePaths.includes(path));
     closeDeleteRecordDialog();
     S.detailRecord = null;
     show("historyView");
@@ -5319,6 +5457,7 @@ async function deleteCurrentRecord() {
     button.disabled = false;
     button.setAttribute("aria-busy", "false");
     button.textContent = "記録を削除する";
+    S.deletingRecord = false;
   }
 }
 
@@ -5568,7 +5707,7 @@ async function loadProfile() {
       "select=id,brand_name,product_name,brewery_name,prefecture,rating,drank_at&order=drank_at.desc&limit=500",
     );
   } catch (e) {
-    console.warn("profile record summary failed", e);
+
   }
   const uniqueBreweries = new Set(records.map((r) => r.brewery_name).filter(Boolean)).size;
   const uniquePrefectures = new Set(records.map((r) => r.prefecture).filter(Boolean)).size;
@@ -5858,7 +5997,7 @@ function saveFrontPhotoToDevice() {
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (e) {
-    console.warn("device photo save failed", e);
+
   }
 }
 
@@ -5906,75 +6045,53 @@ function closeDeleteAccountDialog() {
   if (typeof dialog?.close === "function") dialog.close();
   else dialog?.removeAttribute("open");
 }
+let accountDeletionBusy = false;
 function syncDeleteAccountConfirmation() {
-  const entered = $("deleteAccountEmail")?.value?.trim().toLowerCase() || "";
-  const expected = String(S.user?.email || "").trim().toLowerCase();
-  const button = $("confirmDeleteAccountBtn");
-  if (button) button.disabled = !expected || entered !== expected;
+  const entered = $("deleteAccountConfirmation")?.value?.trim() || "";
+  $("confirmDeleteAccountBtn").disabled = accountDeletionBusy || entered !== "DELETE_MY_ACCOUNT";
   msg($("deleteAccountDialogMsg"), "");
 }
 function requestDeleteMyAccount() {
-  if (!S.user?.email) {
-    msg(
-      $("deleteAccountMsg"),
-      "登録情報を確認できませんでした。再ログインしてからお試しください。",
-      "err",
-    );
-    return;
-  }
-  $("deleteAccountEmail").value = "";
-  $("deleteAccountRegisteredEmail").textContent = `登録メール：${S.user.email}`;
+  if (!S.user?.id || accountDeletionBusy) return;
+  $("deleteAccountConfirmation").value = "";
   $("deleteAccountConfirmPanel").classList.remove("hidden");
   $("deleteAccountProgressPanel").classList.add("hidden");
   syncDeleteAccountConfirmation();
-  const dialog = $("deleteAccountDialog");
-  if (typeof dialog?.showModal === "function") dialog.showModal();
-  else dialog?.setAttribute("open", "");
-  setTimeout(() => $("deleteAccountEmail")?.focus(), 0);
+  $("deleteAccountDialog").showModal();
+  setTimeout(() => $("deleteAccountConfirmation")?.focus(), 0);
 }
 async function deleteMyAccount() {
-  const entered = $("deleteAccountEmail")?.value?.trim() || "";
-  if (
-    entered.toLowerCase() !== String(S.user?.email || "").trim().toLowerCase()
-  ) {
-    msg(
-      $("deleteAccountDialogMsg"),
-      "登録メールアドレスと一致しません。",
-      "err",
-    );
+  if (accountDeletionBusy || !S.user?.id) return;
+  if ($("deleteAccountConfirmation")?.value?.trim() !== "DELETE_MY_ACCOUNT") {
+    msg($("deleteAccountDialogMsg"), "確認欄に DELETE_MY_ACCOUNT と入力してください。", "err");
     return;
   }
-  if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。"))
-    return;
+  if (!requireOnline("現在オフラインです。通信が戻ってから削除してください。")) return;
+  const epoch = sessionEpoch;
+  accountDeletionBusy = true;
+  syncDeleteAccountConfirmation();
   $("deleteAccountConfirmPanel").classList.add("hidden");
   $("deleteAccountProgressPanel").classList.remove("hidden");
-
   try {
     const r = await authFetch(BASE + "/functions/v1/delete-account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirm_email: entered.trim() }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmation: "DELETE_MY_ACCOUNT" }),
     });
     const d = await r.json().catch(() => null);
-    if (!r.ok) throw new Error(d?.error || "アカウント削除に失敗しました");
-
+    assertSession(epoch);
+    if (!r.ok || d?.status !== "deleted") throw new Error("DELETE_FAILED");
     closeDeleteAccountDialog();
     clearAllLocalUserData();
     show("authView");
-    msg(
-      $("authMsg"),
-      "アカウントを削除しました。ご利用ありがとうございました。",
-      "ok",
-    );
-  } catch (e) {
+    msg($("authMsg"), "アカウントを削除しました。ご利用ありがとうございました。", "ok");
+  } catch {
+    if (epoch !== sessionEpoch) return;
     $("deleteAccountConfirmPanel").classList.remove("hidden");
     $("deleteAccountProgressPanel").classList.add("hidden");
-    msg(
-      $("deleteAccountDialogMsg"),
-      "削除できませんでした。通信状況を確認して、もう一度お試しください。",
-      "err",
-    );
-    console.warn("account deletion failed", e);
+    msg($("deleteAccountDialogMsg"), "削除を完了できませんでした。通信状態を確認して再試行してください。一部の写真は削除済みの可能性があります。", "err");
+  } finally {
+    accountDeletionBusy = false;
+    $("confirmDeleteAccountBtn").disabled = false;
   }
 }
 
@@ -6034,8 +6151,8 @@ if ($("cancelDeleteRecordBtn"))
   $("cancelDeleteRecordBtn").onclick = closeDeleteRecordDialog;
 if ($("confirmDeleteRecordBtn"))
   $("confirmDeleteRecordBtn").onclick = deleteCurrentRecord;
-if ($("deleteAccountEmail"))
-  $("deleteAccountEmail").addEventListener(
+if ($("deleteAccountConfirmation"))
+  $("deleteAccountConfirmation").addEventListener(
     "input",
     syncDeleteAccountConfirmation,
   );

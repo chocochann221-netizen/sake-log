@@ -69,9 +69,9 @@ async function sha256Hex(s: string) {
   const d = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(s)));
   return Array.from(d).map(b => b.toString(16).padStart(2, "0")).join("");
 }
-async function buildLineAuthorizeUrl(redirectTo: string, mode: "login" | "link", userId?: string) {
+async function buildLineAuthorizeUrl(redirectTo: string, mode: "login" | "link", userId?: string, challenge?: string) {
   const nonce = crypto.randomUUID().replace(/-/g, "");
-  const state = await makeState({ redirectTo, nonce, mode, userId: userId || null });
+  const state = await makeState({ redirectTo, nonce, mode, userId: userId || null, challenge: challenge || null });
   const auth = new URL("https://access.line.me/oauth2/v2.1/authorize");
   auth.searchParams.set("response_type", "code");
   auth.searchParams.set("client_id", LINE_CHANNEL_ID);
@@ -91,6 +91,11 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
+    let code = url.searchParams.get("code");
+    let state = url.searchParams.get("state");
+    let completingLink = false;
+    let authenticatedLinkUser = "";
+
     // Explicit account-link start. Requires an already signed-in Supabase user.
     if (req.method === "POST") {
       const authHeader = req.headers.get("Authorization") || "";
@@ -98,11 +103,6 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "ログインが必要です" }), { status: 401, headers: cors });
       }
       const body = await req.json().catch(() => ({}));
-      const redirectTo = String(body.redirect_to || "");
-      if (!ALLOWED_REDIRECTS.has(redirectTo)) {
-        return new Response(JSON.stringify({ error: "redirect not allowed" }), { status: 400, headers: cors });
-      }
-
       const userClient = createClient(SUPABASE_URL, ANON_KEY, {
         global: { headers: { Authorization: authHeader } },
         auth: { persistSession: false, autoRefreshToken: false }
@@ -112,25 +112,44 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "ログインを確認できませんでした" }), { status: 401, headers: cors });
       }
 
-      const authorizeUrl = await buildLineAuthorizeUrl(redirectTo, "link", data.user.id);
-      return new Response(JSON.stringify({ authorize_url: authorizeUrl }), { status: 200, headers: cors });
+      if (body.action === "complete_link") {
+        code = String(body.code || "");
+        state = String(body.state || "");
+        completingLink = true;
+        authenticatedLinkUser = data.user.id;
+        if (!code) return new Response(JSON.stringify({ error: "連携を確認できませんでした" }), { status: 400, headers: cors });
+      } else {
+        const redirectTo = String(body.redirect_to || "");
+        if (!ALLOWED_REDIRECTS.has(redirectTo)) return new Response(JSON.stringify({ error: "redirect not allowed" }), { status: 400, headers: cors });
+        const authorizeUrl = await buildLineAuthorizeUrl(redirectTo, "link", data.user.id);
+        return new Response(JSON.stringify({ authorize_url: authorizeUrl }), { status: 200, headers: cors });
+      }
     }
 
-    if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
-
-    const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state");
+    if (req.method !== "GET" && !completingLink) return new Response("Method not allowed", { status: 405 });
 
     // Normal LINE login start.
     if (!code) {
       const redirectTo = url.searchParams.get("redirect_to") || "https://sake-log-git.pages.dev/";
       if (!ALLOWED_REDIRECTS.has(redirectTo)) return new Response("redirect not allowed", { status: 400 });
-      return redirect(await buildLineAuthorizeUrl(redirectTo, "login"));
+      const challenge = url.searchParams.get("challenge") || "";
+      if (!/^[a-f0-9]{64}$/.test(challenge)) return new Response("ログイン画面からやり直してください", { status: 400 });
+      return redirect(await buildLineAuthorizeUrl(redirectTo, "login", undefined, challenge));
     }
 
     // LINE callback.
     const payload = await readState(state || "");
     const redirectTo = String(payload.redirectTo);
+    if (completingLink && (payload.mode !== "link" || payload.userId !== authenticatedLinkUser)) {
+      return new Response(JSON.stringify({ error: "連携を開始したアカウントで再ログインしてください" }), { status: 403, headers: cors });
+    }
+    if (payload.mode === "link" && !completingLink) {
+      // A signed state is not proof that the callback browser owns the target
+      // account. Require its current Supabase session before changing mapping.
+      const out = new URL(redirectTo);
+      out.hash = new URLSearchParams({ line_link_code: code!, line_link_state: state! }).toString();
+      return redirect(out.toString());
+    }
 
     const tokenBody = new URLSearchParams({
       grant_type: "authorization_code",
@@ -192,14 +211,13 @@ Deno.serve(async (req) => {
         return appError(redirectTo, "別のLINEアカウントがすでに連携されています");
       }
 
-      const { error: upsertError } = await admin
-        .from("line_account_links")
-        .upsert({ line_sub_hash: subHash, user_id: targetUserId, updated_at: new Date().toISOString() });
-      if (upsertError) return appError(redirectTo, "LINE連携を保存できませんでした");
-
-      const out = new URL(redirectTo);
-      out.hash = "line_linked=1";
-      return redirect(out.toString());
+      if (!linkedByLine) {
+        // Never overwrite an existing owner after the lookup/insert race.
+        const { error: insertError } = await admin.from("line_account_links")
+          .insert({ line_sub_hash: subHash, user_id: targetUserId, updated_at: new Date().toISOString() });
+        if (insertError) return new Response(JSON.stringify({ error: "LINE連携を保存できませんでした。連携状態を確認して再試行してください。" }), { status: 409, headers: cors });
+      }
+      return new Response(JSON.stringify({ linked: true }), { status: 200, headers: cors });
     }
 
     // Normal LINE login. Use a linked canonical user if present.
@@ -238,7 +256,7 @@ Deno.serve(async (req) => {
 
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink(linkArgs);
     if (linkError || !linkData) {
-      console.error("generateLink failed", linkError);
+      console.error("LINE_LOGIN_LINK_FAILED");
       return appError(redirectTo, "和酒ログのログイン準備に失敗しました");
     }
 
@@ -253,10 +271,10 @@ Deno.serve(async (req) => {
     if (!tokenHash) return appError(redirectTo, "ログイントークンを作成できませんでした");
 
     const out = new URL(redirectTo);
-    out.hash = "line_token_hash=" + encodeURIComponent(tokenHash);
+    out.hash = new URLSearchParams({ line_token_hash: tokenHash, line_challenge: String(payload.challenge || "") }).toString();
     return redirect(out.toString());
   } catch (e) {
-    console.error(e);
+    console.error("LINE_LOGIN_FAILED");
     return new Response("LINE login failed", { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 });
