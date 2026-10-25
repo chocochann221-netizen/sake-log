@@ -1,3 +1,4 @@
+import { ownedStoragePath } from "../_shared/storage-ownership.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = new Set([
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") || "";
 
     if (!authHeader.startsWith("Bearer ")) {
-      throw new Error("login required");
+      return new Response(JSON.stringify({ error: "ログインが必要です" }), { status: 401, headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const userClient = createClient(supabaseUrl, anonKey, {
@@ -62,42 +63,48 @@ Deno.serve(async (req) => {
       auth: { persistSession: false }
     });
 
-    const [
-      { data: sakePhotos, error: sakeErr },
-      { data: eventPhotos, error: eventErr },
-      { data: menuScans, error: menuErr },
-      { data: flyerSubmissions, error: flyerErr }
-    ] = await Promise.all([
-      admin.from("sake_photos").select("storage_path").eq("user_id", uid),
-      admin.from("event_photos").select("storage_path").eq("user_id", uid),
-      admin.from("menu_scans").select("storage_path").eq("user_id", uid),
-      admin.from("event_flyer_submissions").select("image_path").eq("user_id", uid)
-    ]);
-    if (sakeErr) throw sakeErr;
-    if (eventErr) throw eventErr;
-    if (menuErr) throw menuErr;
-    if (flyerErr) throw flyerErr;
-
-    const sakePaths = (sakePhotos || []).map((x) => x.storage_path).filter(Boolean);
-    const eventPaths = (eventPhotos || []).map((x) => x.storage_path).filter(Boolean);
-    const menuPaths = (menuScans || []).map((x) => x.storage_path).filter(Boolean);
-    const flyerPaths = (flyerSubmissions || []).map((x) => x.image_path).filter(Boolean);
-
-    if (sakePaths.length) {
-      const { error } = await admin.storage.from("sake-photos").remove(sakePaths);
-      if (error) throw new Error("日本酒写真の削除に失敗しました");
+    // Paginate before deleting anything: the API row limit is not a complete inventory.
+    const buckets = new Map<string, Set<string>>();
+    for (const [table, column, bucket] of [
+      ["sake_photos", "storage_path", "sake-photos"],
+      ["event_photos", "storage_path", "event-photos"],
+      ["menu_scans", "storage_path", "sake-photos"],
+      ["event_flyer_submissions", "image_path", "event-flyers"],
+      ["personal_data_export_requests", "storage_path", "personal-data-exports"],
+    ]) {
+      const paths = buckets.get(bucket) || new Set<string>();
+      buckets.set(bucket, paths);
+      for (let offset = 0; ; ) {
+        const { data, error } = await admin.from(table).select(column).eq("user_id", uid)
+          .order("id").range(offset, offset + 999);
+        if (error) throw error;
+        if (!data?.length) break;
+        for (const row of data) if (row[column]) paths.add(ownedStoragePath(uid, row[column]));
+        offset += data.length;
+      }
     }
-    if (eventPaths.length) {
-      const { error } = await admin.storage.from("event-photos").remove(eventPaths);
-      if (error) throw new Error("イベント写真の削除に失敗しました");
+    // Include orphan uploads and already-created export ZIPs before auth.users cascades
+    // remove their references. Never list or remove another user's folder.
+    async function collectFolder(bucket: string, prefix: string, paths: Set<string>) {
+      for (let offset = 0; ; ) {
+        const { data, error } = await admin.storage.from(bucket).list(prefix, { limit: 1000, offset, sortBy: { column: "name", order: "asc" } });
+        if (error) throw error;
+        if (!data?.length) break;
+        for (const entry of data) {
+          const path = ownedStoragePath(uid, prefix + "/" + entry.name);
+          if (entry.id) paths.add(path);
+          else await collectFolder(bucket, path, paths);
+        }
+        offset += data.length;
+      }
     }
-    if (menuPaths.length) {
-      const { error } = await admin.storage.from("sake-photos").remove(menuPaths);
-      if (error) throw new Error("メニュー画像の削除に失敗しました");
-    }
-    if (flyerPaths.length) {
-      const { error } = await admin.storage.from("event-flyers").remove(flyerPaths);
-      if (error) throw new Error("イベントチラシ画像の削除に失敗しました");
+    for (const [bucket, paths] of buckets) await collectFolder(bucket, uid, paths);
+    for (const [bucket, paths] of buckets) {
+      const all = [...paths];
+      for (let start = 0; start < all.length; start += 100) {
+        const { error } = await admin.storage.from(bucket).remove(all.slice(start, start + 100));
+        if (error) throw new Error("STORAGE_DELETE_FAILED");
+      }
     }
 
     const { error: eventDeleteError } = await admin
@@ -122,7 +129,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     return new Response(JSON.stringify({
-      error: e instanceof Error ? e.message : "アカウント削除に失敗しました"
+      error: "削除を完了できませんでした。通信状態を確認して再試行してください。一部の写真は削除済みの可能性があります。"
     }), {
       status: 500,
       headers: { ...corsHeaders(req), "Content-Type": "application/json" }

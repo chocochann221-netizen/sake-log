@@ -1,3 +1,4 @@
+import { ownedStoragePath } from '../_shared/storage-ownership.ts'
 import 'jsr:@supabase/functions-js@2.4.4/edge-runtime.d.ts'
 import { strToU8, zipSync } from 'npm:fflate@0.8.2'
 
@@ -110,15 +111,25 @@ function requireRecentAuthentication(req: Request) {
 }
 
 async function rows(table: string, userId: string, key = 'user_id', select = '*') {
-  const query = new URLSearchParams({ select, [key]: `eq.${userId}` })
-  const response = await api(`/rest/v1/${table}?${query}`)
-  if (!response.ok) throw new Error(`READ_${table.toUpperCase()}_${response.status}`)
-  return await response.json() as Record<string, unknown>[]
+  const all: Record<string, unknown>[] = []
+  const columns = select.split(',')
+  const order = columns.includes('id') ? 'id.asc' : columns.includes('event_id') ? 'event_id.asc' : `${key}.asc`
+  for (let offset = 0; ; ) {
+    const query = new URLSearchParams({ select, [key]: `eq.${userId}`, order, offset: String(offset), limit: '1000' })
+    const response = await api(`/rest/v1/${table}?${query}`)
+    if (!response.ok) throw new Error(`READ_${table.toUpperCase()}_${response.status}`)
+    const page = await response.json() as Record<string, unknown>[]
+    if (!Array.isArray(page)) throw new Error('INVALID_TABLE_RESPONSE')
+    if (!page.length) return all
+    all.push(...page)
+    offset += page.length
+  }
 }
 
 function csvCell(value: unknown) {
   if (value == null) return ''
-  const text = typeof value === 'object' ? JSON.stringify(value) : String(value)
+  const raw = typeof value === 'object' ? JSON.stringify(value) : String(value)
+  const text = /^[\s]*[=+@-]/.test(raw) ? "'" + raw : raw
   return `"${text.replaceAll('"', '""')}"`
 }
 
@@ -132,8 +143,8 @@ function safeArchivePath(path: string) {
   return path.split('/').filter((part) => part && part !== '.' && part !== '..').join('/')
 }
 
-async function updateRequest(id: string, patch: Record<string, unknown>) {
-  const response = await api(`/rest/v1/personal_data_export_requests?id=eq.${encodeURIComponent(id)}`, {
+async function updateRequest(id: string, patch: Record<string, unknown>, expectedStatuses?: string[]) {
+  const response = await api(`/rest/v1/personal_data_export_requests?id=eq.${encodeURIComponent(id)}${expectedStatuses ? '&status=in.(' + expectedStatuses.join(',') + ')' : ''}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=representation' },
     body: JSON.stringify(patch),
@@ -155,16 +166,36 @@ async function getRequest(userId: string, id?: string) {
   return ((await response.json()) as ExportRequest[])[0] ?? null
 }
 
-async function downloadStorageObject(bucket: string, path: string) {
-  const encoded = path.split('/').map(encodeURIComponent).join('/')
+async function downloadStorageObject(bucket: string, path: string, userId: string, remaining: number) {
+  const encoded = ownedStoragePath(userId, path).split('/').map(encodeURIComponent).join('/')
   const response = await api(`/storage/v1/object/authenticated/${encodeURIComponent(bucket)}/${encoded}`)
   if (!response.ok) throw new Error(`READ_STORAGE_${bucket}_${response.status}`)
-  return new Uint8Array(await response.arrayBuffer())
+  if (Number(response.headers.get('content-length')) > remaining) {
+    await response.body?.cancel()
+    throw new Error('EXPORT_TOO_LARGE')
+  }
+  const reader = response.body?.getReader()
+  if (!reader) return new Uint8Array()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      size += value.byteLength
+      if (size > remaining) { await reader.cancel(); throw new Error('EXPORT_TOO_LARGE') }
+      chunks.push(value)
+    }
+  } finally { reader.releaseLock() }
+  const bytes = new Uint8Array(size)
+  let offset = 0
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength }
+  return bytes
 }
 
 async function generateExport(request: ExportRequest, user: Record<string, unknown>) {
   try {
-    await updateRequest(request.id, { status: 'preparing', preparing_at: new Date().toISOString(), error_code: null })
+    if (!await updateRequest(request.id, { status: 'preparing', preparing_at: new Date().toISOString(), error_code: null }, ['requested'])) return
 
     const payload: Record<string, Record<string, unknown>[]> = {}
     payload.profiles = await rows('profiles', request.user_id, 'id', PROFILE_COLUMNS)
@@ -197,11 +228,14 @@ async function generateExport(request: ExportRequest, user: Record<string, unkno
     for (const row of payload.menu_scans ?? []) if (typeof row.storage_path === 'string') fileRefs.push({ bucket: 'sake-photos', path: row.storage_path, category: 'menu-scans' })
     for (const row of payload.event_flyer_submissions ?? []) if (typeof row.image_path === 'string') fileRefs.push({ bucket: 'event-flyers', path: row.image_path, category: 'event-flyers' })
 
-    let rawFileBytes = 0
+    // Validate every reference before any privileged Storage request.
+    for (const file of fileRefs) ownedStoragePath(request.user_id, file.path)
+    let rawFileBytes = Object.values(zipEntries).reduce((size, bytes) => size + bytes.byteLength, 0)
+    if (rawFileBytes > MAX_RAW_FILE_BYTES) throw new Error('EXPORT_TOO_LARGE')
     const missingFiles: Array<{ bucket: string; path: string; reason: string }> = []
     for (const file of fileRefs) {
       try {
-        const bytes = await downloadStorageObject(file.bucket, file.path)
+        const bytes = await downloadStorageObject(file.bucket, file.path, request.user_id, MAX_RAW_FILE_BYTES - rawFileBytes)
         rawFileBytes += bytes.byteLength
         if (rawFileBytes > MAX_RAW_FILE_BYTES) throw new Error('EXPORT_TOO_LARGE')
         zipEntries[`files/${file.category}/${safeArchivePath(file.path)}`] = bytes
@@ -247,27 +281,32 @@ async function generateExport(request: ExportRequest, user: Record<string, unkno
 
     const readyAt = new Date()
     const expiresAt = new Date(readyAt.getTime() + EXPORT_TTL_HOURS * 60 * 60 * 1000)
-    await updateRequest(request.id, {
+    const published = await updateRequest(request.id, {
       status: 'ready',
       storage_path: storagePath,
       file_size_bytes: archive.byteLength,
       file_sha256: sha256,
       ready_at: readyAt.toISOString(),
       expires_at: expiresAt.toISOString(),
-    })
+    }, ['preparing'])
+    if (!published) {
+      const removal = await api(`/storage/v1/object/${BUCKET}/${encodedPath}`, { method: 'DELETE' })
+      if (!removal.ok) throw new Error('CANCELLED_EXPORT_DELETE_FAILED')
+    }
   } catch (error) {
     const current = await getRequest(request.user_id, request.id).catch(() => null)
     if (current?.status === 'cancelled') return
     await updateRequest(request.id, {
       status: 'failed',
       error_code: error instanceof Error ? error.message.slice(0, 120) : 'UNKNOWN',
-    }).catch(() => undefined)
+    }, ['requested', 'preparing']).catch(() => undefined)
   }
 }
 
 async function createRequest(user: Record<string, unknown>) {
   const userId = String(user.id)
-  const existing = await getRequest(userId)
+  let existing = await getRequest(userId)
+  if (existing?.expires_at && ['ready', 'downloaded'].includes(existing.status) && Date.parse(existing.expires_at) <= Date.now()) existing = await expireRequest(existing)
   if (existing && ['requested', 'preparing', 'ready', 'downloaded'].includes(existing.status)) return existing
 
   const response = await api('/rest/v1/personal_data_export_requests', {
@@ -285,10 +324,10 @@ async function createRequest(user: Record<string, unknown>) {
 async function createDownloadUrl(request: ExportRequest) {
   if (!request.storage_path || !['ready', 'downloaded'].includes(request.status)) throw new Error('NOT_READY')
   if (!request.expires_at || new Date(request.expires_at).getTime() <= Date.now()) {
-    await updateRequest(request.id, { status: 'expired' })
+    await expireRequest(request)
     throw new Error('EXPIRED')
   }
-  const encodedPath = request.storage_path.split('/').map(encodeURIComponent).join('/')
+  const encodedPath = ownedStoragePath(request.user_id, request.storage_path).split('/').map(encodeURIComponent).join('/')
   const response = await api(`/storage/v1/object/sign/${BUCKET}/${encodedPath}`, {
     method: 'POST',
     body: JSON.stringify({ expiresIn: 300 }),
@@ -296,17 +335,18 @@ async function createDownloadUrl(request: ExportRequest) {
   if (!response.ok) throw new Error(`SIGN_${response.status}`)
   const data = await response.json()
   const now = new Date().toISOString()
-  await updateRequest(request.id, {
+  const issued = await updateRequest(request.id, {
     status: 'downloaded',
     first_download_url_issued_at: request.status === 'ready' ? now : undefined,
     downloaded_at: now,
-  })
+  }, ['ready', 'downloaded'])
+  if (!issued) throw new Error('EXPIRED')
   return { download_url: `${SUPABASE_URL}/storage/v1${data.signedURL}`, expires_in_seconds: 300 }
 }
 
 async function expireRequest(request: ExportRequest) {
   if (request.storage_path) {
-    const encodedPath = request.storage_path.split('/').map(encodeURIComponent).join('/')
+    const encodedPath = ownedStoragePath(request.user_id, request.storage_path).split('/').map(encodeURIComponent).join('/')
     const removal = await api(`/storage/v1/object/${BUCKET}/${encodedPath}`, { method: 'DELETE' })
     if (!removal.ok) {
       const detail = await removal.text().catch(() => '')
@@ -381,7 +421,9 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'cancel') {
       if (!['requested', 'preparing'].includes(current.status)) return json({ error: 'CANNOT_CANCEL', request: current }, 409)
-      return json({ request: await updateRequest(current.id, { status: 'cancelled', cancelled_at: new Date().toISOString() }) })
+      const cancelled = await updateRequest(current.id, { status: 'cancelled', cancelled_at: new Date().toISOString() }, ['requested', 'preparing'])
+      if (!cancelled) return json({ error: 'CANNOT_CANCEL', request: await getRequest(String(user.id), current.id) }, 409)
+      return json({ request: cancelled })
     }
     if (action === 'download') return json({ request: current, ...(await createDownloadUrl(current)) })
     return json({ request: current })
