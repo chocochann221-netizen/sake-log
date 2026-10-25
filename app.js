@@ -692,20 +692,29 @@ $("authBtn").onclick = async () => {
     msg($("authMsg"), "パスワードを入力してください。", "err");
     return;
   }
+  // A new login supersedes any restoration or request from the previous session.
+  sessionEpoch++;
+  sessionController.abort();
+  sessionController = new AbortController();
+  refreshInFlight = null;
+  const epoch = sessionEpoch;
+  const signup = S.signup;
   S.authBusy = true;
   $("authBtn").disabled = true;
-  const path = S.signup
+  const path = signup
     ? "/auth/v1/signup?redirect_to=" + encodeURIComponent(currentAppRedirectUrl())
     : "/auth/v1/token?grant_type=password";
   try {
     const r = await fetch(BASE + path, {
       method: "POST",
       headers: headers(),
+      signal: AbortSignal.any([sessionController.signal, AbortSignal.timeout(30000)]),
       body: JSON.stringify({ email, password }),
     });
     const d = await r.json().catch(() => ({}));
+    if (epoch !== sessionEpoch) return;
     if (!r.ok) throw new Error(r.status === 429 ? "しばらく待ってからもう一度お試しください。" : "ログイン・登録を完了できませんでした。メールアドレス、パスワード、確認メールをご確認ください。");
-    if (S.signup && !d.access_token) {
+    if (signup && !d.access_token) {
       showEmailConfirmation(email);
       return;
     }
@@ -716,10 +725,13 @@ $("authBtn").onclick = async () => {
     show("homeView");
     loadMyUpcomingEventList().catch(() => {});
   } catch (e) {
+    if (epoch !== sessionEpoch) return;
     msg($("authMsg"), e.message, "err");
   } finally {
-    S.authBusy = false;
-    $("authBtn").disabled = false;
+    if (epoch === sessionEpoch) {
+      S.authBusy = false;
+      $("authBtn").disabled = false;
+    }
   }
 };
 
@@ -3723,7 +3735,8 @@ function wireRecordDraftAutosave() {
   let timer = null;
   const schedule = () => {
     clearTimeout(timer);
-    timer = setTimeout(saveRecordDraft, 250);
+    const epoch = sessionEpoch;
+    timer = setTimeout(() => { if (epoch === sessionEpoch) saveRecordDraft(); }, 250);
   };
   for (const id of RECORD_DRAFT_FIELDS) {
     $(id)?.addEventListener("input", schedule);

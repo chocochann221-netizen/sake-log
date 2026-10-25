@@ -51,11 +51,11 @@ DB/Storageを跨ぐ編集・退会の原子性、通信中断後の孤立ファ�
 
 ## 実行したテストと結果
 
-**34件 PASS / 0件 FAIL / 0件 SKIP**。再インストールと保存予定の起動コマンドでサーバーを再起動して再実行。
+**36件 PASS / 0件 FAIL / 0件 SKIP**。再インストールと保存予定の起動コマンドでサーバーを再起動して再実行。
 テスト名・実装は `tests/` を参照。
 
 - 初期7件の回帰テストは修正前に7件ともFAILし、修正後はPASS。
-- 実Chromium＋模擬API: セッション競合、logout後の遅延応答、pending保持、私的UI破棄、削除失敗、provider-neutral退会、メール確認、LINE callback拒否、bounded refresh、応答不明insert、二重保存、offline保持、0行更新、Blob解放、320/360/393/412px表示、通信障害後の再試行、PKCE code交換、ユーザー別draft/pending。
+- 実Chromium＋模擬API: セッション競合、logout後の遅延応答、pending保持、私的UI破棄、削除失敗、provider-neutral退会、メール確認、LINE callback拒否、bounded refresh、応答不明insert、二重保存、offline保持、0行更新、Blob解放、320/360/393/412px表示、通信障害後の再試行、PKCE code交換、ユーザー別draft/pending、遅延ログイン応答、アカウント切替後の自動保存。
 - Edgeソース実行＋模擬サービス: Storage所有権、他人パス拒否、ページング、ストリーム上限、CSV、cancel競合、recent auth、退会失敗/ZIP/孤立画像、LINE同一ユーザー確認・hash化・state改ざん拒否。
 - 実ローカルHTTP: 画面200、認識API GET=405、認証なしPOST=401。
 - JS 21本、HTML内script 9本、TypeScript 4本の構文確認。Edge Function 3本のesbuild bundle成功。Deno本番型検査や配備済み関数の検証とは区別する。

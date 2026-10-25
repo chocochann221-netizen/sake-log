@@ -135,3 +135,14 @@ test('pending operations and input drafts stay isolated across account switching
   });
   assert.deepEqual(result,{bDraft:null,pending:'A-pending',draft:'A private'});
 });
+test('late password-login response cannot replace a newer account session',async t=>{
+  const page=await app(t,async url=>{if(url.includes('grant_type=password')){await new Promise(r=>setTimeout(r,80));return json({access_token:'late-A',refresh_token:'late-refresh',user:{id:'A',email:'a@example.invalid'}});}});
+  const result=await page.evaluate(async()=>{document.getElementById('email').value='a@example.invalid';document.getElementById('password').value='example-password';const login=document.getElementById('authBtn').onclick();clearSession();saveSession({access_token:'test-B',user:{id:'B'}});await login;return {user:S.user.id,token:S.token};});
+  assert.deepEqual(result,{user:'B',token:'test-B'});
+});
+test('scheduled draft autosave cannot overwrite the next account draft',async t=>{
+  const page=await app(t);await signIn(page);
+  await page.evaluate(()=>{document.getElementById('brand').value='A draft';document.getElementById('brand').dispatchEvent(new Event('input'));clearSession();saveSession({access_token:'test-B',user:{id:'B'}});writeLocalOperation(RECORD_DRAFT_KEY,{userId:'B',values:{brand:'B retained'},savedAt:Date.now()});});
+  await page.waitForTimeout(350);
+  assert.equal(await page.evaluate(()=>readRecordDraft().values.brand),'B retained');
+});
