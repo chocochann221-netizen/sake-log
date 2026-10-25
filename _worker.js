@@ -108,20 +108,20 @@ async function recognizeSake(request, env) {
     }finally{clearTimeout(timeout);}
     const data=await resp.json();
     if(!resp.ok){
-      if(resp.status===429)return json({error:data?.error?.message||"OpenAI rate limit",rate_limited:true},429);
+      if(resp.status===429)return json({error:"利用が集中しています。しばらく待ってから再試行してください。",rate_limited:true},429);
       throw new Error(data?.error?.message||"OpenAI recognition error");
     }
     const rawText=extractResponseText(data);
     let parsed={};
     try{parsed=JSON.parse(cleanJson(rawText));}
-    catch(e){return json({error:"AI返答JSON解析失敗: "+e.message,raw_text:rawText.slice(0,1500)},500);}
+    catch(e){return json({error:"認識結果を読み取れませんでした。もう一度お試しください。",retryable:true},502);}
     const f=parsed.label_facts||{};
     const nf={...f,classification:f.classification||f.type||"",ingredients:f.ingredients||"",rice_variety:f.rice_variety||f.rice||"",polishing_ratio:f.polishing_ratio||f.polishing||"",alcohol:f.alcohol||"",volume:f.volume||""};
     const candidates=Array.isArray(parsed.candidates)?parsed.candidates.filter(c=>c&&c.brand&&Number(c.confidence||0)>=0.45).slice(0,3).map(c=>({...c,classification:c.classification||c.type||nf.classification,ingredients:c.ingredients||nf.ingredients,rice_variety:c.rice_variety||nf.rice_variety,polishing_ratio:c.polishing_ratio||nf.polishing_ratio,alcohol:c.alcohol||nf.alcohol,volume:c.volume||nf.volume})):[];
     return json({ocr_text:nf.ocr||"",quota:quotaCheck.quota||null,label_facts:{brand:nf.brand||"",product:nf.product||"",brewery:nf.brewery||"",prefecture:nf.prefecture||"",classification:nf.classification||"",ingredients:nf.ingredients||"",rice_variety:nf.rice_variety||"",polishing_ratio:nf.polishing_ratio||"",alcohol:nf.alcohol||"",volume:nf.volume||"",other:nf.other||[]},candidates,web_sources:Array.isArray(parsed.web_sources)?parsed.web_sources.filter(x=>x&&/^https?:\/\//i.test(String(x.url||""))).slice(0,5):[],note:parsed.note||"",model_name:model,version:"4.9.2",api_calls:1});
   } catch(e) {
     if(e?.name==="AbortError")return json({error:"AI解析が時間内に完了しませんでした。写真はそのまま記録できます。",retryable:true},504);
-    return json({error:e.message||"AI解析に失敗しました",retryable:true},500);
+    return json({error:"解析を完了できませんでした。通信状態を確認して再試行するか、手入力で記録してください。",retryable:true},500);
   }
 }
 
@@ -154,11 +154,11 @@ async function extractEventFlyer(request, env){
     if(!resp.ok)throw new Error(data?.error?.message||"チラシ解析に失敗しました");
     const raw=extractResponseText(data);
     let parsed;
-    try{parsed=JSON.parse(cleanJson(raw));}catch(e){return json({error:"チラシ解析結果を読み取れませんでした",raw_text:raw.slice(0,1200)},500);}
+    try{parsed=JSON.parse(cleanJson(raw));}catch(e){return json({error:"チラシ解析結果を読み取れませんでした。もう一度お試しください。",retryable:true},502);}
     return json({extracted:parsed,model_name:model,version:"1.0"});
   }catch(e){
     if(e?.name==="AbortError")return json({error:"チラシ解析が時間内に完了しませんでした。もう一度お試しください。",retryable:true},504);
-    return json({error:e.message||"チラシ解析に失敗しました",retryable:true},500);
+    return json({error:"チラシを解析できませんでした。通信状態を確認して再試行してください。",retryable:true},500);
   }
 }
 
@@ -172,7 +172,7 @@ async function sakenowaMaster() {
     sakenowaCache={brands:brands.brands||[],breweries:breweries.breweries||[],areas:areas.areas||[]};
     sakenowaCacheAt=Date.now();
     return json({...sakenowaCache,cached:false},200,"public, max-age=21600");
-  } catch(e) { return json({error:e.message},502); }
+  } catch(e) { return json({error:"酒蔵情報を取得できませんでした。時間をおいて再試行してください。"},502); }
 }
 
 export default {

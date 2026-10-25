@@ -192,7 +192,7 @@
       <div class="number" id="dictionary">—</div>
     </div>
 
-    
+
       <div class="card" onclick="showDuplicateGroups()" style="cursor:pointer;">
   <div class="icon">⚠️</div>
   <div class="label">重複候補</div>
@@ -216,7 +216,7 @@
   <div class="label">データ健康状態</div>
   <div class="number" id="dataHealth">—</div>
 </div>
-    
+
     <div class="card" onclick="showRecognitionImprovementQueue()" style="cursor:pointer;">
       <div class="icon">📥</div>
       <div class="label">改善キュー</div>
@@ -252,9 +252,9 @@
   <button class="menu-item" onclick="showEventPhotoModeration()">📷 イベント写真の公開確認</button>
   <button class="menu-item" onclick="showOAuthDiagnostics()">🔐 OAuth・本番URL診断</button>
 <button class="menu-item" onclick="runAutoPromotion()">🤖 自動昇格を実行</button>
-  
+
 </div>
-  
+
   <footer>
     和酒ログ Administrator
   </footer>
@@ -269,8 +269,7 @@
   localStorage.getItem("sakelog_pubkey") || PUBLISHABLE_KEY;
 
   const token =
-    localStorage.getItem("sakelog_token") ||
-    localStorage.getItem("sakelog_access_token");
+    localStorage.getItem("sakelog_token");
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -348,7 +347,7 @@ const promotionReviewCount = await loadPromotionReviewCount();
 const dataHealth = await loadDataHealth();
 const masterCandidateCount = await loadSakeMasterCandidateCount();
 const improvementQueueCount = await loadRecognitionImprovementQueueCount();
-      
+
       document.getElementById("users").textContent =
         data.users ?? 0;
 
@@ -389,11 +388,11 @@ if (improvementQueueEl) {
   improvementQueueEl.textContent = improvementQueueCount ?? "—";
   improvementQueueEl.style.color = Number(improvementQueueCount)>0 ? "#a34a32" : "";
 }
-      
+
       statusText.textContent =
         "管理者認証済み・Supabase接続中";
     } catch (error) {
-  console.error(error);
+
 
   statusText.textContent =
          "管理データ取得エラー：" + error.message;
@@ -491,7 +490,7 @@ async function showOAuthDiagnostics(){
 
     showAdminPanel("🔐 OAuth・本番URL診断",html);
   }catch(error){
-    console.error(error);
+
     showAdminPanel("🔐 OAuth・本番URL診断","<p>診断エラー："+esc(error.message)+"</p>");
   }
 }
@@ -550,7 +549,7 @@ async function showUsers() {
 
   } catch (error) {
 
-    console.error(error);
+
 
     showAdminPanel(
       "👥 ユーザー管理",
@@ -616,7 +615,7 @@ async function showUsers() {
 
   } catch (error) {
 
-    console.error(error);
+
 
     showAdminPanel(
       "🔍 AI認識結果",
@@ -666,7 +665,7 @@ async function enqueueRecognitionImprovement(targetType, payload){
       ?"🧠 辞書改善候補へ送りました。"
       :"🍶 マスター確認候補へ送りました。");
   }catch(error){
-    console.error(error);
+
     alert("改善候補への登録に失敗しました。\n\n"+error.message);
   }
 }
@@ -717,7 +716,7 @@ async function processRecognitionImprovement(queueId,action){
       el.style.color=Number(count)>0 ? "#a34a32" : "";
     }
   }catch(error){
-    console.error(error);
+
     const msgText=String(error.message||error);
     if(/matching dictionary signature not found/i.test(msgText)){
       alert("対応する辞書データが見つかりませんでした。\nこの候補はマスター確認側で扱うか、元の辞書データを確認してください。");
@@ -790,7 +789,7 @@ async function showRecognitionImprovementQueue(){
       rows||"<p>現在、処理待ちの改善候補はありません。</p>"
     );
   }catch(error){
-    console.error(error);
+
     showAdminPanel("📥 改善キュー","<p>取得エラー："+esc(error.message)+"</p>");
   }
 }
@@ -901,7 +900,7 @@ async function showRecognitionImprovementCandidates(){
       "<p style='font-size:13px;color:#666'>同じ認識違いが2回以上繰り返されたものを、自動で優先順位付けしています。</p>"+rows
     );
   }catch(error){
-    console.error(error);
+
     showAdminPanel("🛠 要改善候補","<p>取得エラー："+esc(error.message)+"</p>");
   }
 }
@@ -967,7 +966,7 @@ async function showCorrectionAnalytics(){
       "<p style='font-size:12px;color:#888;margin-top:18px'>※ 保存時にユーザーがラベル読取結果から大きく修正した項目を集計しています。過去の旧形式データは総数には残りますが、項目別集計には含めません。</p>"
     );
   }catch(error){
-    console.error(error);
+
     showAdminPanel("📊 認識ズレ分析","<p>取得エラー："+esc(error.message)+"</p>");
   }
 }
@@ -1052,7 +1051,7 @@ async function showCorrections() {
 
   } catch (error) {
 
-    console.error(error);
+
 
     showAdminPanel(
       "✏️ 誤認識・修正データ",
@@ -1131,7 +1130,7 @@ async function showCorrections() {
 
   } catch (error) {
 
-    console.error(error);
+
 
     showAdminPanel(
       "🍶 日本酒マスター管理",
@@ -1239,7 +1238,7 @@ async function showDictionary() {
 
   } catch (error) {
 
-    console.error(error);
+
 
     showAdminPanel(
       "🧠 学習辞書管理",
@@ -1299,7 +1298,7 @@ async function promoteToMaster(dictionaryId) {
 
   } catch (error) {
 
-    console.error(error);
+
 
     alert(
       "マスター登録に失敗しました。\n\n" +
@@ -1393,7 +1392,7 @@ async function selectMergeTarget(id, brand, product) {
 
   } catch (error) {
 
-    console.error(error);
+
 
     alert(
       "統合に失敗しました。\n\n" +
@@ -1432,7 +1431,7 @@ async function loadDuplicateCount() {
     return duplicates.length;
 
   } catch (error) {
-    console.error("重複候補取得エラー:", error);
+
     return null;
   }
 }
@@ -1464,11 +1463,11 @@ async function loadAutoPromotionCount() {
     return items.length;
 
   } catch (error) {
-    console.error("自動昇格候補取得エラー:", error);
+
     return null;
   }
 }
-    
+
 async function loadPromotionReviewCount() {
   try {
     const r = await fetch(
@@ -1486,7 +1485,7 @@ async function loadPromotionReviewCount() {
     if (!r.ok) throw new Error(await r.text());
     return (await r.json()).length;
   } catch (error) {
-    console.error("昇格要確認取得エラー:", error);
+
     return null;
   }
 }
@@ -1610,7 +1609,7 @@ async function showDuplicateGroups() {
 
   } catch (error) {
 
-    console.error(error);
+
 
     showAdminPanel(
       "⚠️ 重複候補",
@@ -1636,7 +1635,7 @@ async function loadDataHealth() {
     if(!r.ok) throw new Error(await r.text());
     return await r.json();
   } catch(error) {
-    console.error("データ健康状態取得エラー:", error);
+
     return null;
   }
 }
@@ -1694,7 +1693,7 @@ async function adminSignedEventPhotoUrl(path){
     const signed=d.signedURL||d.signedUrl||d.signed_url;
     return signed ? (/^https?:\/\//i.test(signed)?signed:BASE+"/storage/v1"+signed) : null;
   }catch(error){
-    console.error("イベント写真URL取得エラー:",error);
+
     return null;
   }
 }
@@ -1720,7 +1719,7 @@ async function moderateEventPhoto(photoId,action,faceStatus=null){
     if(!r.ok) throw new Error(await r.text());
     await showEventPhotoModeration();
   }catch(error){
-    console.error(error);
+
     alert("写真の状態更新に失敗しました。\n\n"+error.message);
   }
 }
@@ -1828,7 +1827,7 @@ async function showEventPhotoModeration(){
       "<p style='font-size:13px;color:#666'>一般公開は、顔なし確認または顔処理済みの写真だけ許可されます。</p>"+blocks.join("")
     );
   }catch(error){
-    console.error(error);
+
     showAdminPanel("📷 イベント写真の公開確認","<p>取得エラー："+esc(error.message)+"</p>");
   }
 }
@@ -1850,7 +1849,7 @@ async function loadSakeMasterCandidateCount() {
     const total = range.includes("/") ? Number(range.split("/").pop()) : (await r.json()).length;
     return Number.isFinite(total) ? total : null;
   } catch (error) {
-    console.error("商品マスター候補件数取得エラー:", error);
+
     return null;
   }
 }
@@ -1947,7 +1946,7 @@ async function showSakeMasterCandidates() {
       </div>${rows}`
     );
   } catch (error) {
-    console.error(error);
+
     showAdminPanel(
       "🌱 商品マスター候補",
       "<p>取得エラー：" + esc(error.message) + "</p>"
@@ -1998,7 +1997,7 @@ async function promoteCandidateBrewery(eventId, breweryName, sourceUrl, count) {
     await loadAdminDashboard();
     await showSakeMasterCandidates();
   } catch (error) {
-    console.error(error);
+
     alert("一括昇格に失敗しました。\n\n" + error.message);
   }
 }
@@ -2041,7 +2040,7 @@ async function promoteMasterCandidate(candidateId) {
     await loadAdminDashboard();
     await showSakeMasterCandidates();
   } catch (error) {
-    console.error(error);
+
     alert("昇格に失敗しました。\n\n" + error.message);
   }
 }
@@ -2068,7 +2067,7 @@ async function markMasterCandidateResearch(candidateId) {
     await loadAdminDashboard();
     await showSakeMasterCandidates();
   } catch (error) {
-    console.error(error);
+
     alert("状態更新に失敗しました。\n\n" + error.message);
   }
 }
@@ -2119,7 +2118,7 @@ async function runAutoPromotion() {
     await loadAdminDashboard();
 
   } catch (error) {
-    console.error(error);
+
 
     alert(
       "自動昇格に失敗しました。\n\n" +
@@ -2127,11 +2126,11 @@ async function runAutoPromotion() {
     );
   }
 }
-    
+
     loadAdminDashboard();
 
 
-    
+
 </script>
 </body>
 </html>
