@@ -75,7 +75,7 @@ DB/Storageを跨ぐ編集・退会の原子性、通信中断後の孤立ファ�
 - **退会Functionは未認証POSTに500を返したためFAIL。** エラーは既存実装の `login required` 例外と一致した。監査ブランチの401修正はまだ配備されていないと考えられるが、配備済みソース全体の読取りは未実施。削除成功や情報漏洩を示す結果ではない。
 
 実通信結果は `security-audit-2026-10-26-live.json` に保存。スクリプトは異常があればexit 1を返す。匿名の確認はA/B所有権試験を代替しない。
-環境にSupabase管理接続・A/Bテストユーザーのバインディングはなく、利用可能なSupabase管理ツールもない。
+初回はSupabase管理接続・A/Bテストユーザーのバインディングがなかった。管理トークン提供後の追加調査は後述。
 本番ユーザーの利用、架空認証情報の作成、課金API呼出しは行っていない。
 
 次に必要な確認は次の3まとまり。
@@ -108,3 +108,46 @@ A/B試験用の `SAKELOG_UAT_A_ACCESS_TOKEN` / `SAKELOG_UAT_B_ACCESS_TOKEN` と�
 - `f95b27e953d2bd06f031d4ebb7d2dcd72a1ac7f8`: Worker/ログ/旧token fallback・syntax/HTTPテスト。
 
 監査記録コミットのSHAとGitHubの読戻し結果は最終作業報告に記載する。
+
+## 管理トークン提供後の追加調査（2026-10-26）
+
+`SUPABASE_ACCESS_TOKEN` のbindingはready、ネットワークはenforced。Management APIのプロジェクト読取りは200、プロジェクトはACTIVE_HEALTHY。
+本番DBを変更する前に、pg_policies 103件、対象制約28件、対象列85件、SECURITY DEFINER等の関数定義52件、トリガー、Storage、配備済みFunctionメタデータ、Security/Performance Advisorを取得した。
+個人のDB行・メールアドレス・写真を取得していない。
+
+### 写真参照の所有権不足（S04 / P0）
+
+現在のsake_photos INSERT/UPDATEポリシーはuser_id=auth.uid()のみを確認する。
+`drinking_record_id` の参照先レコードの所有者、および `storage_path` の先頭フォルダの所有者は検証しない。
+該当チェックを補うトリガーや制約もなく、authenticatedにはINSERT/UPDATE権限がある。
+
+本番から読み取った該当ポリシー式を、ネットワークを無効化した隔離PostgreSQL 17に再現した。
+架空A/Bの両方向で、他人レコードへの参照・他人パスへのINSERT・他人パスへのUPDATEの6ケースを再現。
+`20261026090000_sake_photo_reference_ownership.sql` は、既存ポリシーを残したままINSERT/UPDATEに2つのRESTRICTIVEポリシーを追加する。
+本人のレコード・Storage先頭フォルダを照合し、トラバーサルやエンコードした区切りを拒否する。既存のnullableなrecord参照は維持する。
+
+`python3 tests/photo_ownership_db.py` の結果は **33 PASS / 0 FAIL**。
+内訳は、修正前の問題再現6、修正後の両方向正常/拒否確認18、不正パス拒否8、制限ポリシー作成確認1。
+本番への事前集計では、他人パス・他人レコード参照・非正規パスの各該当数はすべて0だった。
+既存データの書換え、FK indexの削除、権限の拡大は行っていない。
+
+### 適用を阻んだ権限と本番の状態
+
+- プロジェクトAPIキーの読取りは403（必要な権限がないとのSupabase応答）。テストユーザーの作成・ログインには進めず、作成数は0。
+- API仕様の `read_only: false` を指定しても、CREATE POLICYはSQLSTATE 25006「read-only transaction」で拒否された。
+- 読取りによる診断ではcurrent_user/session_userとも `supabase_read_only_user`、transaction_read_only/default_transaction_read_onlyともon、接続先はレプリカではなかった。
+- 追加予定ポリシー2件と移行履歴versionの読戻しはいずれも0件。トランザクションは適用されておらず、**本番修正は未反映**。
+- 管理APIの正式OpenAPIで、DB変更はdatabase_write、キー値参照はapi_gateway_keys_read/api_gateway_keys_secret_readに対応することを確認した。認証方法や別経路で権限不足を回避していない。
+
+同じSUPABASE_ACCESS_TOKENに、対象プロジェクトのDB変更とAPIキー参照が可能な権限が必要。
+Owner/Admin等の適切な権限を持つアカウントのトークンを環境設定へ安全に設定し、反映後にAPIとDBの権限を再確認する。
+それまでは本番A/B実通信、退会後の実DB/Storage残存確認、Function配備を完了扱いにしない。
+
+### Advisor・配備済みメタデータ
+
+- Storage 4 bucketはすべてprivate。
+- Functionはdelete-account v4 / line-login v3 / personal-data-export v6。verify_jwtはそれぞれfalse / false / true。
+- Security Advisor: INFO 3件（server-only表のRLS有効・policyなし）、WARN 3件（意図して残すSECURITY DEFINER 2関数、漏洩パスワード保護1件）。既存Gateの説明と一致。ERRORなし。
+- Performance Advisor: auth_rls_initplan WARN 41件、multiple_permissive_policies WARN 12件、duplicate_index WARN 1件、unused_index INFO 69件。権限や意味を変える最適化は行わず、既存FK indexも保持。
+
+今回の33件は隔離DB検証であり、前回のローカル36件、匿名実通信10 PASS / 1 FAIL、本番A/B未実施とは別集計。

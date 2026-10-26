@@ -73,3 +73,15 @@ Functionには未認証の空要求（開示はstatus）だけを送る。個人
 A/B認証済み試験には環境設定の `SAKELOG_UAT_A_ACCESS_TOKEN` と `SAKELOG_UAT_B_ACCESS_TOKEN` が必要。
 配備済みFunction・schema等の読取りには `SUPABASE_ACCESS_TOKEN` が必要。必要項目のみドラフト登録済みで、値の保存を確認していない。
 管理API用に `api.supabase.com` を追加。値は環境設定で安全に入力する。認証情報が提供されたら本人ID・テスト用アカウントの対象を確認してから試験を再開する。
+
+## 写真所有権の隔離DBテスト
+
+```sh
+cd /workspace/sake-log
+python3 tests/photo_ownership_db.py
+```
+
+管理されたDocker daemonとPostgreSQL 17の固定digestを使用する。コンテナはnetwork=none、公開ポートなし、試験後に削除。
+本番接続・本番ユーザー・本番データを使わず、読取り済みのRLS式をfixtureで再現する。
+33件PASSを確認。新しいSQL migrationは現在本番未反映であり、このテストから自動適用しない。
+管理トークンは読取りに使えるが、キー参照は403、DB変更はread-only transactionで拒否される。必要権限のある同名bindingへ変更後に再確認する。
