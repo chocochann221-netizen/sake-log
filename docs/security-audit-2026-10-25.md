@@ -64,11 +64,21 @@ DB/Storageを跨ぐ編集・退会の原子性、通信中断後の孤立ファ�
 
 ## 実通信・実機の制限
 
-Supabase `/auth/v1/settings` の読取りを既存公開キーで試行したが、クラウドのCONNECTが403で拒否。接続先許可の不足であり、アプリの認証失敗やRLSのFAILとは分類しない。
+初回はSupabaseへのCONNECTが403で拒否された。2026-10-26の再開時には実要求が成功した。環境ステータスのnetwork stateはunknownのままだったため、設定表示だけで接続可否を判断していない。
+
+追加した `tests/live_anonymous_checks.py` を本番Supabaseに対して実行し、**実通信11件中10件PASS・1件FAIL**。ローカル36件とは別集計。
+
+- Google/メール有効、Apple/匿名ユーザー無効、確認メール必須を取得。
+- profiles、brewery_contact_private、brewery_links、line_account_links、personal_data_export_requestsは匿名アクセス401/42501。
+- HEAD＋count=exactで、匿名から見えるdrinking_recordsとsake_photosの件数はいずれも0。個人の行内容を取得していない。
+- 未認証のpersonal-data-export（statusのみ）とline-loginは401。
+- **退会Functionは未認証POSTに500を返したためFAIL。** エラーは既存実装の `login required` 例外と一致した。監査ブランチの401修正はまだ配備されていないと考えられるが、配備済みソース全体の読取りは未実施。削除成功や情報漏洩を示す結果ではない。
+
+実通信結果は `security-audit-2026-10-26-live.json` に保存。スクリプトは異常があればexit 1を返す。匿名の確認はA/B所有権試験を代替しない。
 環境にSupabase管理接続・A/Bテストユーザーのバインディングはなく、利用可能なSupabase管理ツールもない。
 本番ユーザーの利用、架空認証情報の作成、課金API呼出しは行っていない。
 
-外部接続が許可された後に必要な確認は次の3まとまり。
+次に必要な確認は次の3まとまり。
 
 1. `SECURITY_AB_UAT.md` 正本のA/B双方向試験（profile/record/photo/Storage、RPC、role/plan、quota、server-only表）と終了時のテストデータ削除・残存確認。安全に用意した専用アカウントとfixtureで行う。
 2. Supabase schema/policy/functionの読取り、Security/Performance Advisor、Google/LINE/メール実復帰・再ログイン・password recovery・退会・開示。新旧frontend/Edge Functionの互換性も配備前に確認する。
@@ -86,7 +96,9 @@ Supabaseの管理アクセスなしに関数を配備したり、mainへマー�
 ## クラウド設定
 
 `install_script` と `start_skill` をドラフト保存済み。Node/Chromium/開発ツール、起動ディレクトリ、HTTP readiness、テストコマンドを記載。
-追加許可ドメインは `mtshsijgfmottgkbgnir.supabase.co` と `muro.sakenowa.com`。
+初回の追加許可ドメインは `mtshsijgfmottgkbgnir.supabase.co` と `muro.sakenowa.com`。
+再開時の読戻しではstart_skillがnullだったため、完全な起動手順を再保存し、読戻しの全文一致を確認した。
+A/B試験用の `SAKELOG_UAT_A_ACCESS_TOKEN` / `SAKELOG_UAT_B_ACCESS_TOKEN` と、配備済みFunction・schema等の確認用の `SUPABASE_ACCESS_TOKEN` の必要項目を追加した。値は未入力・未バインドであることを確認済み。管理API用に `api.supabase.com` も許可ドメインへ追加された。テスト用トークンは専用アカウントだけを使い、値をチャットやGitへ保存しない。
 設定の確認・保存と環境の公開は利用者側の操作。保存済みドラフトと実行環境への適用・公開・新規タスクでの復元検証を混同しない。
 
 実装修正コミット:

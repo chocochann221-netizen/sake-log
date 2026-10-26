@@ -58,3 +58,18 @@ NodeのTypeScript除去APIの警告はテスト失敗ではない。Deno本番�
 
 完全なSupabase schema/policyの再構築ファイルやAndroidネイティブプロジェクトはこのリポジトリにない。
 本番DBの変更、Edge Function配備、mainへのマージは起動処理に含めない。
+
+## 匿名アクセスの実通信確認（2026-10-26追記）
+
+```sh
+cd /workspace/sake-log
+python3 tests/live_anonymous_checks.py --output /tmp/sake-live.json
+```
+
+このコマンドは実Supabaseへ接続する。利用者としてログインせず、GETのlimit=0とHEADの件数だけでDB境界を確認する。
+Functionには未認証の空要求（開示はstatus）だけを送る。個人データの取得・作成・変更・削除は行わない。
+最新実行は10 PASS / 1 FAIL。本番退会Functionの未認証応答が500で、ブランチの401修正は本番反映待ち。
+
+A/B認証済み試験には環境設定の `SAKELOG_UAT_A_ACCESS_TOKEN` と `SAKELOG_UAT_B_ACCESS_TOKEN` が必要。
+配備済みFunction・schema等の読取りには `SUPABASE_ACCESS_TOKEN` が必要。必要項目のみドラフト登録済みで、値の保存を確認していない。
+管理API用に `api.supabase.com` を追加。値は環境設定で安全に入力する。認証情報が提供されたら本人ID・テスト用アカウントの対象を確認してから試験を再開する。

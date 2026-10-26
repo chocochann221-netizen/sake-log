@@ -1,0 +1,78 @@
+{
+  "observed_at": "2026-10-26T18:59:56.639312+09:00",
+  "scope": "live anonymous boundaries only; no A/B ownership claim",
+  "passed": 10,
+  "failed": 1,
+  "results": [
+    {
+      "check": "auth_configuration",
+      "status": 200,
+      "providers": {
+        "email": true,
+        "google": true,
+        "apple": false,
+        "anonymous_users": false
+      },
+      "email_confirmation_required": true,
+      "pass": true
+    },
+    {
+      "check": "anon_denied_profiles",
+      "status": 401,
+      "error_code": "42501",
+      "pass": true
+    },
+    {
+      "check": "anon_denied_brewery_contact_private",
+      "status": 401,
+      "error_code": "42501",
+      "pass": true
+    },
+    {
+      "check": "anon_denied_brewery_links",
+      "status": 401,
+      "error_code": "42501",
+      "pass": true
+    },
+    {
+      "check": "anon_denied_line_account_links",
+      "status": 401,
+      "error_code": "42501",
+      "pass": true
+    },
+    {
+      "check": "anon_denied_personal_data_export_requests",
+      "status": 401,
+      "error_code": "42501",
+      "pass": true
+    },
+    {
+      "check": "anon_no_visible_drinking_records",
+      "status": 200,
+      "visible_rows": "0",
+      "pass": true
+    },
+    {
+      "check": "anon_no_visible_sake_photos",
+      "status": 200,
+      "visible_rows": "0",
+      "pass": true
+    },
+    {
+      "check": "unauthenticated_delete-account",
+      "status": 500,
+      "pass": false,
+      "matches_original_missing_auth_throw": true
+    },
+    {
+      "check": "unauthenticated_personal-data-export",
+      "status": 401,
+      "pass": true
+    },
+    {
+      "check": "unauthenticated_line-login",
+      "status": 401,
+      "pass": true
+    }
+  ]
+}
